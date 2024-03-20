@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "gameobject.h"
+#include "sceneallocator.h"
 
 // stores all the allocations of the current scene in resizable array
 static void** allocations = NULL;
