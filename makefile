@@ -9,21 +9,24 @@ SOURCE_DIR ?= engine
 
 PROJECT_DIR ?= project
 
-SCRIPT_SOURCES := $(shell find $(PROJECT_DIR) -name '*.c')
+SCRIPT_SOURCES := $(shell find $(PROJECT_DIR)/scripts -name '*.c')
 SCRIPT_OBJECTS := $(SCRIPT_SOURCES:%.c=%.o)
 SCRIPT_OUTPUTS := $(SCRIPT_OBJECTS:%=build/%)
 
-SCENES := $(shell find $(PROJECT_DIR) -name '*.json')
+PREFABS := $(shell find $(PROJECT_DIR)/prefabs -name '*.json')
 
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.c') $(shell find $(SOURCE_DIR) -name '*.cpp')
 OBJECTS_1 := $(SOURCES:%.c=%.o)
 OBJECTS := $(OBJECTS_1:%.cpp=%.o)
 OUTPUTS := $(OBJECTS:engine%=build%) $(SCRIPT_OUTPUTS)
 
-main: $(SOURCE_DIR)/GENERATED_SCRIPTS.h driver
+main: driver
 
-$(SOURCE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES) $(SCENES)
+$(SOURCE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES)
 	python3 ./build_scripts.py $(PROJECT_DIR)
+
+$(SOURCE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
+	python3 ./build_prefabs.py $(PROJECT_DIR)
 
 .PHONY: $(RAYLIB_DIR)/libraylib.a
 $(RAYLIB_DIR)/libraylib.a:
@@ -32,13 +35,13 @@ $(RAYLIB_DIR)/libraylib.a:
 driver: $(OUTPUTS) $(RAYLIB_DIR)/libraylib.a
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS)
 
-build/%.o: $(SOURCE_DIR)/%.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h | $(BUILD_DIR)
+build/%.o: $(SOURCE_DIR)/%.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
 	$(CC) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $<
 
-build/%.o: %.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h | $(BUILD_DIR)
+build/%.o: %.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
 	$(CC) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $<
 
-build/%.o: $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/GENERATED_SCRIPTS.h | $(BUILD_DIR)
+build/%.o: $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
 	$(CXX) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $<
 
 $(BUILD_DIR):
@@ -49,4 +52,5 @@ $(BUILD_DIR):
 clean:
 	rm -rf build
 	rm -rf $(SOURCE_DIR)/GENERATED*
+	rm -rf driver
 #	cd $(RAYLIB_DIR) && $(MAKE) clean
