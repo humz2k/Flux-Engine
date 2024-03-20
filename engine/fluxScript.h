@@ -1,6 +1,3 @@
-//#ifndef _SCRIPTS_H_
-//#define _SCRIPTS_H_
-
 #include "gameobject.h"
 #include <assert.h>
 
@@ -34,7 +31,3 @@ extern float deltaTime;
 #define script_data DID_YOU_FORGET_TO_DEFINE_SCRIPT
 
 #endif
-
-//struct script* get_script(GameObject* obj,enum script_enum script_name);
-
-//#endif
