@@ -1,4 +1,6 @@
 # Flux-Engine
 
 ## Style
-C-style C++. Limited C++ features, but should look like C with extras rather than modern C++.
+* Prefix all engine functions/structs with `flux`
+  * Public functions `flux_snake_case`.
+  * Public structs `fluxCamelCase`.

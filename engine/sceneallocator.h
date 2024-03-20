@@ -5,15 +5,15 @@
 #include "raylib.h"
 
 // initializes the scene allocator for the current scene (so should be called every scene load)
-void fluxInitSceneAllocator(void);
+void flux_init_scene_allocator(void);
 
 // closes the scene allocator for the current scene (so should be called every scene close)
-void fluxCloseSceneAllocator(void);
+void flux_close_scene_allocator(void);
 
 // allocates some heap space that will be cleared on scene close
-void* fluxSceneAlloc(size_t sz);
+void* flux_scene_alloc(size_t sz);
 
 // loads a model that will be cleared on scene close
-Model fluxSceneLoadModel(const char* path);
+Model flux_scene_load_model(const char* path);
 
 #endif

@@ -19,7 +19,7 @@ static int models_size = 0;
 
 
 // initializes the scene allocator for the current scene (so should be called every scene load)
-void fluxInitSceneAllocator(void){
+void flux_init_scene_allocator(void){
     // allocations and models must be NULL
     // if not, then something bad happened
     assert((NULL == allocations) && (NULL == models) && "was fluxCloseSceneAllocator called on scene close?");
@@ -35,7 +35,7 @@ void fluxInitSceneAllocator(void){
 }
 
 // closes the scene allocator for the current scene (so should be called every scene close)
-void fluxCloseSceneAllocator(void){
+void flux_close_scene_allocator(void){
     assert((n_allocations >= 0) && "n_allocations was less than 0???");
     assert((n_allocations < allocations_size) && "n_allocations is less than allocations_size!");
     assert((n_models >= 0) && "n_models was less than 0???");
@@ -54,7 +54,7 @@ void fluxCloseSceneAllocator(void){
 }
 
 // allocates some heap space that will be cleared on scene close
-void* fluxSceneAlloc(size_t sz){
+void* flux_scene_alloc(size_t sz){
     assert((n_allocations >= 0) && "n_allocations was less than 0???");
     // if we are out of space, we must grow the array
     if (n_allocations >= allocations_size){
@@ -75,7 +75,7 @@ void* fluxSceneAlloc(size_t sz){
     return out;
 }
 
-Model fluxSceneLoadModel(const char* path){
+Model flux_scene_load_model(const char* path){
     assert((n_models >= 0) && "n_models was less than 0???");
     // if we are out of space, we must grow the array
     if (n_models >= models_size){
