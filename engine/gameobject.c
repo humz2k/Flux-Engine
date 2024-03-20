@@ -3,9 +3,7 @@
 #include "config.h"
 #include "transform.h"
 #include "gameobject.h"
-
-struct fluxScriptStruct;
-typedef struct fluxScriptStruct* fluxScript;
+#include "GENERATED_SCRIPTS.h"
 
 // game object struct
 struct fluxGameObjectStruct{

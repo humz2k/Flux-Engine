@@ -1,14 +1,14 @@
 #define SCRIPT test
-#include "scripts.h"
+#include "fluxScript.h"
 
 script_data{
     int x;
 };
 
-void onInit(fluxGameObject obj, script_data* data){
+fluxCallback onInit(fluxGameObject obj, script_data* data){
     data->x = 0;
 }
 
-void onUpdate(fluxGameObject obj, script_data* data){
+fluxCallback onUpdate(fluxGameObject obj, script_data* data){
     data->x++;
 }

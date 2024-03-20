@@ -8,7 +8,7 @@ SCRIPT_CALLBACKS = [
 
 # processes all Flux scripts and creates `struct script`
 class ScriptProcessor:
-    def __init__(self, project_path : str = "project", scripts_folder : str = "scripts", engine_path : str = "engine", output_file : str = "GENERATED_SCRIPTS.c"):
+    def __init__(self, project_path : str = "project", scripts_folder : str = "scripts", engine_path : str = "engine", output_file : str = "GENERATED_SCRIPTS.h"):
         # path of the project (where project_path/scripts is where all the scripts are)
         self.project_path : str = project_path
         # name of the scripts folder
@@ -27,11 +27,13 @@ class ScriptProcessor:
         # when we process a script, we add the name of it to this list
         self.script_names : list[str] = []
         # the output generated file (initially empty)
-        self.output : str = ""
+        self.output : str = '#include "gameobject.h"\n#include "sceneallocator.h"\n' + "#ifdef FLUX_SCRIPTS_IMPLEMENTATION\n"
         # now we can process all the scripts
         self.process_scripts()
         # we can then add the script id enum to the start of output
-        self.output += self.generate_enum_script_id() + self.generate_struct_script() + self.generate_all_callbacks()
+        self.output += "\n#endif\n" + self.generate_enum_script_id() + self.generate_struct_script() + self.generate_all_callbacks() + self.generate_script_allocator()
+        # we also want to forward declare all data scripts
+        self.output = self.generate_forward_declarations() + self.output
         # now write to the output file
         with open(self.output_path,"w") as f:
             f.write(self.output)
@@ -51,7 +53,7 @@ class ScriptProcessor:
     # given a callback name, return an empty `implementation`
     # i.e., a function that doesn't do anything
     def get_empty_implementation(self,callback : str) -> str:
-        return "void {0}(fluxGameObject obj, script_data* data){{}}".format(callback)
+        return "fluxCallback {0}(fluxGameObject obj, script_data* data){{}}".format(callback)
 
     # gets implementations for all not implemented callbacks
     def get_extra_implementations(self, raw : str) -> str:
@@ -91,24 +93,29 @@ class ScriptProcessor:
     def generate_struct_script(self) -> str:
         return """
 
+struct fluxScriptStruct;
+typedef struct fluxScriptStruct* fluxScript;
+#ifdef FLUX_SCRIPTS_IMPLEMENTATION
 struct fluxScriptStruct{
     enum fluxScriptID id;
     union {
-        """ + ";\n        ".join(["struct " + self.get_script_data_name(i) + " " + self.get_script_data_name(i) for i in self.script_names]) + """;
+        void* raw;
+        """ + ";\n        ".join(["struct " + self.get_script_data_name(i) + "* " + self.get_script_data_name(i) for i in self.script_names]) + """;
     };
 };
+#endif
 
 """
 
     # gets the mangled callback function for a script_name
     def get_mangled_callback(self, callback : str, script_name : str):
-        return callback + "_fluxCallback_" + script_name
+        return script_name + "_fluxCallback_" + callback
 
     # generates the switch statement callback `callback` for the script `script_name`
     def generate_switch_script_callback(self,callback : str, script_name : str) -> str:
         return """
         case {0}:
-            {1}(obj,&(script->{2}));
+            {1}(obj,script->{2});
             break;
 """.format(self.get_script_enum_name(script_name),self.get_mangled_callback(callback,script_name),self.get_script_data_name(script_name))
 
@@ -116,7 +123,9 @@ struct fluxScriptStruct{
     def generate_callback(self,callback : str) -> str:
         return """
 
-void fluxCallback_{0}(fluxGameObject obj, struct fluxScriptStruct* script){{
+void fluxCallback_{0}(fluxGameObject obj, fluxScript script)
+#ifdef FLUX_SCRIPTS_IMPLEMENTATION
+{{
     switch(script->id){{
         {1}
         default:
@@ -124,14 +133,45 @@ void fluxCallback_{0}(fluxGameObject obj, struct fluxScriptStruct* script){{
             break;
     }}
 }}
+#else
+;
+#endif
 
 """.format(callback,"\n".join([self.generate_switch_script_callback(callback,i) for i in self.script_names]))
 
+    # generates all callbacks
     def generate_all_callbacks(self) -> str:
         return "\n".join([self.generate_callback(i) for i in SCRIPT_CALLBACKS])
 
+    # forward declares the script data structs
+    def generate_forward_declarations(self) -> str:
+        return "\n" + "\n".join(["struct " + self.get_script_data_name(i) + ";" for i in self.script_names]) + "\n"
+
+    # generates the script allocator
+    def generate_script_allocator(self) -> str:
+        return """
+
+fluxScript fluxAllocateScript(enum fluxScriptID id)
+#ifdef FLUX_SCRIPTS_IMPLEMENTATION
+{
+    fluxScript out = (fluxScript)flux_scene_alloc(sizeof(struct fluxScriptStruct));
+    out->id = id;
+    size_t sz = 0;
+    switch(id){
+        """ + "\n        ".join(["case " + self.get_script_enum_name(i) + ":\n            sz = sizeof(struct " + self.get_script_data_name(i) + ");\n            break;" for i in self.script_names]) + """
+        default:
+            assert((1 == 0) && "something terrible happened at build time!");
+            break;
+    }
+    out->raw = flux_scene_alloc(sz);
+    return out;
+}
+#else
+;
+#endif
+
+"""
 
 processor = ScriptProcessor()
-print(processor.output)
 #print(processor.generate_callback(SCRIPT_CALLBACKS[0]))
 #print(processor.script_names)

@@ -33,3 +33,5 @@
 
 .vscode
 .DS_Store
+
+engine/GENERATED_**
