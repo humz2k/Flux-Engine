@@ -36,3 +36,4 @@
 
 engine/GENERATED_**
 driver
+**/__pycache__
