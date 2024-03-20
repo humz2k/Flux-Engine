@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+from pputils import *
 
 SCRIPT_CALLBACKS = [
     "onUpdate", "afterUpdate", "onInit", "onDestroy", "onDraw", "onDraw2D"
@@ -78,13 +79,9 @@ class ScriptProcessor:
         for i in self.scripts:
             self.process_file(i)
 
-    # gets the name of the script enum of `script_name`
-    def get_script_enum_name(self,script_name : str) -> str:
-        return "fluxScript_" + script_name
-
     # generates `enum fluxScriptID`
     def generate_enum_script_id(self):
-        return "\nenum fluxScriptID{" + ",".join([self.get_script_enum_name(i) for i in self.script_names]) + "};\n"
+        return "\nenum fluxScriptID{" + ",".join([get_script_enum_name(i) for i in self.script_names]) + "};\n"
 
     def get_script_data_name(self,script_name : str) -> str:
         return script_name + "_fluxData"
@@ -117,7 +114,7 @@ struct fluxScriptStruct{
         case {0}:
             {1}(obj,script->{2});
             break;
-""".format(self.get_script_enum_name(script_name),self.get_mangled_callback(callback,script_name),self.get_script_data_name(script_name))
+""".format(get_script_enum_name(script_name),self.get_mangled_callback(callback,script_name),self.get_script_data_name(script_name))
 
     # generates the callback `callback` for `struct fluxScriptStruct`
     def generate_callback(self,callback : str) -> str:
@@ -158,7 +155,7 @@ fluxScript fluxAllocateScript(enum fluxScriptID id)
     out->id = id;
     size_t sz = 0;
     switch(id){
-        """ + "\n        ".join(["case " + self.get_script_enum_name(i) + ":\n            sz = sizeof(struct " + self.get_script_data_name(i) + ");\n            break;" for i in self.script_names]) + """
+        """ + "\n        ".join(["case " + get_script_enum_name(i) + ":\n            sz = sizeof(struct " + self.get_script_data_name(i) + ");\n            break;" for i in self.script_names]) + """
         default:
             assert((1 == 0) && "something terrible happened at build time!");
             break;
