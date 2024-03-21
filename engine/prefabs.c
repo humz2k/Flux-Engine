@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include "raylib.h"
 #include "raymath.h"
@@ -8,8 +9,7 @@
 #include "transform.h"
 #include "gameobject.h"
 #include "game_callbacks.h"
-#include "GENERATED_SCRIPTS.h"
-#include "GENERATED_PREFABS.h"
+#include "scripts.h"
 
 struct fluxPrefabStruct{
     const char* name;
@@ -19,7 +19,7 @@ struct fluxPrefabStruct{
     int n_scripts;
     enum fluxScriptID scripts[FLUX_MAX_SCRIPTS];
     int n_children;
-    struct fluxPrefabStruct* children[FLUX_MAX_CHILDREN];
+    enum fluxPrefabID children[FLUX_MAX_CHILDREN];
 };
 
 static int n_prefabs = 0;
@@ -52,8 +52,8 @@ void flux_register_prefab(const char* name, const char* tag, const char* model_p
     }
     prefab->n_children = n_children;
     for (int i = 0; i < n_children; i++){
-        assert((int)children[i] < n_prefabs);
-        prefab->children[i] = &allocated_prefabs[(int)children[i]];
+        assert(children[i] < n_prefabs);
+        prefab->children[i] = children[i];
     }
 
 }
@@ -71,4 +71,24 @@ void flux_init_prefabs(void){
     init_all_prefabs();
 
     TraceLog(LOG_INFO,"initialized %d prefabs",n_prefabs);
+}
+
+fluxGameObject flux_instantiate_prefab(enum fluxPrefabID prefabid, fluxTransform transform){
+    assert(prefabid < n_prefabs);
+    struct fluxPrefabStruct prefab = allocated_prefabs[prefabid];
+    fluxGameObject out = flux_allocate_gameobject(prefab.name,prefab.tag,transform);
+    if (prefab.model_path != NULL){
+        Model model = flux_scene_load_model(prefab.model_path);
+        flux_gameobject_set_model(out,model,WHITE);
+    }
+    if (prefab.is_camera){
+        flux_gameobject_set_camera(out,45,CAMERA_PERSPECTIVE);
+    }
+    for (int i = 0; i < prefab.n_scripts; i++){
+        flux_gameobject_add_script(out,prefab.scripts[i]);
+    }
+    for (int i = 0; i < prefab.n_children; i++){
+        flux_gameobject_add_child(out,flux_instantiate_prefab(prefab.children[i],transform));
+    }
+    return out;
 }

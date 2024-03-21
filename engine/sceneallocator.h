@@ -16,4 +16,7 @@ void* flux_scene_alloc(size_t sz);
 // loads a model that will be cleared on scene close
 Model flux_scene_load_model(const char* path);
 
+// returns a unique identifier for a game object
+int flux_scene_get_unique_id(void);
+
 #endif

@@ -1,4 +1,5 @@
 {
     "prefabName": "testPrefab",
+    "prefabModel": "SPHERE",
     "prefabScripts": ["test"]
 }

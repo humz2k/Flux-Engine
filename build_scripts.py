@@ -28,7 +28,7 @@ class ScriptProcessor:
         # when we process a script, we add the name of it to this list
         self.script_names : list[str] = []
         # the output generated file (initially empty)
-        self.output : str = '#include "gameobject.h"\n#include "sceneallocator.h"\n' + "#ifdef FLUX_SCRIPTS_IMPLEMENTATION\n"
+        self.output : str = '#define FLUX_GAMEOBJECT_TYPE_ONLY\n#include "gameobject.h"\n#include "sceneallocator.h"\n' + "#ifdef FLUX_SCRIPTS_IMPLEMENTATION\n"
         # now we can process all the scripts
         self.process_scripts()
         # we can then add the script id enum to the start of output
@@ -148,7 +148,7 @@ void fluxCallback_{0}(fluxGameObject obj, fluxScript script)
     def generate_script_allocator(self) -> str:
         return """
 
-fluxScript fluxAllocateScript(enum fluxScriptID id)
+fluxScript flux_allocate_script(enum fluxScriptID id)
 #ifdef FLUX_SCRIPTS_IMPLEMENTATION
 {
     fluxScript out = (fluxScript)flux_scene_alloc(sizeof(struct fluxScriptStruct));
