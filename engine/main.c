@@ -14,8 +14,8 @@ int main(){
 
 
     fluxTransform camera_transform;
-    camera_transform.pos = (Vector3){0,1,-10};
-    camera_transform.rot = Vector3Zero();
+    camera_transform.pos = (Vector3){0,1,-3};
+    camera_transform.rot = (Vector3){-0.3,0,0};
     camera_transform.scale = Vector3One();
 
     flux_scene_instantiate_prefab(fluxPrefab_defaultCamera, camera_transform);
