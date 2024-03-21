@@ -1,0 +1,2 @@
+prefab_name,pos_x,pos_y,pos_z,rot_x,rot_y,rot_z,scale_x,scale_y,scale_z,tint_r,tint_g,tint_b,tint_a
+sphere_prefab,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,255,255,255,255
