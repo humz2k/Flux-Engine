@@ -536,6 +536,14 @@ void SetMasterVolume(float volume)
     ma_device_set_master_volume(&AUDIO.System.device, volume);
 }
 
+// Get master volume (listener)
+float GetMasterVolume(void)
+{
+    float volume = 0.0f;
+    ma_device_get_master_volume(&AUDIO.System.device, &volume);
+    return volume;
+}
+
 //----------------------------------------------------------------------------------
 // Module Functions Definition - Audio Buffer management
 //----------------------------------------------------------------------------------
@@ -920,7 +928,6 @@ Sound LoadSoundFromWave(Wave wave)
 }
 
 // Clone sound from existing sound data, clone does not own wave data
-// Wave data must
 // NOTE: Wave data must be unallocated manually and will be shared across all clones
 Sound LoadSoundAlias(Sound source)
 {
@@ -928,13 +935,16 @@ Sound LoadSoundAlias(Sound source)
 
     if (source.stream.buffer->data != NULL)
     {
-        AudioBuffer* audioBuffer = LoadAudioBuffer(AUDIO_DEVICE_FORMAT, AUDIO_DEVICE_CHANNELS, AUDIO.System.device.sampleRate, source.frameCount, AUDIO_BUFFER_USAGE_STATIC);
+        AudioBuffer* audioBuffer = LoadAudioBuffer(AUDIO_DEVICE_FORMAT, AUDIO_DEVICE_CHANNELS, AUDIO.System.device.sampleRate, 0, AUDIO_BUFFER_USAGE_STATIC);
         if (audioBuffer == NULL)
         {
             TRACELOG(LOG_WARNING, "SOUND: Failed to create buffer");
             return sound; // early return to avoid dereferencing the audioBuffer null pointer
         }
+        audioBuffer->sizeInFrames = source.stream.buffer->sizeInFrames;
+        audioBuffer->volume = source.stream.buffer->volume;
         audioBuffer->data = source.stream.buffer->data;
+
         sound.frameCount = source.frameCount;
         sound.stream.sampleRate = AUDIO.System.device.sampleRate;
         sound.stream.sampleSize = 32;
@@ -944,6 +954,7 @@ Sound LoadSoundAlias(Sound source)
 
     return sound;
 }
+
 
 // Checks if a sound is ready
 bool IsSoundReady(Sound sound)
@@ -1786,7 +1797,14 @@ void SeekMusicStream(Music music, float position)
         case MUSIC_AUDIO_MP3: drmp3_seek_to_pcm_frame((drmp3 *)music.ctxData, positionInFrames); break;
 #endif
 #if defined(SUPPORT_FILEFORMAT_QOA)
-        case MUSIC_AUDIO_QOA: qoaplay_seek_frame((qoaplay_desc *)music.ctxData, positionInFrames); break;
+        case MUSIC_AUDIO_QOA:
+        {
+            int qoaFrame = positionInFrames/QOA_FRAME_LEN;
+            qoaplay_seek_frame((qoaplay_desc *)music.ctxData, qoaFrame); // Seeks to QOA frame, not PCM frame
+
+            // We need to compute QOA frame number and update positionInFrames
+            positionInFrames = ((qoaplay_desc *)music.ctxData)->sample_position;
+        } break;
 #endif
 #if defined(SUPPORT_FILEFORMAT_FLAC)
         case MUSIC_AUDIO_FLAC: drflac_seek_to_pcm_frame((drflac *)music.ctxData, positionInFrames); break;

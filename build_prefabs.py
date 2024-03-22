@@ -39,9 +39,9 @@ class PrefabProcessor:
         with open(self.output_path,"w") as f:
             f.write(self.output)
 
-    # finds all `.json` files in `prefabs_path`
+    # finds all `.prefab` files in `prefabs_path`
     def find_prefabs(self) -> list[str]:
-        return [os.path.join(self.prefabs_path,i) for i in os.listdir(self.prefabs_path) if i.split(".")[-1].strip() == "json"]
+        return [os.path.join(self.prefabs_path,i) for i in os.listdir(self.prefabs_path) if i.split(".")[-1].strip() == "prefab"]
 
     # reads the prefab name from loaded json
     # or gives it a unique number if no name is specified

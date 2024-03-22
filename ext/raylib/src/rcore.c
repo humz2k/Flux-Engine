@@ -3,18 +3,22 @@
 *   rcore - Window/display management, Graphic device/context management and input management
 *
 *   PLATFORMS SUPPORTED:
-*       - PLATFORM_DESKTOP: 
-*           > Windows (Win32, Win64)
-*           > Linux (X11/Wayland desktop mode)
-*           > macOS/OSX (x64, arm64)
-*           > FreeBSD, OpenBSD, NetBSD, DragonFly (X11 desktop)
-*       - PLATFORM_WEB:     
-*           > HTML5 (WebAssembly)
-*       - PLATFORM_DRM:     
-*           > Raspberry Pi 0-5
-*           > Linux native mode (KMS driver)
-*       - PLATFORM_ANDROID: 
-*           > Android (ARM, ARM64)
+*       > PLATFORM_DESKTOP (GLFW backend):
+*           - Windows (Win32, Win64)
+*           - Linux (X11/Wayland desktop mode)
+*           - macOS/OSX (x64, arm64)
+*           - FreeBSD, OpenBSD, NetBSD, DragonFly (X11 desktop)
+*       > PLATFORM_DESKTOP_SDL (SDL backend):
+*           - Windows (Win32, Win64)
+*           - Linux (X11/Wayland desktop mode)
+*           - Others (not tested)
+*       > PLATFORM_WEB:
+*           - HTML5 (WebAssembly)
+*       > PLATFORM_DRM:
+*           - Raspberry Pi 0-5 (DRM/KMS)
+*           - Linux DRM subsystem (KMS mode)
+*       > PLATFORM_ANDROID:
+*           - Android (ARM, ARM64)
 *
 *   CONFIGURATION:
 *       #define SUPPORT_DEFAULT_FONT (default)
@@ -48,8 +52,8 @@
 *           provided by stb_image and stb_image_write libraries, so, those libraries must be enabled on textures module
 *           for linkage
 *
-*       #define SUPPORT_EVENTS_AUTOMATION
-*           Support automatic generated events, loading and recording of those events when required
+*       #define SUPPORT_AUTOMATION_EVENTS
+*           Support automatic events recording and playing, useful for automated testing systems or AI based game playing
 *
 *   DEPENDENCIES:
 *       raymath  - 3D math functionality (Vector2, Vector3, Matrix, Quaternion)
@@ -85,12 +89,19 @@
     #include "config.h"             // Defines module configuration flags
 #endif
 
-#include "rcore.h"                  // Defines types and globals
+#include "utils.h"                  // Required for: TRACELOG() macros
+
+#include <stdlib.h>                 // Required for: srand(), rand(), atexit()
+#include <stdio.h>                  // Required for: sprintf() [Used in OpenURL()]
+#include <string.h>                 // Required for: strrchr(), strcmp(), strlen(), memset()
+#include <time.h>                   // Required for: time() [Used in InitTimer()]
+#include <math.h>                   // Required for: tan() [Used in BeginMode3D()], atan2f() [Used in LoadVrStereoConfig()]
 
 #define RLGL_IMPLEMENTATION
 #include "rlgl.h"                   // OpenGL abstraction layer to OpenGL 1.1, 3.3+ or ES2
 
-#include "raymath.h"                // Vector3, Quaternion and Matrix functionality
+#define RAYMATH_IMPLEMENTATION
+#include "raymath.h"                // Vector2, Vector3, Quaternion and Matrix functionality
 
 #if defined(SUPPORT_GESTURES_SYSTEM)
     #define RGESTURES_IMPLEMENTATION
@@ -118,6 +129,11 @@
 
     #define SDEFL_IMPLEMENTATION
     #include "external/sdefl.h"     // Deflate (RFC 1951) compressor
+#endif
+
+#if defined(SUPPORT_RPRAND_GENERATOR)
+    #define RPRAND_IMPLEMENTATION
+    #include "external/rprand.h"
 #endif
 
 #if defined(__linux__) && !defined(_GNU_SOURCE)
@@ -167,6 +183,166 @@ __declspec(dllimport) int __stdcall WideCharToMultiByte(unsigned int cp, unsigne
 #endif
 
 //----------------------------------------------------------------------------------
+// Defines and Macros
+//----------------------------------------------------------------------------------
+#ifndef MAX_FILEPATH_CAPACITY
+    #define MAX_FILEPATH_CAPACITY       8192        // Maximum capacity for filepath
+#endif
+#ifndef MAX_FILEPATH_LENGTH
+    #if defined(_WIN32)
+        #define MAX_FILEPATH_LENGTH      256        // On Win32, MAX_PATH = 260 (limits.h) but Windows 10, Version 1607 enables long paths...
+    #else
+        #define MAX_FILEPATH_LENGTH     4096        // On Linux, PATH_MAX = 4096 by default (limits.h)
+    #endif
+#endif
+
+#ifndef MAX_KEYBOARD_KEYS
+    #define MAX_KEYBOARD_KEYS            512        // Maximum number of keyboard keys supported
+#endif
+#ifndef MAX_MOUSE_BUTTONS
+    #define MAX_MOUSE_BUTTONS              8        // Maximum number of mouse buttons supported
+#endif
+#ifndef MAX_GAMEPADS
+    #define MAX_GAMEPADS                   4        // Maximum number of gamepads supported
+#endif
+#ifndef MAX_GAMEPAD_AXIS
+    #define MAX_GAMEPAD_AXIS               8        // Maximum number of axis supported (per gamepad)
+#endif
+#ifndef MAX_GAMEPAD_BUTTONS
+    #define MAX_GAMEPAD_BUTTONS           32        // Maximum number of buttons supported (per gamepad)
+#endif
+#ifndef MAX_TOUCH_POINTS
+    #define MAX_TOUCH_POINTS               8        // Maximum number of touch points supported
+#endif
+#ifndef MAX_KEY_PRESSED_QUEUE
+    #define MAX_KEY_PRESSED_QUEUE         16        // Maximum number of keys in the key input queue
+#endif
+#ifndef MAX_CHAR_PRESSED_QUEUE
+    #define MAX_CHAR_PRESSED_QUEUE        16        // Maximum number of characters in the char input queue
+#endif
+
+#ifndef MAX_DECOMPRESSION_SIZE
+    #define MAX_DECOMPRESSION_SIZE        64        // Maximum size allocated for decompression in MB
+#endif
+
+#ifndef MAX_AUTOMATION_EVENTS
+    #define MAX_AUTOMATION_EVENTS      16384        // Maximum number of automation events to record
+#endif
+
+// Flags operation macros
+#define FLAG_SET(n, f) ((n) |= (f))
+#define FLAG_CLEAR(n, f) ((n) &= ~(f))
+#define FLAG_TOGGLE(n, f) ((n) ^= (f))
+#define FLAG_CHECK(n, f) ((n) & (f))
+
+#if (defined(__linux__) || defined(PLATFORM_WEB)) && (_POSIX_C_SOURCE < 199309L)
+    #undef _POSIX_C_SOURCE
+    #define _POSIX_C_SOURCE 199309L // Required for: CLOCK_MONOTONIC if compiled with c99 without gnu ext.
+#endif
+
+//----------------------------------------------------------------------------------
+// Types and Structures Definition
+//----------------------------------------------------------------------------------
+typedef struct { int x; int y; } Point;
+typedef struct { unsigned int width; unsigned int height; } Size;
+
+// Core global state context data
+typedef struct CoreData {
+    struct {
+        const char *title;                  // Window text title const pointer
+        unsigned int flags;                 // Configuration flags (bit based), keeps window state
+        bool ready;                         // Check if window has been initialized successfully
+        bool fullscreen;                    // Check if fullscreen mode is enabled
+        bool shouldClose;                   // Check if window set for closing
+        bool resizedLastFrame;              // Check if window has been resized last frame
+        bool eventWaiting;                  // Wait for events before ending frame
+        bool usingFbo;                      // Using FBO (RenderTexture) for rendering instead of default framebuffer
+
+        Point position;                     // Window position (required on fullscreen toggle)
+        Point previousPosition;             // Window previous position (required on borderless windowed toggle)
+        Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
+        Size screen;                        // Screen width and height (used render area)
+        Size previousScreen;                // Screen previous width and height (required on borderless windowed toggle)
+        Size currentFbo;                    // Current render width and height (depends on active fbo)
+        Size render;                        // Framebuffer width and height (render area, including black bars if required)
+        Point renderOffset;                 // Offset from render area (must be divided by 2)
+        Size screenMin;                     // Screen minimum width and height (for resizable window)
+        Size screenMax;                     // Screen maximum width and height (for resizable window)
+        Matrix screenScale;                 // Matrix to scale screen (framebuffer rendering)
+
+        char **dropFilepaths;               // Store dropped files paths pointers (provided by GLFW)
+        unsigned int dropFileCount;         // Count dropped files strings
+
+    } Window;
+    struct {
+        const char *basePath;               // Base path for data storage
+
+    } Storage;
+    struct {
+        struct {
+            int exitKey;                    // Default exit key
+            char currentKeyState[MAX_KEYBOARD_KEYS]; // Registers current frame key state
+            char previousKeyState[MAX_KEYBOARD_KEYS]; // Registers previous frame key state
+
+            // NOTE: Since key press logic involves comparing prev vs cur key state, we need to handle key repeats specially
+            char keyRepeatInFrame[MAX_KEYBOARD_KEYS]; // Registers key repeats for current frame.
+
+            int keyPressedQueue[MAX_KEY_PRESSED_QUEUE]; // Input keys queue
+            int keyPressedQueueCount;       // Input keys queue count
+
+            int charPressedQueue[MAX_CHAR_PRESSED_QUEUE]; // Input characters queue (unicode)
+            int charPressedQueueCount;      // Input characters queue count
+
+        } Keyboard;
+        struct {
+            Vector2 offset;                 // Mouse offset
+            Vector2 scale;                  // Mouse scaling
+            Vector2 currentPosition;        // Mouse position on screen
+            Vector2 previousPosition;       // Previous mouse position
+
+            int cursor;                     // Tracks current mouse cursor
+            bool cursorHidden;              // Track if cursor is hidden
+            bool cursorOnScreen;            // Tracks if cursor is inside client area
+
+            char currentButtonState[MAX_MOUSE_BUTTONS];     // Registers current mouse button state
+            char previousButtonState[MAX_MOUSE_BUTTONS];    // Registers previous mouse button state
+            Vector2 currentWheelMove;       // Registers current mouse wheel variation
+            Vector2 previousWheelMove;      // Registers previous mouse wheel variation
+
+        } Mouse;
+        struct {
+            int pointCount;                             // Number of touch points active
+            int pointId[MAX_TOUCH_POINTS];              // Point identifiers
+            Vector2 position[MAX_TOUCH_POINTS];         // Touch position on screen
+            char currentTouchState[MAX_TOUCH_POINTS];   // Registers current touch state
+            char previousTouchState[MAX_TOUCH_POINTS];  // Registers previous touch state
+
+        } Touch;
+        struct {
+            int lastButtonPressed;          // Register last gamepad button pressed
+            int axisCount[MAX_GAMEPADS];                  // Register number of available gamepad axis
+            bool ready[MAX_GAMEPADS];       // Flag to know if gamepad is ready
+            char name[MAX_GAMEPADS][64];    // Gamepad name holder
+            char currentButtonState[MAX_GAMEPADS][MAX_GAMEPAD_BUTTONS];     // Current gamepad buttons state
+            char previousButtonState[MAX_GAMEPADS][MAX_GAMEPAD_BUTTONS];    // Previous gamepad buttons state
+            float axisState[MAX_GAMEPADS][MAX_GAMEPAD_AXIS];                // Gamepad axis state
+
+        } Gamepad;
+    } Input;
+    struct {
+        double current;                     // Current time measure
+        double previous;                    // Previous time measure
+        double update;                      // Time measure for frame update
+        double draw;                        // Time measure for frame draw
+        double frame;                       // Time measure for one frame
+        double target;                      // Desired time for one frame, if 0 not applied
+        unsigned long long int base;        // Base time measure for hi-res timer (PLATFORM_ANDROID, PLATFORM_DRM)
+        unsigned int frameCounter;          // Frame counter
+
+    } Time;
+} CoreData;
+
+//----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
 RLAPI const char *raylib_version = RAYLIB_VERSION;  // raylib version exported symbol, required for some bindings
@@ -183,9 +359,8 @@ bool gifRecording = false;           // GIF recording state
 MsfGifState gifState = { 0 };        // MSGIF context state
 #endif
 
-#if defined(SUPPORT_EVENTS_AUTOMATION)
-#define MAX_CODE_AUTOMATION_EVENTS      16384
-
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+// Automation events type
 typedef enum AutomationEventType {
     EVENT_NONE = 0,
     // Input events
@@ -212,12 +387,12 @@ typedef enum AutomationEventType {
     WINDOW_MINIMIZE,                // no params
     WINDOW_RESIZE,                  // param[0]: width, param[1]: height
     // Custom events
-    ACTION_TAKE_SCREENSHOT,
-    ACTION_SETTARGETFPS
+    ACTION_TAKE_SCREENSHOT,         // no params
+    ACTION_SETTARGETFPS             // param[0]: fps
 } AutomationEventType;
 
-// Event type
-// Used to enable events flags
+// Event type to config events flags
+// TODO: Not used at the moment
 typedef enum {
     EVENT_INPUT_KEYBOARD    = 0,
     EVENT_INPUT_MOUSE       = 1,
@@ -228,6 +403,7 @@ typedef enum {
     EVENT_CUSTOM            = 32
 } EventType;
 
+// Event type name strings, required for export
 static const char *autoEventTypeName[] = {
     "EVENT_NONE",
     "INPUT_KEY_UP",
@@ -255,19 +431,19 @@ static const char *autoEventTypeName[] = {
     "ACTION_SETTARGETFPS"
 };
 
+/*
 // Automation event (24 bytes)
-typedef struct AutomationEvent {
+// NOTE: Opaque struct, internal to raylib
+struct AutomationEvent {
     unsigned int frame;                 // Event frame
     unsigned int type;                  // Event type (AutomationEventType)
     int params[4];                      // Event parameters (if required)
-} AutomationEvent;
+};
+*/
 
-static AutomationEvent *events = NULL;  // Events array
-static unsigned int eventCount = 0;     // Events count
-static bool eventsPlaying = false;      // Play events
-static bool eventsRecording = false;    // Record events
-
-//static short eventsEnabled = 0b0000001111111111;    // Events enabled for checking
+static AutomationEventList *currentEventList = NULL;        // Current automation events list, set by user, keep internal pointer
+static bool automationEventRecording = false;               // Recording automation events flag
+//static short automationEventEnabled = 0b0000001111111111; // TODO: Automation events enabled for recording/playing
 #endif
 //-----------------------------------------------------------------------------------
 
@@ -281,18 +457,18 @@ extern void LoadFontDefault(void);      // [Module: text] Loads default font on 
 extern void UnloadFontDefault(void);    // [Module: text] Unloads default font from GPU memory
 #endif
 
-static void InitTimer(void);                                // Initialize timer (hi-resolution if available)
-static void SetupFramebuffer(int width, int height);        // Setup main framebuffer
+extern int InitPlatform(void);          // Initialize platform (graphics, inputs and more)
+extern void ClosePlatform(void);        // Close platform
+
+static void InitTimer(void);                                // Initialize timer, hi-resolution if available (required by InitPlatform())
+static void SetupFramebuffer(int width, int height);        // Setup main framebuffer (required by InitPlatform())
 static void SetupViewport(int width, int height);           // Set viewport for a provided width and height
 
 static void ScanDirectoryFiles(const char *basePath, FilePathList *list, const char *filter);   // Scan all files and directories in a base path
 static void ScanDirectoryFilesRecursively(const char *basePath, FilePathList *list, const char *filter);  // Scan all files and directories recursively from a base path
 
-#if defined(SUPPORT_EVENTS_AUTOMATION)
-static void LoadAutomationEvents(const char *fileName);     // Load automation events from file
-static void ExportAutomationEvents(const char *fileName);   // Export recorded automation events into a file
-static void RecordAutomationEvent(unsigned int frame);      // Record frame events (to internal events array)
-static void PlayAutomationEvent(unsigned int frame);        // Play frame events (from internal events array)
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+static void RecordAutomationEvent(void); // Record frame events (to internal events array)
 #endif
 
 #if defined(_WIN32)
@@ -301,20 +477,20 @@ void __stdcall Sleep(unsigned long msTimeout);              // Required for: Wai
 #endif
 
 #if !defined(SUPPORT_MODULE_RTEXT)
-const char *TextFormat(const char *text, ...);       // Formatting of text with variables to 'embed'
+const char *TextFormat(const char *text, ...);              // Formatting of text with variables to 'embed'
 #endif // !SUPPORT_MODULE_RTEXT
 
 // Include platform-specific submodules
 #if defined(PLATFORM_DESKTOP)
-    #include "rcore_desktop.c"
+    #include "platforms/rcore_desktop.c"
 #elif defined(PLATFORM_DESKTOP_SDL)
-    #include "rcore_desktop_sdl.c" 
+    #include "platforms/rcore_desktop_sdl.c"
 #elif defined(PLATFORM_WEB)
-    #include "rcore_web.c"
+    #include "platforms/rcore_web.c"
 #elif defined(PLATFORM_DRM)
-    #include "rcore_drm.c"
+    #include "platforms/rcore_drm.c"
 #elif defined(PLATFORM_ANDROID)
-    #include "rcore_android.c"
+    #include "platforms/rcore_android.c"
 #else
     // TODO: Include your custom platform backend!
     // i.e software rendering backend or console backend!
@@ -325,8 +501,6 @@ const char *TextFormat(const char *text, ...);       // Formatting of text with 
 //----------------------------------------------------------------------------------
 
 // NOTE: Functions with a platform-specific implementation on rcore_<platform>.c
-//void InitWindow(int width, int height, const char *title)
-//void CloseWindow(void)
 //bool WindowShouldClose(void)
 //void ToggleFullscreen(void)
 //void ToggleBorderlessWindowed(void)
@@ -368,6 +542,154 @@ const char *TextFormat(const char *text, ...);       // Formatting of text with 
 //void HideCursor(void)
 //void EnableCursor(void)
 //void DisableCursor(void)
+
+// Initialize window and OpenGL context
+// NOTE: data parameter could be used to pass any kind of required data to the initialization
+void InitWindow(int width, int height, const char *title)
+{
+    TRACELOG(LOG_INFO, "Initializing raylib %s", RAYLIB_VERSION);
+
+#if defined(PLATFORM_DESKTOP)
+    TRACELOG(LOG_INFO, "Platform backend: DESKTOP (GLFW)");
+#elif defined(PLATFORM_DESKTOP_SDL)
+    TRACELOG(LOG_INFO, "Platform backend: DESKTOP (SDL)");
+#elif defined(PLATFORM_WEB)
+    TRACELOG(LOG_INFO, "Platform backend: WEB (HTML5)");
+#elif defined(PLATFORM_DRM)
+    TRACELOG(LOG_INFO, "Platform backend: NATIVE DRM");
+#elif defined(PLATFORM_ANDROID)
+    TRACELOG(LOG_INFO, "Platform backend: ANDROID");
+#else
+    // TODO: Include your custom platform backend!
+    // i.e software rendering backend or console backend!
+    TRACELOG(LOG_INFO, "Platform backend: CUSTOM");
+#endif
+
+    TRACELOG(LOG_INFO, "Supported raylib modules:");
+    TRACELOG(LOG_INFO, "    > rcore:..... loaded (mandatory)");
+    TRACELOG(LOG_INFO, "    > rlgl:...... loaded (mandatory)");
+#if defined(SUPPORT_MODULE_RSHAPES)
+    TRACELOG(LOG_INFO, "    > rshapes:... loaded (optional)");
+#else
+    TRACELOG(LOG_INFO, "    > rshapes:... not loaded (optional)");
+#endif
+#if defined(SUPPORT_MODULE_RTEXTURES)
+    TRACELOG(LOG_INFO, "    > rtextures:. loaded (optional)");
+#else
+    TRACELOG(LOG_INFO, "    > rtextures:. not loaded (optional)");
+#endif
+#if defined(SUPPORT_MODULE_RTEXT)
+    TRACELOG(LOG_INFO, "    > rtext:..... loaded (optional)");
+#else
+    TRACELOG(LOG_INFO, "    > rtext:..... not loaded (optional)");
+#endif
+#if defined(SUPPORT_MODULE_RMODELS)
+    TRACELOG(LOG_INFO, "    > rmodels:... loaded (optional)");
+#else
+    TRACELOG(LOG_INFO, "    > rmodels:... not loaded (optional)");
+#endif
+#if defined(SUPPORT_MODULE_RAUDIO)
+    TRACELOG(LOG_INFO, "    > raudio:.... loaded (optional)");
+#else
+    TRACELOG(LOG_INFO, "    > raudio:.... not loaded (optional)");
+#endif
+
+    // Initialize window data
+    CORE.Window.screen.width = width;
+    CORE.Window.screen.height = height;
+    CORE.Window.eventWaiting = false;
+    CORE.Window.screenScale = MatrixIdentity();     // No draw scaling required by default
+    if ((title != NULL) && (title[0] != 0)) CORE.Window.title = title;
+
+    // Initialize global input state
+    memset(&CORE.Input, 0, sizeof(CORE.Input));     // Reset CORE.Input structure to 0
+    CORE.Input.Keyboard.exitKey = KEY_ESCAPE;
+    CORE.Input.Mouse.scale = (Vector2){ 1.0f, 1.0f };
+    CORE.Input.Mouse.cursor = MOUSE_CURSOR_ARROW;
+    CORE.Input.Gamepad.lastButtonPressed = GAMEPAD_BUTTON_UNKNOWN;
+
+    // Initialize platform
+    //--------------------------------------------------------------
+    InitPlatform();
+    //--------------------------------------------------------------
+
+    // Initialize rlgl default data (buffers and shaders)
+    // NOTE: CORE.Window.currentFbo.width and CORE.Window.currentFbo.height not used, just stored as globals in rlgl
+    rlglInit(CORE.Window.currentFbo.width, CORE.Window.currentFbo.height);
+
+    // Setup default viewport
+    SetupViewport(CORE.Window.currentFbo.width, CORE.Window.currentFbo.height);
+
+#if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_DEFAULT_FONT)
+    // Load default font
+    // WARNING: External function: Module required: rtext
+    LoadFontDefault();
+    #if defined(SUPPORT_MODULE_RSHAPES)
+    // Set font white rectangle for shapes drawing, so shapes and text can be batched together
+    // WARNING: rshapes module is required, if not available, default internal white rectangle is used
+    Rectangle rec = GetFontDefault().recs[95];
+    if (CORE.Window.flags & FLAG_MSAA_4X_HINT)
+    {
+        // NOTE: We try to maxime rec padding to avoid pixel bleeding on MSAA filtering
+        SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 2, rec.y + 2, 1, 1 });
+    }
+    else
+    {
+        // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding
+        SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 1, rec.y + 1, rec.width - 2, rec.height - 2 });
+    }
+    #endif
+#else
+    #if defined(SUPPORT_MODULE_RSHAPES)
+    // Set default texture and rectangle to be used for shapes drawing
+    // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
+    Texture2D texture = { rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
+    SetShapesTexture(texture, (Rectangle){ 0.0f, 0.0f, 1.0f, 1.0f });    // WARNING: Module required: rshapes
+    #endif
+#endif
+#if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_DEFAULT_FONT)
+    if ((CORE.Window.flags & FLAG_WINDOW_HIGHDPI) > 0)
+    {
+        // Set default font texture filter for HighDPI (blurry)
+        // RL_TEXTURE_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
+        rlTextureParameters(GetFontDefault().texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
+        rlTextureParameters(GetFontDefault().texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
+    }
+#endif
+
+    CORE.Time.frameCounter = 0;
+    CORE.Window.shouldClose = false;
+
+    // Initialize random seed
+    SetRandomSeed((unsigned int)time(NULL));
+}
+
+// Close window and unload OpenGL context
+void CloseWindow(void)
+{
+#if defined(SUPPORT_GIF_RECORDING)
+    if (gifRecording)
+    {
+        MsfGifResult result = msf_gif_end(&gifState);
+        msf_gif_free(result);
+        gifRecording = false;
+    }
+#endif
+
+#if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_DEFAULT_FONT)
+    UnloadFontDefault();        // WARNING: Module required: rtext
+#endif
+
+    rlglClose();                // De-init rlgl
+
+    // De-initialize platform
+    //--------------------------------------------------------------
+    ClosePlatform();
+    //--------------------------------------------------------------
+
+    CORE.Window.ready = false;
+    TRACELOG(LOG_INFO, "Window closed successfully");
+}
 
 // Check if window has been initialized successfully
 bool IsWindowReady(void)
@@ -432,13 +754,27 @@ int GetScreenHeight(void)
 // Get current render width which is equal to screen width*dpi scale
 int GetRenderWidth(void)
 {
-    return CORE.Window.render.width;
+    int width = 0;
+#if defined(__APPLE__)
+    Vector2 scale = GetWindowScaleDPI();
+    width = (int)((float)CORE.Window.render.width*scale.x);
+#else
+    width = CORE.Window.render.width;
+#endif
+    return width;
 }
 
 // Get current screen height which is equal to screen height*dpi scale
 int GetRenderHeight(void)
 {
-    return CORE.Window.render.height;
+    int height = 0;
+#if defined(__APPLE__)
+    Vector2 scale = GetWindowScaleDPI();
+    height = (int)((float)CORE.Window.render.height*scale.y);
+#else
+    height = CORE.Window.render.height;
+#endif
+    return height;
 }
 
 // Enable waiting for events on EndDrawing(), no automatic event polling
@@ -529,32 +865,8 @@ void EndDrawing(void)
     }
 #endif
 
-#if defined(SUPPORT_EVENTS_AUTOMATION)
-    // Draw record/play indicator
-    if (eventsRecording)
-    {
-        gifFrameCounter++;
-
-        if (((gifFrameCounter/15)%2) == 1)
-        {
-            DrawCircle(30, CORE.Window.screen.height - 20, 10, MAROON);
-            DrawText("EVENTS RECORDING", 50, CORE.Window.screen.height - 25, 10, RED);
-        }
-
-        rlDrawRenderBatchActive();  // Update and draw internal render batch
-    }
-    else if (eventsPlaying)
-    {
-        gifFrameCounter++;
-
-        if (((gifFrameCounter/15)%2) == 1)
-        {
-            DrawCircle(30, CORE.Window.screen.height - 20, 10, LIME);
-            DrawText("EVENTS PLAYING", 50, CORE.Window.screen.height - 25, 10, GREEN);
-        }
-
-        rlDrawRenderBatchActive();  // Update and draw internal render batch
-    }
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    if (automationEventRecording) RecordAutomationEvent();    // Event recording
 #endif
 
 #if !defined(SUPPORT_CUSTOM_FRAME_CONTROL)
@@ -582,16 +894,43 @@ void EndDrawing(void)
     PollInputEvents();      // Poll user events (before next frame update)
 #endif
 
-#if defined(SUPPORT_EVENTS_AUTOMATION)
-    // Events recording and playing logic
-    if (eventsRecording) RecordAutomationEvent(CORE.Time.frameCounter);
-    else if (eventsPlaying)
+#if defined(SUPPORT_SCREEN_CAPTURE)
+    if (IsKeyPressed(KEY_F12))
     {
-        // TODO: When should we play? After/before/replace PollInputEvents()?
-        if (CORE.Time.frameCounter >= eventCount) eventsPlaying = false;
-        PlayAutomationEvent(CORE.Time.frameCounter);
+#if defined(SUPPORT_GIF_RECORDING)
+        if (IsKeyDown(KEY_LEFT_CONTROL))
+        {
+            if (gifRecording)
+            {
+                gifRecording = false;
+
+                MsfGifResult result = msf_gif_end(&gifState);
+
+                SaveFileData(TextFormat("%s/screenrec%03i.gif", CORE.Storage.basePath, screenshotCounter), result.data, (unsigned int)result.dataSize);
+                msf_gif_free(result);
+
+                TRACELOG(LOG_INFO, "SYSTEM: Finish animated GIF recording");
+            }
+            else
+            {
+                gifRecording = true;
+                gifFrameCounter = 0;
+
+                Vector2 scale = GetWindowScaleDPI();
+                msf_gif_begin(&gifState, (int)((float)CORE.Window.render.width*scale.x), (int)((float)CORE.Window.render.height*scale.y));
+                screenshotCounter++;
+
+                TRACELOG(LOG_INFO, "SYSTEM: Start animated GIF recording: %s", TextFormat("screenrec%03i.gif", screenshotCounter));
+            }
+        }
+        else
+#endif  // SUPPORT_GIF_RECORDING
+        {
+            TakeScreenshot(TextFormat("screenshot%03i.png", screenshotCounter));
+            screenshotCounter++;
+        }
     }
-#endif
+#endif  // SUPPORT_SCREEN_CAPTURE
 
     CORE.Time.frameCounter++;
 }
@@ -702,6 +1041,7 @@ void BeginTextureMode(RenderTexture2D target)
     // calculation when using BeginMode3D()
     CORE.Window.currentFbo.width = target.texture.width;
     CORE.Window.currentFbo.height = target.texture.height;
+    CORE.Window.usingFbo = true;
 }
 
 // Ends drawing to render texture
@@ -717,6 +1057,7 @@ void EndTextureMode(void)
     // Reset current fbo to screen size
     CORE.Window.currentFbo.width = CORE.Window.render.width;
     CORE.Window.currentFbo.height = CORE.Window.render.height;
+    CORE.Window.usingFbo = false;
 }
 
 // Begin custom shader mode
@@ -753,19 +1094,22 @@ void BeginScissorMode(int x, int y, int width, int height)
     rlEnableScissorTest();
 
 #if defined(__APPLE__)
-    Vector2 scale = GetWindowScaleDPI();
-    rlScissor((int)(x*scale.x), (int)(GetScreenHeight()*scale.y - (((y + height)*scale.y))), (int)(width*scale.x), (int)(height*scale.y));
+    if (!CORE.Window.usingFbo)
+    {
+        Vector2 scale = GetWindowScaleDPI();
+        rlScissor((int)(x*scale.x), (int)(GetScreenHeight()*scale.y - (((y + height)*scale.y))), (int)(width*scale.x), (int)(height*scale.y));
+    }
 #else
-    if ((CORE.Window.flags & FLAG_WINDOW_HIGHDPI) > 0)
+    if (!CORE.Window.usingFbo && ((CORE.Window.flags & FLAG_WINDOW_HIGHDPI) > 0))
     {
         Vector2 scale = GetWindowScaleDPI();
         rlScissor((int)(x*scale.x), (int)(CORE.Window.currentFbo.height - (y + height)*scale.y), (int)(width*scale.x), (int)(height*scale.y));
     }
+#endif
     else
     {
         rlScissor(x, CORE.Window.currentFbo.height - (y + height), width, height);
     }
-#endif
 }
 
 // End scissor mode
@@ -1239,6 +1583,16 @@ int GetFPS(void)
     static float average = 0, last = 0;
     float fpsFrame = GetFrameTime();
 
+    // if we reset the window, reset the FPS info
+    if (CORE.Time.frameCounter == 0)
+    {
+        average = 0;
+        last = 0;
+        index = 0;
+
+        for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; i++) history[i] = 0;
+    }
+
     if (fpsFrame == 0) return 0;
 
     if ((GetTime() - last) > FPS_STEP)
@@ -1267,7 +1621,7 @@ float GetFrameTime(void)
 //----------------------------------------------------------------------------------
 
 // NOTE: Functions with a platform-specific implementation on rcore_<platform>.c
-//void SwapScreenBuffer(void);  
+//void SwapScreenBuffer(void);
 //void PollInputEvents(void);
 
 // Wait for some time (stop program execution)
@@ -1278,7 +1632,7 @@ float GetFrameTime(void)
 void WaitTime(double seconds)
 {
     if (seconds < 0) return;
-    
+
 #if defined(SUPPORT_BUSY_WAIT_LOOP) || defined(SUPPORT_PARTIALBUSY_WAIT_LOOP)
     double destinationTime = GetTime() + seconds;
 #endif
@@ -1323,12 +1677,22 @@ void WaitTime(double seconds)
 // NOTE: Functions with a platform-specific implementation on rcore_<platform>.c
 //void OpenURL(const char *url)
 
-// Get a random value between min and max (both included)
-// WARNING: Ranges higher than RAND_MAX will return invalid results
-// More specifically, if (max - min) > INT_MAX there will be an overflow,
-// and otherwise if (max - min) > RAND_MAX the random value will incorrectly never exceed a certain threshold
+
+// Set the seed for the random number generator
+void SetRandomSeed(unsigned int seed)
+{
+#if defined(SUPPORT_RPRAND_GENERATOR)
+    rprand_set_seed(seed);
+#else
+    srand(seed);
+#endif
+}
+
+// Get a random value between min and max included
 int GetRandomValue(int min, int max)
 {
+    int value = 0;
+
     if (min > max)
     {
         int tmp = max;
@@ -1336,21 +1700,74 @@ int GetRandomValue(int min, int max)
         min = tmp;
     }
 
+#if defined(SUPPORT_RPRAND_GENERATOR)
+    value = rprand_get_value(min, max);
+#else
+    // WARNING: Ranges higher than RAND_MAX will return invalid results
+    // More specifically, if (max - min) > INT_MAX there will be an overflow,
+    // and otherwise if (max - min) > RAND_MAX the random value will incorrectly never exceed a certain threshold
+    // NOTE: Depending on the library it can be as low as 32767
     if ((unsigned int)(max - min) > (unsigned int)RAND_MAX)
     {
         TRACELOG(LOG_WARNING, "Invalid GetRandomValue() arguments, range should not be higher than %i", RAND_MAX);
     }
 
-    return (rand()%(abs(max - min) + 1) + min);
+    value = (rand()%(abs(max - min) + 1) + min);
+#endif
+    return value;
 }
 
-// Set the seed for the random number generator
-void SetRandomSeed(unsigned int seed)
+// Load random values sequence, no values repeated, min and max included
+int *LoadRandomSequence(unsigned int count, int min, int max)
 {
-    srand(seed);
+    int *values = NULL;
+
+#if defined(SUPPORT_RPRAND_GENERATOR)
+    values = rprand_load_sequence(count, min, max);
+#else
+    if (count > ((unsigned int)abs(max - min) + 1)) return values;
+
+    values = (int *)RL_CALLOC(count, sizeof(int));
+
+    int value = 0;
+    bool dupValue = false;
+
+    for (int i = 0; i < (int)count;)
+    {
+        value = (rand()%(abs(max - min) + 1) + min);
+        dupValue = false;
+
+        for (int j = 0; j < i; j++)
+        {
+            if (values[j] == value)
+            {
+                dupValue = true;
+                break;
+            }
+        }
+
+        if (!dupValue)
+        {
+            values[i] = value;
+            i++;
+        }
+    }
+#endif
+    return values;
 }
 
-// Takes a screenshot of current screen (saved a .png)
+// Unload random values sequence
+void UnloadRandomSequence(int *sequence)
+{
+#if defined(SUPPORT_RPRAND_GENERATOR)
+    rprand_unload_sequence(sequence);
+#else
+    RL_FREE(sequence);
+#endif
+}
+
+// Takes a screenshot of current screen
+// NOTE: Provided fileName should not contain paths, saving to working directory
 void TakeScreenshot(const char *fileName)
 {
 #if defined(SUPPORT_MODULE_RTEXTURES)
@@ -1362,12 +1779,13 @@ void TakeScreenshot(const char *fileName)
     Image image = { imgData, (int)((float)CORE.Window.render.width*scale.x), (int)((float)CORE.Window.render.height*scale.y), 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
 
     char path[512] = { 0 };
-    strcpy(path, TextFormat("%s/%s", CORE.Storage.basePath, fileName));
-
+    strcpy(path, TextFormat("%s/%s", CORE.Storage.basePath, GetFileName(fileName)));
+    
     ExportImage(image, path);           // WARNING: Module required: rtextures
     RL_FREE(imgData);
 
-    TRACELOG(LOG_INFO, "SYSTEM: [%s] Screenshot taken successfully", path);
+    if (FileExists(path)) TRACELOG(LOG_INFO, "SYSTEM: [%s] Screenshot taken successfully", path);
+    else TRACELOG(LOG_WARNING, "SYSTEM: [%s] Screenshot could not be saved", path);
 #else
     TRACELOG(LOG_WARNING,"IMAGE: ExportImage() requires module: rtextures");
 #endif
@@ -1420,10 +1838,10 @@ bool IsFileExtension(const char *fileName, const char *ext)
     {
 #if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_TEXT_MANIPULATION)
         int extCount = 0;
-        const char **checkExts = TextSplit(ext, ';', &extCount);  // WARNING: Module required: rtext
+        const char **checkExts = TextSplit(ext, ';', &extCount); // WARNING: Module required: rtext
 
         char fileExtLower[MAX_FILE_EXTENSION_SIZE + 1] = { 0 };
-        strncpy(fileExtLower, TextToLower(fileExt), MAX_FILE_EXTENSION_SIZE);  // WARNING: Module required: rtext
+        strncpy(fileExtLower, TextToLower(fileExt), MAX_FILE_EXTENSION_SIZE); // WARNING: Module required: rtext
 
         for (int i = 0; i < extCount; i++)
         {
@@ -1978,6 +2396,255 @@ unsigned char *DecodeDataBase64(const unsigned char *data, int *outputSize)
 }
 
 //----------------------------------------------------------------------------------
+// Module Functions Definition: Automation Events Recording and Playing
+//----------------------------------------------------------------------------------
+
+// Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
+AutomationEventList LoadAutomationEventList(const char *fileName)
+{
+    AutomationEventList list = { 0 };
+
+    // Allocate and empty automation event list, ready to record new events
+    list.events = (AutomationEvent *)RL_CALLOC(MAX_AUTOMATION_EVENTS, sizeof(AutomationEvent));
+    list.capacity = MAX_AUTOMATION_EVENTS;
+
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    if (fileName == NULL) TRACELOG(LOG_INFO, "AUTOMATION: New empty events list loaded successfully");
+    else
+    {
+        // Load automation events file (binary)
+        /*
+        //int dataSize = 0;
+        //unsigned char *data = LoadFileData(fileName, &dataSize);
+
+        FILE *raeFile = fopen(fileName, "rb");
+        unsigned char fileId[4] = { 0 };
+
+        fread(fileId, 1, 4, raeFile);
+
+        if ((fileId[0] == 'r') && (fileId[1] == 'A') && (fileId[2] == 'E') && (fileId[1] == ' '))
+        {
+            fread(&eventCount, sizeof(int), 1, raeFile);
+            TRACELOG(LOG_WARNING, "Events loaded: %i\n", eventCount);
+            fread(events, sizeof(AutomationEvent), eventCount, raeFile);
+        }
+
+        fclose(raeFile);
+        */
+
+        // Load events file (text)
+        //unsigned char *buffer = LoadFileText(fileName);
+        FILE *raeFile = fopen(fileName, "rt");
+
+        if (raeFile != NULL)
+        {
+            unsigned int counter = 0;
+            char buffer[256] = { 0 };
+            char eventDesc[64] = { 0 };
+
+            fgets(buffer, 256, raeFile);
+
+            while (!feof(raeFile))
+            {
+                switch (buffer[0])
+                {
+                    case 'c': sscanf(buffer, "c %i", &list.count); break;
+                    case 'e':
+                    {
+                        sscanf(buffer, "e %d %d %d %d %d %d %[^\n]s", &list.events[counter].frame, &list.events[counter].type,
+                               &list.events[counter].params[0], &list.events[counter].params[1], &list.events[counter].params[2], &list.events[counter].params[3], eventDesc);
+
+                        counter++;
+                    } break;
+                    default: break;
+                }
+
+                fgets(buffer, 256, raeFile);
+            }
+
+            if (counter != list.count)
+            {
+                TRACELOG(LOG_WARNING, "AUTOMATION: Events read from file [%i] do not mach event count specified [%i]", counter, list.count);
+                list.count = counter;
+            }
+
+            fclose(raeFile);
+
+            TRACELOG(LOG_INFO, "AUTOMATION: Events file loaded successfully");
+        }
+
+        TRACELOG(LOG_INFO, "AUTOMATION: Events loaded from file: %i", list.count);
+    }
+#endif
+    return list;
+}
+
+// Unload automation events list from file
+void UnloadAutomationEventList(AutomationEventList *list)
+{
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    RL_FREE(list->events);
+    list->events = NULL;
+    list->count = 0;
+    list->capacity = 0;
+#endif
+}
+
+// Export automation events list as text file
+bool ExportAutomationEventList(AutomationEventList list, const char *fileName)
+{
+    bool success = false;
+
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    // Export events as binary file
+    // TODO: Save to memory buffer and SaveFileData()
+    /*
+    unsigned char fileId[4] = "rAE ";
+    FILE *raeFile = fopen(fileName, "wb");
+    fwrite(fileId, sizeof(unsigned char), 4, raeFile);
+    fwrite(&eventCount, sizeof(int), 1, raeFile);
+    fwrite(events, sizeof(AutomationEvent), eventCount, raeFile);
+    fclose(raeFile);
+    */
+
+    // Export events as text
+    // TODO: Save to memory buffer and SaveFileText()
+    char *txtData = (char *)RL_CALLOC(256*list.count + 2048, sizeof(char)); // 256 characters per line plus some header
+
+    int byteCount = 0;
+    byteCount += sprintf(txtData + byteCount, "#\n");
+    byteCount += sprintf(txtData + byteCount, "# Automation events exporter v1.0 - raylib automation events list\n");
+    byteCount += sprintf(txtData + byteCount, "#\n");
+    byteCount += sprintf(txtData + byteCount, "#    c <events_count>\n");
+    byteCount += sprintf(txtData + byteCount, "#    e <frame> <event_type> <param0> <param1> <param2> <param3> // <event_type_name>\n");
+    byteCount += sprintf(txtData + byteCount, "#\n");
+    byteCount += sprintf(txtData + byteCount, "# more info and bugs-report:  github.com/raysan5/raylib\n");
+    byteCount += sprintf(txtData + byteCount, "# feedback and support:       ray[at]raylib.com\n");
+    byteCount += sprintf(txtData + byteCount, "#\n");
+    byteCount += sprintf(txtData + byteCount, "# Copyright (c) 2023-2024 Ramon Santamaria (@raysan5)\n");
+    byteCount += sprintf(txtData + byteCount, "#\n\n");
+
+    // Add events data
+    byteCount += sprintf(txtData + byteCount, "c %i\n", list.count);
+    for (unsigned int i = 0; i < list.count; i++)
+    {
+        byteCount += snprintf(txtData + byteCount, 256, "e %i %i %i %i %i %i // Event: %s\n", list.events[i].frame, list.events[i].type,
+            list.events[i].params[0], list.events[i].params[1], list.events[i].params[2], list.events[i].params[3], autoEventTypeName[list.events[i].type]);
+    }
+
+    // NOTE: Text data size exported is determined by '\0' (NULL) character
+    success = SaveFileText(fileName, txtData);
+
+    RL_FREE(txtData);
+#endif
+
+    return success;
+}
+
+// Setup automation event list to record to
+void SetAutomationEventList(AutomationEventList *list)
+{
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    currentEventList = list;
+#endif
+}
+
+// Set automation event internal base frame to start recording
+void SetAutomationEventBaseFrame(int frame)
+{
+    CORE.Time.frameCounter = frame;
+}
+
+// Start recording automation events (AutomationEventList must be set)
+void StartAutomationEventRecording(void)
+{
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    automationEventRecording = true;
+#endif
+}
+
+// Stop recording automation events
+void StopAutomationEventRecording(void)
+{
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    automationEventRecording = false;
+#endif
+}
+
+// Play a recorded automation event
+void PlayAutomationEvent(AutomationEvent event)
+{
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+    // WARNING: When should event be played? After/before/replace PollInputEvents()? -> Up to the user!
+
+    if (!automationEventRecording)      // TODO: Allow recording events while playing?
+    {
+        switch (event.type)
+        {
+            // Input event
+            case INPUT_KEY_UP: CORE.Input.Keyboard.currentKeyState[event.params[0]] = false; break;             // param[0]: key
+            case INPUT_KEY_DOWN: {                                                                              // param[0]: key
+                CORE.Input.Keyboard.currentKeyState[event.params[0]] = true;
+
+                if (CORE.Input.Keyboard.previousKeyState[event.params[0]] == false)
+                {
+                    if (CORE.Input.Keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE)
+                    {
+                        // Add character to the queue
+                        CORE.Input.Keyboard.keyPressedQueue[CORE.Input.Keyboard.keyPressedQueueCount] = event.params[0];
+                        CORE.Input.Keyboard.keyPressedQueueCount++;
+                    }
+                }
+            } break;
+            case INPUT_MOUSE_BUTTON_UP: CORE.Input.Mouse.currentButtonState[event.params[0]] = false; break;    // param[0]: key
+            case INPUT_MOUSE_BUTTON_DOWN: CORE.Input.Mouse.currentButtonState[event.params[0]] = true; break;   // param[0]: key
+            case INPUT_MOUSE_POSITION:      // param[0]: x, param[1]: y
+            {
+                CORE.Input.Mouse.currentPosition.x = (float)event.params[0];
+                CORE.Input.Mouse.currentPosition.y = (float)event.params[1];
+            } break;
+            case INPUT_MOUSE_WHEEL_MOTION:  // param[0]: x delta, param[1]: y delta
+            {
+                CORE.Input.Mouse.currentWheelMove.x = (float)event.params[0]; break;
+                CORE.Input.Mouse.currentWheelMove.y = (float)event.params[1]; break;
+            } break;
+            case INPUT_TOUCH_UP: CORE.Input.Touch.currentTouchState[event.params[0]] = false; break;            // param[0]: id
+            case INPUT_TOUCH_DOWN: CORE.Input.Touch.currentTouchState[event.params[0]] = true; break;           // param[0]: id
+            case INPUT_TOUCH_POSITION:      // param[0]: id, param[1]: x, param[2]: y
+            {
+                CORE.Input.Touch.position[event.params[0]].x = (float)event.params[1];
+                CORE.Input.Touch.position[event.params[0]].y = (float)event.params[2];
+            } break;
+            case INPUT_GAMEPAD_CONNECT: CORE.Input.Gamepad.ready[event.params[0]] = true; break;                // param[0]: gamepad
+            case INPUT_GAMEPAD_DISCONNECT: CORE.Input.Gamepad.ready[event.params[0]] = false; break;            // param[0]: gamepad
+            case INPUT_GAMEPAD_BUTTON_UP: CORE.Input.Gamepad.currentButtonState[event.params[0]][event.params[1]] = false; break;    // param[0]: gamepad, param[1]: button
+            case INPUT_GAMEPAD_BUTTON_DOWN: CORE.Input.Gamepad.currentButtonState[event.params[0]][event.params[1]] = true; break;   // param[0]: gamepad, param[1]: button
+            case INPUT_GAMEPAD_AXIS_MOTION: // param[0]: gamepad, param[1]: axis, param[2]: delta
+            {
+                CORE.Input.Gamepad.axisState[event.params[0]][event.params[1]] = ((float)event.params[2]/32768.0f);
+            } break;
+            case INPUT_GESTURE: GESTURES.current = event.params[0]; break;     // param[0]: gesture (enum Gesture) -> rgestures.h: GESTURES.current
+
+            // Window event
+            case WINDOW_CLOSE: CORE.Window.shouldClose = true; break;
+            case WINDOW_MAXIMIZE: MaximizeWindow(); break;
+            case WINDOW_MINIMIZE: MinimizeWindow(); break;
+            case WINDOW_RESIZE: SetWindowSize(event.params[0], event.params[1]); break;
+
+            // Custom event
+            case ACTION_TAKE_SCREENSHOT:
+            {
+                TakeScreenshot(TextFormat("screenshot%03i.png", screenshotCounter));
+                screenshotCounter++;
+            } break;
+            case ACTION_SETTARGETFPS: SetTargetFPS(event.params[0]); break;
+            default: break;
+        }
+    }
+#endif
+}
+
+//----------------------------------------------------------------------------------
 // Module Functions Definition: Input Handling: Keyboard
 //----------------------------------------------------------------------------------
 
@@ -2366,7 +3033,8 @@ int GetTouchPointCount(void)
 //----------------------------------------------------------------------------------
 
 // NOTE: Functions with a platform-specific implementation on rcore_<platform>.c
-//static bool InitPlatform(void)
+//int InitPlatform(void)
+//void ClosePlatform(void)
 
 // Initialize hi-resolution timer
 void InitTimer(void)
@@ -2375,7 +3043,7 @@ void InitTimer(void)
     // However, it can also reduce overall system performance, because the thread scheduler switches tasks more often.
     // High resolutions can also prevent the CPU power management system from entering power-saving modes.
     // Setting a higher resolution does not improve the accuracy of the high-resolution performance counter.
-#if defined(_WIN32) && defined(SUPPORT_WINMM_HIGHRES_TIMER) && !defined(SUPPORT_BUSY_WAIT_LOOP)
+#if defined(_WIN32) && defined(SUPPORT_WINMM_HIGHRES_TIMER) && !defined(SUPPORT_BUSY_WAIT_LOOP) && !defined(PLATFORM_DESKTOP_SDL)
     timeBeginPeriod(1);                 // Setup high-resolution timer to 1ms (granularity of 1-2 ms)
 #endif
 
@@ -2402,8 +3070,6 @@ void SetupViewport(int width, int height)
     // NOTE: We consider render size (scaled) and offset in case black bars are required and
     // render area does not match full display area (this situation is only applicable on fullscreen mode)
 #if defined(__APPLE__)
-    //float xScale = 1.0f, yScale = 1.0f;
-    //glfwGetWindowContentScale(CORE.Window.handle, &xScale, &yScale);
     Vector2 scale = GetWindowScaleDPI();
     rlViewport(CORE.Window.renderOffset.x/2*scale.x, CORE.Window.renderOffset.y/2*scale.y, (CORE.Window.render.width)*scale.x, (CORE.Window.render.height)*scale.y);
 #else
@@ -2517,7 +3183,11 @@ static void ScanDirectoryFiles(const char *basePath, FilePathList *files, const 
             if ((strcmp(dp->d_name, ".") != 0) &&
                 (strcmp(dp->d_name, "..") != 0))
             {
+            #if defined(_WIN32)
+                sprintf(path, "%s\\%s", basePath, dp->d_name);
+            #else
                 sprintf(path, "%s/%s", basePath, dp->d_name);
+            #endif
 
                 if (filter != NULL)
                 {
@@ -2556,7 +3226,11 @@ static void ScanDirectoryFilesRecursively(const char *basePath, FilePathList *fi
             if ((strcmp(dp->d_name, ".") != 0) && (strcmp(dp->d_name, "..") != 0))
             {
                 // Construct new path from our base path
+            #if defined(_WIN32)
+                sprintf(path, "%s\\%s", basePath, dp->d_name);
+            #else
                 sprintf(path, "%s/%s", basePath, dp->d_name);
+            #endif
 
                 if (IsPathFile(path))
                 {
@@ -2589,233 +3263,180 @@ static void ScanDirectoryFilesRecursively(const char *basePath, FilePathList *fi
     else TRACELOG(LOG_WARNING, "FILEIO: Directory cannot be opened (%s)", basePath);
 }
 
-#if defined(SUPPORT_EVENTS_AUTOMATION)
-// NOTE: Loading happens over AutomationEvent *events
-// TODO: This system should probably be redesigned
-static void LoadAutomationEvents(const char *fileName)
+#if defined(SUPPORT_AUTOMATION_EVENTS)
+// Automation event recording
+// NOTE: Recording is by default done at EndDrawing(), after PollInputEvents()
+static void RecordAutomationEvent(void)
 {
-    // Load events file (binary)
-    /*
-    FILE *repFile = fopen(fileName, "rb");
-    unsigned char fileId[4] = { 0 };
+    // Checking events in current frame and save them into currentEventList
+    // TODO: How important is the current frame? Could it be modified?
 
-    fread(fileId, 1, 4, repFile);
+    if (currentEventList->count == currentEventList->capacity) return;    // Security check
 
-    if ((fileId[0] == 'r') && (fileId[1] == 'E') && (fileId[2] == 'P') && (fileId[1] == ' '))
-    {
-        fread(&eventCount, sizeof(int), 1, repFile);
-        TRACELOG(LOG_WARNING, "Events loaded: %i\n", eventCount);
-        fread(events, sizeof(AutomationEvent), eventCount, repFile);
-    }
-
-    fclose(repFile);
-    */
-
-    // Load events file (text)
-    FILE *repFile = fopen(fileName, "rt");
-
-    if (repFile != NULL)
-    {
-        unsigned int count = 0;
-        char buffer[256] = { 0 };
-
-        fgets(buffer, 256, repFile);
-
-        while (!feof(repFile))
-        {
-            if (buffer[0] == 'c') sscanf(buffer, "c %i", &eventCount);
-            else if (buffer[0] == 'e')
-            {
-                sscanf(buffer, "e %d %d %d %d %d", &events[count].frame, &events[count].type,
-                       &events[count].params[0], &events[count].params[1], &events[count].params[2]);
-
-                count++;
-            }
-
-            fgets(buffer, 256, repFile);
-        }
-
-        if (count != eventCount) TRACELOG(LOG_WARNING, "Events count provided is different than count");
-
-        fclose(repFile);
-    }
-
-    TRACELOG(LOG_WARNING, "Events loaded: %i", eventCount);
-}
-
-// Export recorded events into a file
-static void ExportAutomationEvents(const char *fileName)
-{
-    unsigned char fileId[4] = "rEP ";
-
-    // Save as binary
-    /*
-    FILE *repFile = fopen(fileName, "wb");
-    fwrite(fileId, sizeof(unsigned char), 4, repFile);
-    fwrite(&eventCount, sizeof(int), 1, repFile);
-    fwrite(events, sizeof(AutomationEvent), eventCount, repFile);
-    fclose(repFile);
-    */
-
-    // Export events as text
-    FILE *repFile = fopen(fileName, "wt");
-
-    if (repFile != NULL)
-    {
-        fprintf(repFile, "# Automation events list\n");
-        fprintf(repFile, "#    c <events_count>\n");
-        fprintf(repFile, "#    e <frame> <event_type> <param0> <param1> <param2> // <event_type_name>\n");
-
-        fprintf(repFile, "c %i\n", eventCount);
-        for (int i = 0; i < eventCount; i++)
-        {
-            fprintf(repFile, "e %i %i %i %i %i // %s\n", events[i].frame, events[i].type,
-                    events[i].params[0], events[i].params[1], events[i].params[2], autoEventTypeName[events[i].type]);
-        }
-
-        fclose(repFile);
-    }
-}
-
-// EndDrawing() -> After PollInputEvents()
-// Check event in current frame and save into the events[i] array
-static void RecordAutomationEvent(unsigned int frame)
-{
+    // Keyboard input events recording
+    //-------------------------------------------------------------------------------------
     for (int key = 0; key < MAX_KEYBOARD_KEYS; key++)
     {
-        // INPUT_KEY_UP (only saved once)
+        // Event type: INPUT_KEY_UP (only saved once)
         if (CORE.Input.Keyboard.previousKeyState[key] && !CORE.Input.Keyboard.currentKeyState[key])
         {
-            events[eventCount].frame = frame;
-            events[eventCount].type = INPUT_KEY_UP;
-            events[eventCount].params[0] = key;
-            events[eventCount].params[1] = 0;
-            events[eventCount].params[2] = 0;
+            currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+            currentEventList->events[currentEventList->count].type = INPUT_KEY_UP;
+            currentEventList->events[currentEventList->count].params[0] = key;
+            currentEventList->events[currentEventList->count].params[1] = 0;
+            currentEventList->events[currentEventList->count].params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[%i] INPUT_KEY_UP: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-            eventCount++;
+            TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_KEY_UP | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+            currentEventList->count++;
         }
 
-        // INPUT_KEY_DOWN
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
+
+        // Event type: INPUT_KEY_DOWN
         if (CORE.Input.Keyboard.currentKeyState[key])
         {
-            events[eventCount].frame = frame;
-            events[eventCount].type = INPUT_KEY_DOWN;
-            events[eventCount].params[0] = key;
-            events[eventCount].params[1] = 0;
-            events[eventCount].params[2] = 0;
+            currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+            currentEventList->events[currentEventList->count].type = INPUT_KEY_DOWN;
+            currentEventList->events[currentEventList->count].params[0] = key;
+            currentEventList->events[currentEventList->count].params[1] = 0;
+            currentEventList->events[currentEventList->count].params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[%i] INPUT_KEY_DOWN: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-            eventCount++;
+            TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_KEY_DOWN | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+            currentEventList->count++;
         }
-    }
 
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
+    }
+    //-------------------------------------------------------------------------------------
+
+    // Mouse input currentEventList->events recording
+    //-------------------------------------------------------------------------------------
     for (int button = 0; button < MAX_MOUSE_BUTTONS; button++)
     {
-        // INPUT_MOUSE_BUTTON_UP
+        // Event type: INPUT_MOUSE_BUTTON_UP
         if (CORE.Input.Mouse.previousButtonState[button] && !CORE.Input.Mouse.currentButtonState[button])
         {
-            events[eventCount].frame = frame;
-            events[eventCount].type = INPUT_MOUSE_BUTTON_UP;
-            events[eventCount].params[0] = button;
-            events[eventCount].params[1] = 0;
-            events[eventCount].params[2] = 0;
+            currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+            currentEventList->events[currentEventList->count].type = INPUT_MOUSE_BUTTON_UP;
+            currentEventList->events[currentEventList->count].params[0] = button;
+            currentEventList->events[currentEventList->count].params[1] = 0;
+            currentEventList->events[currentEventList->count].params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[%i] INPUT_MOUSE_BUTTON_UP: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-            eventCount++;
+            TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_MOUSE_BUTTON_UP | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+            currentEventList->count++;
         }
 
-        // INPUT_MOUSE_BUTTON_DOWN
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
+
+        // Event type: INPUT_MOUSE_BUTTON_DOWN
         if (CORE.Input.Mouse.currentButtonState[button])
         {
-            events[eventCount].frame = frame;
-            events[eventCount].type = INPUT_MOUSE_BUTTON_DOWN;
-            events[eventCount].params[0] = button;
-            events[eventCount].params[1] = 0;
-            events[eventCount].params[2] = 0;
+            currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+            currentEventList->events[currentEventList->count].type = INPUT_MOUSE_BUTTON_DOWN;
+            currentEventList->events[currentEventList->count].params[0] = button;
+            currentEventList->events[currentEventList->count].params[1] = 0;
+            currentEventList->events[currentEventList->count].params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[%i] INPUT_MOUSE_BUTTON_DOWN: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-            eventCount++;
+            TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_MOUSE_BUTTON_DOWN | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+            currentEventList->count++;
         }
+
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
     }
 
-    // INPUT_MOUSE_POSITION (only saved if changed)
+    // Event type: INPUT_MOUSE_POSITION (only saved if changed)
     if (((int)CORE.Input.Mouse.currentPosition.x != (int)CORE.Input.Mouse.previousPosition.x) ||
         ((int)CORE.Input.Mouse.currentPosition.y != (int)CORE.Input.Mouse.previousPosition.y))
     {
-        events[eventCount].frame = frame;
-        events[eventCount].type = INPUT_MOUSE_POSITION;
-        events[eventCount].params[0] = (int)CORE.Input.Mouse.currentPosition.x;
-        events[eventCount].params[1] = (int)CORE.Input.Mouse.currentPosition.y;
-        events[eventCount].params[2] = 0;
+        currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+        currentEventList->events[currentEventList->count].type = INPUT_MOUSE_POSITION;
+        currentEventList->events[currentEventList->count].params[0] = (int)CORE.Input.Mouse.currentPosition.x;
+        currentEventList->events[currentEventList->count].params[1] = (int)CORE.Input.Mouse.currentPosition.y;
+        currentEventList->events[currentEventList->count].params[2] = 0;
 
-        TRACELOG(LOG_INFO, "[%i] INPUT_MOUSE_POSITION: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-        eventCount++;
+        TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_MOUSE_POSITION | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+        currentEventList->count++;
+
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
     }
 
-    // INPUT_MOUSE_WHEEL_MOTION
+    // Event type: INPUT_MOUSE_WHEEL_MOTION
     if (((int)CORE.Input.Mouse.currentWheelMove.x != (int)CORE.Input.Mouse.previousWheelMove.x) ||
         ((int)CORE.Input.Mouse.currentWheelMove.y != (int)CORE.Input.Mouse.previousWheelMove.y))
     {
-        events[eventCount].frame = frame;
-        events[eventCount].type = INPUT_MOUSE_WHEEL_MOTION;
-        events[eventCount].params[0] = (int)CORE.Input.Mouse.currentWheelMove.x;
-        events[eventCount].params[1] = (int)CORE.Input.Mouse.currentWheelMove.y;;
-        events[eventCount].params[2] = 0;
+        currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+        currentEventList->events[currentEventList->count].type = INPUT_MOUSE_WHEEL_MOTION;
+        currentEventList->events[currentEventList->count].params[0] = (int)CORE.Input.Mouse.currentWheelMove.x;
+        currentEventList->events[currentEventList->count].params[1] = (int)CORE.Input.Mouse.currentWheelMove.y;;
+        currentEventList->events[currentEventList->count].params[2] = 0;
 
-        TRACELOG(LOG_INFO, "[%i] INPUT_MOUSE_WHEEL_MOTION: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-        eventCount++;
+        TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_MOUSE_WHEEL_MOTION | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+        currentEventList->count++;
+
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
     }
+    //-------------------------------------------------------------------------------------
 
+    // Touch input currentEventList->events recording
+    //-------------------------------------------------------------------------------------
     for (int id = 0; id < MAX_TOUCH_POINTS; id++)
     {
-        // INPUT_TOUCH_UP
+        // Event type: INPUT_TOUCH_UP
         if (CORE.Input.Touch.previousTouchState[id] && !CORE.Input.Touch.currentTouchState[id])
         {
-            events[eventCount].frame = frame;
-            events[eventCount].type = INPUT_TOUCH_UP;
-            events[eventCount].params[0] = id;
-            events[eventCount].params[1] = 0;
-            events[eventCount].params[2] = 0;
+            currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+            currentEventList->events[currentEventList->count].type = INPUT_TOUCH_UP;
+            currentEventList->events[currentEventList->count].params[0] = id;
+            currentEventList->events[currentEventList->count].params[1] = 0;
+            currentEventList->events[currentEventList->count].params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[%i] INPUT_TOUCH_UP: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-            eventCount++;
+            TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_TOUCH_UP | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+            currentEventList->count++;
         }
 
-        // INPUT_TOUCH_DOWN
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
+
+        // Event type: INPUT_TOUCH_DOWN
         if (CORE.Input.Touch.currentTouchState[id])
         {
-            events[eventCount].frame = frame;
-            events[eventCount].type = INPUT_TOUCH_DOWN;
-            events[eventCount].params[0] = id;
-            events[eventCount].params[1] = 0;
-            events[eventCount].params[2] = 0;
+            currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+            currentEventList->events[currentEventList->count].type = INPUT_TOUCH_DOWN;
+            currentEventList->events[currentEventList->count].params[0] = id;
+            currentEventList->events[currentEventList->count].params[1] = 0;
+            currentEventList->events[currentEventList->count].params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[%i] INPUT_TOUCH_DOWN: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-            eventCount++;
+            TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_TOUCH_DOWN | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+            currentEventList->count++;
         }
 
-        // INPUT_TOUCH_POSITION
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
+
+        // Event type: INPUT_TOUCH_POSITION
         // TODO: It requires the id!
         /*
         if (((int)CORE.Input.Touch.currentPosition[id].x != (int)CORE.Input.Touch.previousPosition[id].x) ||
             ((int)CORE.Input.Touch.currentPosition[id].y != (int)CORE.Input.Touch.previousPosition[id].y))
         {
-            events[eventCount].frame = frame;
-            events[eventCount].type = INPUT_TOUCH_POSITION;
-            events[eventCount].params[0] = id;
-            events[eventCount].params[1] = (int)CORE.Input.Touch.currentPosition[id].x;
-            events[eventCount].params[2] = (int)CORE.Input.Touch.currentPosition[id].y;
+            currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+            currentEventList->events[currentEventList->count].type = INPUT_TOUCH_POSITION;
+            currentEventList->events[currentEventList->count].params[0] = id;
+            currentEventList->events[currentEventList->count].params[1] = (int)CORE.Input.Touch.currentPosition[id].x;
+            currentEventList->events[currentEventList->count].params[2] = (int)CORE.Input.Touch.currentPosition[id].y;
 
-            TRACELOG(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-            eventCount++;
+            TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_TOUCH_POSITION | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+            currentEventList->count++;
         }
         */
-    }
 
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
+    }
+    //-------------------------------------------------------------------------------------
+
+    // Gamepad input currentEventList->events recording
+    //-------------------------------------------------------------------------------------
     for (int gamepad = 0; gamepad < MAX_GAMEPADS; gamepad++)
     {
-        // INPUT_GAMEPAD_CONNECT
+        // Event type: INPUT_GAMEPAD_CONNECT
         /*
         if ((CORE.Input.Gamepad.currentState[gamepad] != CORE.Input.Gamepad.previousState[gamepad]) &&
             (CORE.Input.Gamepad.currentState[gamepad])) // Check if changed to ready
@@ -2824,7 +3445,7 @@ static void RecordAutomationEvent(unsigned int frame)
         }
         */
 
-        // INPUT_GAMEPAD_DISCONNECT
+        // Event type: INPUT_GAMEPAD_DISCONNECT
         /*
         if ((CORE.Input.Gamepad.currentState[gamepad] != CORE.Input.Gamepad.previousState[gamepad]) &&
             (!CORE.Input.Gamepad.currentState[gamepad])) // Check if changed to not-ready
@@ -2835,122 +3456,84 @@ static void RecordAutomationEvent(unsigned int frame)
 
         for (int button = 0; button < MAX_GAMEPAD_BUTTONS; button++)
         {
-            // INPUT_GAMEPAD_BUTTON_UP
+            // Event type: INPUT_GAMEPAD_BUTTON_UP
             if (CORE.Input.Gamepad.previousButtonState[gamepad][button] && !CORE.Input.Gamepad.currentButtonState[gamepad][button])
             {
-                events[eventCount].frame = frame;
-                events[eventCount].type = INPUT_GAMEPAD_BUTTON_UP;
-                events[eventCount].params[0] = gamepad;
-                events[eventCount].params[1] = button;
-                events[eventCount].params[2] = 0;
+                currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+                currentEventList->events[currentEventList->count].type = INPUT_GAMEPAD_BUTTON_UP;
+                currentEventList->events[currentEventList->count].params[0] = gamepad;
+                currentEventList->events[currentEventList->count].params[1] = button;
+                currentEventList->events[currentEventList->count].params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[%i] INPUT_GAMEPAD_BUTTON_UP: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-                eventCount++;
+                TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_GAMEPAD_BUTTON_UP | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+                currentEventList->count++;
             }
 
-            // INPUT_GAMEPAD_BUTTON_DOWN
+            if (currentEventList->count == currentEventList->capacity) return;    // Security check
+
+            // Event type: INPUT_GAMEPAD_BUTTON_DOWN
             if (CORE.Input.Gamepad.currentButtonState[gamepad][button])
             {
-                events[eventCount].frame = frame;
-                events[eventCount].type = INPUT_GAMEPAD_BUTTON_DOWN;
-                events[eventCount].params[0] = gamepad;
-                events[eventCount].params[1] = button;
-                events[eventCount].params[2] = 0;
+                currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+                currentEventList->events[currentEventList->count].type = INPUT_GAMEPAD_BUTTON_DOWN;
+                currentEventList->events[currentEventList->count].params[0] = gamepad;
+                currentEventList->events[currentEventList->count].params[1] = button;
+                currentEventList->events[currentEventList->count].params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[%i] INPUT_GAMEPAD_BUTTON_DOWN: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-                eventCount++;
+                TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_GAMEPAD_BUTTON_DOWN | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+                currentEventList->count++;
             }
+
+            if (currentEventList->count == currentEventList->capacity) return;    // Security check
         }
 
         for (int axis = 0; axis < MAX_GAMEPAD_AXIS; axis++)
         {
-            // INPUT_GAMEPAD_AXIS_MOTION
+            // Event type: INPUT_GAMEPAD_AXIS_MOTION
             if (CORE.Input.Gamepad.axisState[gamepad][axis] > 0.1f)
             {
-                events[eventCount].frame = frame;
-                events[eventCount].type = INPUT_GAMEPAD_AXIS_MOTION;
-                events[eventCount].params[0] = gamepad;
-                events[eventCount].params[1] = axis;
-                events[eventCount].params[2] = (int)(CORE.Input.Gamepad.axisState[gamepad][axis]*32768.0f);
+                currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+                currentEventList->events[currentEventList->count].type = INPUT_GAMEPAD_AXIS_MOTION;
+                currentEventList->events[currentEventList->count].params[0] = gamepad;
+                currentEventList->events[currentEventList->count].params[1] = axis;
+                currentEventList->events[currentEventList->count].params[2] = (int)(CORE.Input.Gamepad.axisState[gamepad][axis]*32768.0f);
 
-                TRACELOG(LOG_INFO, "[%i] INPUT_GAMEPAD_AXIS_MOTION: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-                eventCount++;
+                TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_GAMEPAD_AXIS_MOTION | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+                currentEventList->count++;
             }
+
+            if (currentEventList->count == currentEventList->capacity) return;    // Security check
         }
     }
+    //-------------------------------------------------------------------------------------
 
-    // INPUT_GESTURE
+    // Gestures input currentEventList->events recording
+    //-------------------------------------------------------------------------------------
     if (GESTURES.current != GESTURE_NONE)
     {
-        events[eventCount].frame = frame;
-        events[eventCount].type = INPUT_GESTURE;
-        events[eventCount].params[0] = GESTURES.current;
-        events[eventCount].params[1] = 0;
-        events[eventCount].params[2] = 0;
+        // Event type: INPUT_GESTURE
+        currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
+        currentEventList->events[currentEventList->count].type = INPUT_GESTURE;
+        currentEventList->events[currentEventList->count].params[0] = GESTURES.current;
+        currentEventList->events[currentEventList->count].params[1] = 0;
+        currentEventList->events[currentEventList->count].params[2] = 0;
 
-        TRACELOG(LOG_INFO, "[%i] INPUT_GESTURE: %i, %i, %i", events[eventCount].frame, events[eventCount].params[0], events[eventCount].params[1], events[eventCount].params[2]);
-        eventCount++;
+        TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_GESTURE | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
+        currentEventList->count++;
+
+        if (currentEventList->count == currentEventList->capacity) return;    // Security check
     }
-}
+    //-------------------------------------------------------------------------------------
 
-// Play automation event
-static void PlayAutomationEvent(unsigned int frame)
-{
-    for (unsigned int i = 0; i < eventCount; i++)
-    {
-        if (events[i].frame == frame)
-        {
-            switch (events[i].type)
-            {
-                // Input events
-                case INPUT_KEY_UP: CORE.Input.Keyboard.currentKeyState[events[i].params[0]] = false; break;             // param[0]: key
-                case INPUT_KEY_DOWN: CORE.Input.Keyboard.currentKeyState[events[i].params[0]] = true; break;            // param[0]: key
-                case INPUT_MOUSE_BUTTON_UP: CORE.Input.Mouse.currentButtonState[events[i].params[0]] = false; break;    // param[0]: key
-                case INPUT_MOUSE_BUTTON_DOWN: CORE.Input.Mouse.currentButtonState[events[i].params[0]] = true; break;   // param[0]: key
-                case INPUT_MOUSE_POSITION:      // param[0]: x, param[1]: y
-                {
-                    CORE.Input.Mouse.currentPosition.x = (float)events[i].params[0];
-                    CORE.Input.Mouse.currentPosition.y = (float)events[i].params[1];
-                } break;
-                case INPUT_MOUSE_WHEEL_MOTION:  // param[0]: x delta, param[1]: y delta
-                {
-                    CORE.Input.Mouse.currentWheelMove.x = (float)events[i].params[0]; break;
-                    CORE.Input.Mouse.currentWheelMove.y = (float)events[i].params[1]; break;
-                } break;
-                case INPUT_TOUCH_UP: CORE.Input.Touch.currentTouchState[events[i].params[0]] = false; break;            // param[0]: id
-                case INPUT_TOUCH_DOWN: CORE.Input.Touch.currentTouchState[events[i].params[0]] = true; break;           // param[0]: id
-                case INPUT_TOUCH_POSITION:      // param[0]: id, param[1]: x, param[2]: y
-                {
-                    CORE.Input.Touch.position[events[i].params[0]].x = (float)events[i].params[1];
-                    CORE.Input.Touch.position[events[i].params[0]].y = (float)events[i].params[2];
-                } break;
-                case INPUT_GAMEPAD_CONNECT: CORE.Input.Gamepad.ready[events[i].params[0]] = true; break;                // param[0]: gamepad
-                case INPUT_GAMEPAD_DISCONNECT: CORE.Input.Gamepad.ready[events[i].params[0]] = false; break;            // param[0]: gamepad
-                case INPUT_GAMEPAD_BUTTON_UP: CORE.Input.Gamepad.currentButtonState[events[i].params[0]][events[i].params[1]] = false; break;    // param[0]: gamepad, param[1]: button
-                case INPUT_GAMEPAD_BUTTON_DOWN: CORE.Input.Gamepad.currentButtonState[events[i].params[0]][events[i].params[1]] = true; break;   // param[0]: gamepad, param[1]: button
-                case INPUT_GAMEPAD_AXIS_MOTION: // param[0]: gamepad, param[1]: axis, param[2]: delta
-                {
-                    CORE.Input.Gamepad.axisState[events[i].params[0]][events[i].params[1]] = ((float)events[i].params[2]/32768.0f);
-                } break;
-                case INPUT_GESTURE: GESTURES.current = events[i].params[0]; break;     // param[0]: gesture (enum Gesture) -> rgestures.h: GESTURES.current
+    // Window events recording
+    //-------------------------------------------------------------------------------------
+    // TODO.
+    //-------------------------------------------------------------------------------------
 
-                // Window events
-                case WINDOW_CLOSE: CORE.Window.shouldClose = true; break;
-                case WINDOW_MAXIMIZE: MaximizeWindow(); break;
-                case WINDOW_MINIMIZE: MinimizeWindow(); break;
-                case WINDOW_RESIZE: SetWindowSize(events[i].params[0], events[i].params[1]); break;
-
-                // Custom events
-                case ACTION_TAKE_SCREENSHOT:
-                {
-                    TakeScreenshot(TextFormat("screenshot%03i.png", screenshotCounter));
-                    screenshotCounter++;
-                } break;
-                case ACTION_SETTARGETFPS: SetTargetFPS(events[i].params[0]); break;
-                default: break;
-            }
-        }
-    }
+    // Custom actions events recording
+    //-------------------------------------------------------------------------------------
+    // TODO.
+    //-------------------------------------------------------------------------------------
 }
 #endif
 
