@@ -3,115 +3,138 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import ctypes
+import cffi
+from flux import *
 
-class fluxTransform:
-    def __init__(self,pos : Vector3, rot : Vector3, scale : Vector3):
-        self.pos = pos
-        self.rot = rot
-        self.scale = scale
+class EditorWindow:
+    def __init__(self,editor_width = 1000, editor_height = 1000, super_samp = 2, background_color = (50,59,74,255)):
+        self.editor_width = editor_width
+        self.editor_height = editor_height
+        self.super_samp = super_samp
+        self.background_color = background_color
+        self.editor_window = load_render_texture(self.editor_width,self.editor_height)
 
-    def __str__(self):
-        return str(self.pos.x) + "," + str(self.pos.y) + "," + str(self.pos.z) + "," + str(self.rot.x) + "," + str(self.rot.y) + "," + str(self.rot.z) + "," + str(self.scale.x) + "," + str(self.scale.y) + "," + str(self.scale.z)
+    def unload(self):
+        unload_render_texture(self.editor_window)
 
-def defaultTransform():
-    return fluxTransform(vector3_zero(),vector3_zero(),vector3_one())
+    def reload_window(self):
+        self.unload()
+        self.editor_window = load_render_texture(self.editor_width,self.editor_height)
 
-class fluxGameObject:
-    def __init__(self, name : str, tag : str, transform : fluxTransform, model : Model = None, is_camera : bool = False, scripts : list[str] = [], children = []):
-        global GAMEOBJECT_COUNTER
-        self.id = GAMEOBJECT_COUNTER
-        GAMEOBJECT_COUNTER += 1
-        self.name = name
-        self.tag = tag
-        self.transform = transform
-        self.model = model
-        self.is_camera = is_camera
-        self.scripts = scripts
-        self.tint = WHITE
-        self.children : list[fluxGameObject] = children
+    def update(self):
+        editor_width = int(get_screen_width()/2) * self.super_samp
+        editor_height = int(get_screen_height()/1.5) * self.super_samp
+        if (editor_width != self.editor_width) or (editor_height != self.editor_height):
+            self.editor_height = editor_height
+            self.editor_width = editor_width
+            self.reload_window()
 
-    def __eq__(self,other):
-        return self.id == other.id
+    def get_panel_width(self):
+        return self.editor_width//(2*self.super_samp)
 
-class fluxPrefab:
-    def __init__(self, name : str, tag : str, model_path : str, is_camera : bool, scripts : list[str], children : list[str]):
-        self.name = name
-        self.tag = tag
-        self.model_path = model_path
-        self.is_camera = is_camera
-        self.scripts = scripts
-        self.children = children
+    def draw(self,scene,camera, tool_bar_height):
+        #tool_bar_height = int(get_screen_height()/20)
+        begin_texture_mode(self.editor_window)
+        clear_background(BLACK)
+        begin_mode_3d(camera)
+        draw_grid(100,1)
+        scene.draw()
+        end_mode_3d()
+        end_texture_mode()
+        editor_rectangle = Rectangle(self.editor_width//(2*self.super_samp),tool_bar_height,self.editor_width//self.super_samp,self.editor_height//self.super_samp)
+        border_size = get_screen_width()/100
+        border_rectangle = Rectangle(editor_rectangle.x - border_size, editor_rectangle.y - border_size, editor_rectangle.width + 2*border_size, editor_rectangle.height + 2 * border_size)
+        draw_rectangle_rec(border_rectangle,self.background_color)
+        draw_texture_pro(self.editor_window.texture,Rectangle(0,0,self.editor_width,-self.editor_height),editor_rectangle,Vector2(0,0),0,WHITE)
 
-    def instantiate(self,transform : fluxTransform):
-        model = None
-        return fluxGameObject(
-            self.name, self.tag, transform, model, self.is_camera, self.scripts, self.children
-        )
-
-class fluxProject:
-    def __init__(self,path : str):
-        self.path = path
-        self.prefab_counter = 0
-        self.prefabs = {}
-
-    def read_prefab_from_file(self, path):
-        with open(path,"r") as f:
-            prefab = json.load(f)
-        name = prefab.get("prefabName","unnamed" + str(PREFAB_COUNTER))
-        PREFAB_COUNTER += 1
-        tag = prefab.get("prefabTag","default")
-        model_path = prefab.get("prefabModel",None)
-        if model_path is not None:
-            if len(model_path.strip()) == 0:
-                model_path = None
-        is_camera = prefab.get("prefabIsCamera",False)
-        scripts = prefab.get("prefabScripts",[])
-        children = prefab.get("prefabChildren",[])
-        return fluxPrefab(name,tag,model_path,is_camera,scripts,children)
-
-def read_prefabs():
-    pass
-
-#read_prefab_from_file("/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/defaultCamera.json")
-
-exit()
-
-class fluxScene:
+class Toolbar:
     def __init__(self):
-        self.gameobjects = []
+        pass
 
-    def add_gameobject(self, prefab : fluxPrefab, transform : fluxTransform = None):
-        if transform is None:
-            transform = defaultTransform()
-        self.gameobjects.append(prefab.instantiate(transform))
+    def draw(self,tool_bar_height, tool_bar_render_height):
+        tool_bar_shadow = tool_bar_height - tool_bar_render_height
+        draw_rectangle_gradient_v(0,tool_bar_render_height,get_screen_width(),tool_bar_shadow,BLACK,(0,0,0,0))
+        draw_rectangle(0,0,get_screen_width(),tool_bar_render_height,(23,27,33,255))
 
-    def save_scene(self,scene_name):
-        out = "prefab_name,pos_x,pos_y,pos_z,rot_x,rot_y,rot_z,scale_x,scale_y,scale_z,tint_r,tint_g,tint_b,tint_a\n"
-        for j in self.gameobjects:
-            out += j.name + "," + str(j.transform) + "," + ",".join([str(i) for i in j.tint]) + "\n"
-        with open(os.path.join(PROJECT_PATH,"scenes",scene_name),"w") as f:
-            f.write(out)
+set_config_flags(ConfigFlags.FLAG_WINDOW_RESIZABLE + ConfigFlags.FLAG_MSAA_4X_HINT + ConfigFlags.FLAG_WINDOW_HIGHDPI)
+init_window(1200, 800, "editor")
+
+project = fluxProject("/Users/humzaqureshi/GitHub/Flux-Engine/project")
 
 sphere_prefab = fluxPrefab("sphere_prefab","default","SPHERE",False,[],[])
 
-scene = fluxScene()
+scene = fluxScene("my_scene.csv")
 scene.add_gameobject(sphere_prefab,defaultTransform())
-scene.save_scene("my_scene.csv")
 
+prev_editor_width = 1000
+prev_editor_height = 1000
+editor_view = EditorWindow()
+toolbar = Toolbar()
 
-'''camera = Camera3D(vector3_one(),vector3_zero(),Vector3(0,1,0),45,CameraProjection.CAMERA_PERSPECTIVE)
+camera = Camera3D(Vector3(3,3,3),vector3_zero(),Vector3(0,1,0),45,CameraProjection.CAMERA_PERSPECTIVE)
+set_target_fps(60)
 
-set_config_flags(ConfigFlags.FLAG_WINDOW_RESIZABLE)
-init_window(400, 400, "editor")
+checked = True
+
+gui_set_style(0,0,0)
+gui_set_style(0,1,0)
+gui_set_style(0,3,0)
+gui_set_style(0,4,50)
+gui_set_style(0,6,0)
+gui_set_style(0,7,100)
+font = load_font_ex("/Users/humzaqureshi/GitHub/Flux-Engine/editor/JetBrainsMono-Regular.ttf",128,None,0)
+#font = load_font("/Users/humzaqureshi/GitHub/Flux-Engine/editor/JetBrainsMono-Regular.ttf")
+#font.baseSize = 32
+#font.glyphCount = 95
+#print(font.baseSize)
+
+gui_set_font(font)
+#gui_set_style(0,20,100)
 while not window_should_close():
+
+    editor_view.update()
+    tool_bar_height = int(get_screen_height()/20)
+    tool_bar_render_height = int(tool_bar_height*0.8)
+    tool_bar_shadow = tool_bar_height - tool_bar_render_height
+
+    # font size
+    gui_set_style(0,16,int(tool_bar_height / 3))
+
     begin_drawing()
-    clear_background(BLACK)
+    clear_background((30,35,43,255))
 
-    begin_mode_3d(camera)
+    editor_view.draw(scene,camera,tool_bar_height)
+    toolbar.draw(tool_bar_height, tool_bar_render_height)
 
-    draw_grid(100,0.1)
+    control_width = int(editor_view.get_panel_width()/5)
+    control_shadow = tool_bar_shadow
+    draw_rectangle_gradient_h(control_width,tool_bar_render_height,control_shadow,get_screen_height(),BLACK,(0,0,0,0))
+    draw_rectangle(0,tool_bar_render_height,control_width,get_screen_height(),(50,55,64,255))
 
-    end_mode_3d()
+    icon_scale = int(tool_bar_height * 0.045)
+    if (icon_scale < 1):
+        icon_scale = 1
+
+    n_buttons = 10
+
+    buttons = ["new","save","undo","redo"]
+    button_width = get_screen_width()/n_buttons
+
+    for idx,i in enumerate(buttons):
+        gui_button(Rectangle(button_width * idx,0,button_width,tool_bar_render_height),i)
+
+    #gui_draw_icon(1,5,0,icon_scale,WHITE)
+    fps_str = "fps: " + str(get_fps())
+    fps_sz = measure_text_ex(font,fps_str,15,1)
+    draw_text_ex(font,fps_str,Vector2(0.2,get_screen_height() - fps_sz.y * 1.2),15,1,WHITE)
 
     end_drawing()
-close_window()'''
+
+model_loader.unload_models()
+
+#unload_render_texture(editor_view)
+editor_view.unload()
+unload_font(font)
+
+close_window()
