@@ -1,14 +1,23 @@
 RAYLIB_DIR ?= ext/raylib/src
 RAYLIB_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 
+FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -fsanitize=address -fno-omit-frame-pointer -fPIC
+
 INIH_DIR ?= inih
 
 BUILD_DIR ?= build
 
 SOURCE_DIR ?= engine
 EDITOR_DIR ?= editor
+RENDERER_DIR ?= renderer
+DRIVERS_DIR ?= drivers
+
+FLUX_LIB ?= libflux.a
 
 PROJECT_DIR ?= project
+
+FLUX_PRIVATE_INCLUDES := -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR)
+FLUX_LIBRARIES := $(BUILD_DIR)/$(FLUX_LIB) $(RAYLIB_DIR)/libraylib.a
 
 SCRIPT_SOURCES := $(shell find $(PROJECT_DIR)/scripts -name '*.c')
 SCRIPT_OBJECTS := $(SCRIPT_SOURCES:%.c=%.o)
@@ -18,14 +27,18 @@ EDITOR_SOURCES := $(shell find $(EDITOR_DIR) -name '*.c')
 EDITOR_OBJECTS := $(EDITOR_SOURCES:%.c=%.o)
 EDITOR_OUTPUTS := $(EDITOR_OBJECTS:%=build/%)
 
+RENDERER_SOURCES := $(shell find $(RENDERER_DIR) -name '*.c')
+RENDERER_OBJECTS := $(RENDERER_SOURCES:%.c=%.o)
+RENDERER_OUTPUTS := $(RENDERER_OBJECTS:%=build/%)
+
 PREFABS := $(shell find $(PROJECT_DIR)/prefabs -name '*.prefab')
 
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.c') $(shell find $(SOURCE_DIR) -name '*.cpp')
 OBJECTS_1 := $(SOURCES:%.c=%.o)
 OBJECTS := $(OBJECTS_1:%.cpp=%.o)
-OUTPUTS := $(OBJECTS:engine%=build%) $(SCRIPT_OUTPUTS)
+OUTPUTS := $(OBJECTS:%=build/%) $(SCRIPT_OUTPUTS)
 
-main: driver flux_editor
+main: driver flux_editor test_render
 
 $(SOURCE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES)
 	python3 ./build_scripts.py $(PROJECT_DIR)
@@ -37,25 +50,21 @@ $(SOURCE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9
 
-driver: drivers/driver.c $(OUTPUTS) $(EDITOR_OUTPUTS) $(RAYLIB_DIR)/libraylib.a
-	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer -fPIC
+$(BUILD_DIR)/$(FLUX_LIB): $(OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) | $(BUILD_DIR)
+	$(AR) rcs $@ $^
 
-flux_editor: drivers/flux_editor.c $(EDITOR_OUTPUTS) $(RAYLIB_DIR)/libraylib.a
-	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer -fPIC
-
-build/%.o: $(SOURCE_DIR)/%.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer -fPIC
+%: $(DRIVERS_DIR)/%.c $(FLUX_LIBRARIES)
+	$(CC) $(FLUX_PRIVATE_INCLUDES) $^ -o $@ $(RAYLIB_FLAGS) $(FLUX_CC_FLAGS)
 
 build/%.o: %.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer -fPIC
-
-build/%.o: $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CXX) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer -fPIC
+	$(CC) $(FLUX_PRIVATE_INCLUDES) -c -o $@ $< $(FLUX_CC_FLAGS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/$(SOURCE_DIR)
 	mkdir -p $(BUILD_DIR)/$(EDITOR_DIR)
 	mkdir -p $(BUILD_DIR)/$(PROJECT_DIR)
+	mkdir -p $(BUILD_DIR)/$(RENDERER_DIR)
 	mkdir -p $(BUILD_DIR)/$(PROJECT_DIR)/scripts
 
 clean:
@@ -63,4 +72,5 @@ clean:
 	rm -rf $(SOURCE_DIR)/GENERATED*
 	rm -rf driver
 	rm -rf flux_editor
+	rm -rf test_render
 #	cd $(RAYLIB_DIR) && $(MAKE) clean

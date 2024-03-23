@@ -39,3 +39,4 @@ driver
 **/__pycache__
 
 flux_editor
+test_render
