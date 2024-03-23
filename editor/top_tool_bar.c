@@ -8,18 +8,19 @@
 #include "buttons.h"
 #include "text_stuff.h"
 #include "top_tool_bar.h"
+#include "editor_config.h"
 
 static editorPanel top_tool_bar_panel;
 static editorPanel file_panel;
 static int current_button_pos = EDITOR_TOOL_BAR_SIZE;
 
 static void file_click_callback(editorButton button){
-    TraceLog(LOG_INFO,"file clicked");
+    TraceLog(LOG_FLUX_EDITOR,"file clicked");
     enable_panel(file_panel);
 }
 
 static void file_click_off_callback(editorButton button){
-    TraceLog(LOG_INFO,"file off clicked");
+    TraceLog(LOG_FLUX_EDITOR,"file off clicked");
     if (vector_in_panel(file_panel,GetMousePosition())){
         button_stay_clicked(button);
     } else {
@@ -28,19 +29,19 @@ static void file_click_off_callback(editorButton button){
 }
 
 static void edit_click_callback(editorButton button){
-    TraceLog(LOG_INFO,"edit clicked");
+    TraceLog(LOG_FLUX_EDITOR,"edit clicked");
 }
 
 static void edit_click_off_callback(editorButton button){
-    TraceLog(LOG_INFO,"edit off clicked");
+    TraceLog(LOG_FLUX_EDITOR,"edit off clicked");
 }
 
 static void view_click_callback(editorButton button){
-    TraceLog(LOG_INFO,"view clicked");
+    TraceLog(LOG_FLUX_EDITOR,"view clicked");
 }
 
 static void view_click_off_callback(editorButton button){
-    TraceLog(LOG_INFO,"view off clicked");
+    TraceLog(LOG_FLUX_EDITOR,"view off clicked");
 }
 
 static void tool_bar_add_button(const char* text, void (*onClick)(struct editorButtonStruct*), void (*onClickOff)(struct editorButtonStruct*)){

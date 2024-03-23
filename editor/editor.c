@@ -12,8 +12,10 @@
 #include "editor_config.h"
 #include "console.h"
 #include "input_boxes.h"
+#include "filesys_tools.h"
 
 Font editor_font;
+static bool do_quit = false;
 
 void draw_status_bar(void){
     editorRect status_bar = make_rect(make_coord(make_pos_relative(0),make_pos_pixel(GetScreenHeight() - 20)),make_coord(make_pos_relative(1),make_pos_relative(1)));
@@ -22,6 +24,15 @@ void draw_status_bar(void){
     sprintf(fps_text,"fps %d",GetFPS());
     draw_text_in_editor_rect(make_rect(make_coord(make_pos_relative(0),make_pos_pixel(GetScreenHeight() - 20)),make_coord(make_pos_pixel(EDITOR_TOOL_BAR_SIZE*3),make_pos_relative(1))),Vector2Zero(),fps_text,WHITE);
     draw_text_in_editor_rect(status_bar,Vector2Zero(),EDITOR_VERSION_STRING,WHITE);
+}
+
+void quit_editor(void){
+    do_quit = true;
+}
+
+static void console_command_quit(int n_args, const char** args){
+    TraceLog(LOG_FLUX_EDITOR,"goodbye");
+    quit_editor();
 }
 
 int main(){
@@ -34,6 +45,7 @@ int main(){
     init_top_tool_bar();
     init_input_boxes();
     init_console();
+    init_filesys_tools();
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1200,800,"flux_editor");
@@ -50,7 +62,9 @@ int main(){
                                         EDITOR_TOOL_BAR_SHADOW_SIZE,
                                         0, 0, 0, 0, 1);
 
-    while (!WindowShouldClose()){
+    add_console_command("quit",console_command_quit);
+
+    while (!WindowShouldClose() && !do_quit){
 
         update_console();
 
@@ -70,6 +84,7 @@ int main(){
     UnloadFont(editor_font);
     UnloadTexture(logo);
 
+    delete_filesys_tools();
     delete_input_boxes();
     delete_console();
     delete_panels();

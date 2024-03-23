@@ -10,13 +10,24 @@
 #include "text_stuff.h"
 #include "editor_theme.h"
 #include "editor_config.h"
+#include "console.h"
 #include <time.h>
+
+#define LOG_USER 12
 
 static editorPanel console_panel;
 
-char console_input[EDITOR_TEXT_INPUT_MAX_CHARS];
+struct console_command{
+    char name[EDITOR_CONSOLE_COMMAND_MAX_NAME];
+    flux_console_command_callback callback;
+};
 
+static int n_commands = 0;
+static struct console_command commands[EDITOR_CONSOLE_MAX_COMMANDS];
+
+char console_input[EDITOR_TEXT_INPUT_MAX_CHARS];
 static char* stack[EDITOR_CONSOLE_STACK_SIZE];
+int message_type_stack[EDITOR_CONSOLE_STACK_SIZE];
 static int stack_ptr = 0;
 
 void init_stack(void){
@@ -32,21 +43,23 @@ void delete_stack(void){
     }
 }
 
-static void append_stack(char* ptr){
+static void append_stack(char* ptr, int type){
     if (stack[stack_ptr])free(stack[stack_ptr]);
     stack[stack_ptr] = ptr;
+    message_type_stack[stack_ptr] = type;
     stack_ptr++;
     if (stack_ptr >= EDITOR_CONSOLE_STACK_SIZE){
         stack_ptr = 0;
     }
 }
 
-static const char* read_stack(int i){
+static const char* read_stack(int i, int* type){
     int idx = (stack_ptr - 1) - i;
     while (idx < 0){
         idx += EDITOR_CONSOLE_STACK_SIZE;
     }
     if (idx >= EDITOR_CONSOLE_STACK_SIZE)return NULL;
+    *type = message_type_stack[idx];
     return stack[idx];
 }
 
@@ -66,7 +79,10 @@ void CustomLog(int msgType, const char *text, va_list args)
         case LOG_ERROR:   log_type = "[ERROR]: "; break;
         case LOG_WARNING: log_type = "[WARN] : "; break;
         case LOG_DEBUG:   log_type = "[DEBUG]: "; break;
-        //case LOG_USER:    log_type = "[USER] : "; break;
+        case LOG_USER:    log_type = "[USER] : "; break;
+        case LOG_FLUX_EDITOR: log_type = "[INFO] : EDITOR: "; msgType = LOG_INFO; break;
+        case LOG_FLUX_EDITOR_WARNING: log_type = "[WARN] : EDITOR: "; msgType = LOG_WARNING; break;
+        case LOG_FLUX_EDITOR_ERROR: log_type = "[ERROR] : EDITOR: "; msgType = LOG_ERROR; break;
         default: log_type = ""; break;
     }
 
@@ -79,35 +95,119 @@ void CustomLog(int msgType, const char *text, va_list args)
     assert(out = (char*)malloc(sizeof(char) * (strlen(timeStr) + strlen(log_type) + strlen(msg) + 5)));
     sprintf(out,"%s %s%s",timeStr,log_type,msg);
     printf("%s\n",out);
-    append_stack(out);
+    append_stack(out,msgType);
 }
 
-void set_console_input(char* input){
+static int n_command_items(const char* command){
+    char raw_command[strlen(command)+5];
+    strcpy(raw_command,command);
+    char* token = strtok(raw_command," ");
+    int count = 0;
+    while (token){
+        token = strtok(NULL," ");
+        count++;
+    }
+    return count;
+}
+
+struct console_command* find_command(const char* name){
+    for (int i = 0; i < n_commands; i++){
+        if (strcmp(commands[i].name,name) == 0){
+            return &commands[i];
+        }
+    }
+    return NULL;
+}
+
+static void parse_command(const char* command){
+    TraceLog(LOG_USER,command);
+
+    int n_args = n_command_items(command);
+    if (n_args == 0)return;
+
+    const char* args[n_args];
+    char raw_command[strlen(command)+5];
+    strcpy(raw_command,command);
+
+    char* token = strtok(raw_command," ");
+    for (int i = 0; i < n_args; i++){
+        args[i] = token;
+        token = strtok(NULL," ");
+    }
+
+    const char* name = args[0];
+    struct console_command* console_command = find_command(name);
+    if (!console_command){
+        TraceLog(LOG_FLUX_EDITOR_WARNING,"invalid command");
+        return;
+    }
+    console_command->callback(n_args,args);
+}
+
+void set_console_input(char* input,editorTextInputBox box){
     strcpy(console_input,input);
     if (IsKeyPressed(KEY_ENTER)){
+        parse_command(console_input);
         console_input[0] = '\0';
         input[0] = '\0';
-        TraceLog(LOG_INFO,"SUBMIT!");
     }
 }
 
-void get_console_input(char* input){
+void get_console_input(char* input,editorTextInputBox box){
     strcpy(input,console_input);
 }
 
 static int line_count = 0;
 static int line_start = 0;
 
-void get_line_input(char* input){
-    const char* line = read_stack(line_count);
+void get_line_input(char* input, editorTextBox box){
+    int type;
+    const char* line = read_stack(line_count,&type);
     line_count++;
+    if (!line){
+        input[0] = '\0';
+        return;
+    }
+    Color col = WHITE;
+
+    if (strstr(line,"GL:") || strstr(line,"GLAD:")){
+        col = CONSOLE_GL_COLOR;
+    } else if (strstr(line,"TEXTURE:") || strstr(line,"DISPLAY:")
+                || strstr(line,"PLATFORM:") || strstr(line,"SHADER:")
+                || strstr(line,"RLGL:") || strstr(line,"FONT:")
+                || strstr(line,"TIMER:") || strstr(line,"FILEIO:")
+                || strstr(line,"IMAGE:") ){
+        col = CONSOLE_RAYLIB_COLOR;
+    } else if (strstr(line,"EDITOR:")){
+        col = CONSOLE_EDITOR_COLOR;
+    }
+
+    switch (type){
+        case LOG_WARNING: col = ORANGE; break;
+        case LOG_ERROR: col = RED; break;
+        default: break;
+    }
+
+    set_text_box_text_color(box,col);
     if (line)
         strcpy(input,line);
-    else
-        input[0] = '\0';
+}
+
+void add_console_command(const char* name, flux_console_command_callback callback){
+    assert(n_commands < EDITOR_CONSOLE_MAX_COMMANDS);
+    assert(strlen(name) < EDITOR_CONSOLE_COMMAND_MAX_NAME);
+    TraceLog(LOG_FLUX_EDITOR,"adding console command %s",name);
+    strcpy(commands[n_commands].name,name);
+    commands[n_commands].callback = callback;
+    n_commands++;
+}
+
+static void test_console_command(int n_args, const char** args){
+    TraceLog(LOG_FLUX_EDITOR,"testing!");
 }
 
 void init_console(void){
+    TraceLog(LOG_FLUX_EDITOR,"init_console");
     float text_size = 0.025;
     editorRect console_rect = make_rect(
                 make_coord(make_pos_relative(0.1),make_pos_relative(0.1)),
@@ -131,6 +231,9 @@ void init_console(void){
                     make_coord(make_pos_relative(0.9),make_pos_relative(start))),(Color){0,0,0,0},WHITE,get_line_input));
         start -= text_size;
     }
+    n_commands = 0;
+
+    add_console_command("test",test_console_command);
 }
 
 void update_console(void){

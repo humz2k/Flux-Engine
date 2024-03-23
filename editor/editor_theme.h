@@ -22,4 +22,8 @@
 #define EDITOR_FONT "/Users/humzaqureshi/GitHub/Flux-Engine/editor/JetBrainsMono-Regular.ttf"
 #define EDITOR_FONT_BASE_SIZE 128
 
+#define CONSOLE_GL_COLOR GREEN
+#define CONSOLE_RAYLIB_COLOR SKYBLUE
+#define CONSOLE_EDITOR_COLOR YELLOW
+
 #endif

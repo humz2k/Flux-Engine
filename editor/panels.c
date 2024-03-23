@@ -47,7 +47,7 @@ void delete_panels(void){
 }
 
 static void grow_panels(void){
-    TraceLog(LOG_INFO,"growing allocated panels from %d to %d",n_allocated_panels,n_allocated_panels * 2);
+    TraceLog(LOG_FLUX_EDITOR,"growing allocated panels from %d to %d",n_allocated_panels,n_allocated_panels * 2);
     n_allocated_panels *= 2;
     assert(n_allocated_panels > 0);
     assert(allocated_panels = (struct editorPanelStruct**)realloc(allocated_panels,sizeof(struct editorPanelStruct*) * n_allocated_panels));

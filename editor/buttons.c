@@ -7,6 +7,7 @@
 #include "coords.h"
 #include "buttons.h"
 #include "editor_theme.h"
+#include "editor_config.h"
 #include "text_stuff.h"
 
 struct editorButtonStruct{
@@ -42,7 +43,7 @@ void delete_buttons(void){
 }
 
 static void grow_buttons(void){
-    TraceLog(LOG_INFO,"growing allocated buttons from %d to %d",n_allocated_buttons,n_allocated_buttons * 2);
+    TraceLog(LOG_FLUX_EDITOR,"growing allocated buttons from %d to %d",n_allocated_buttons,n_allocated_buttons * 2);
     n_allocated_buttons *= 2;
     assert(n_allocated_buttons > 0);
     assert(allocated_buttons = (struct editorButtonStruct**)realloc(allocated_buttons,sizeof(struct editorButtonStruct*) * n_allocated_buttons));

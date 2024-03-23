@@ -18,8 +18,8 @@ struct editorTextInputBoxStruct{
     Color edit_color;
     Color text_color;
     char current_input[EDITOR_TEXT_INPUT_MAX_CHARS];
-    void (*setText)(char*);
-    void (*getText)(char*);
+    void (*setText)(char*,editorTextInputBox);
+    void (*getText)(char*,editorTextInputBox);
     bool edit_mode;
     bool last_edit_mode;
     bool editable;
@@ -30,6 +30,7 @@ static int n_allocated_text_input_boxes = 0;
 static int n_text_input_boxes = 0;
 
 void init_input_boxes(void){
+    TraceLog(LOG_FLUX_EDITOR,"init_input_boxes");
     n_text_input_boxes = 0;
     n_allocated_text_input_boxes = 10;
     assert(allocated_text_input_boxes == NULL);
@@ -37,6 +38,7 @@ void init_input_boxes(void){
 }
 
 void delete_input_boxes(void){
+    TraceLog(LOG_FLUX_EDITOR,"delete_input_boxes");
     for (int i = 0; i < n_text_input_boxes; i++){
         free(allocated_text_input_boxes[i]);
     }
@@ -46,13 +48,13 @@ void delete_input_boxes(void){
 }
 
 static void grow_text_input_boxes(void){
-    TraceLog(LOG_INFO,"growing allocated text_input_boxes from %d to %d",n_allocated_text_input_boxes,n_allocated_text_input_boxes * 2);
+    TraceLog(LOG_FLUX_EDITOR,"growing allocated text_input_boxes from %d to %d",n_allocated_text_input_boxes,n_allocated_text_input_boxes * 2);
     n_allocated_text_input_boxes *= 2;
     assert(n_allocated_text_input_boxes > 0);
     assert(allocated_text_input_boxes = (struct editorTextInputBoxStruct**)realloc(allocated_text_input_boxes,sizeof(struct editorTextInputBoxStruct*) * n_allocated_text_input_boxes));
 }
 
-editorTextInputBox make_text_input_box(editorRect rect, Color background_color, Color edit_color, Color text_color, void (*setText)(char*), void (*getText)(char*)){
+editorTextInputBox make_text_input_box(editorRect rect, Color background_color, Color edit_color, Color text_color, void (*setText)(char*,editorTextInputBox), void (*getText)(char*,editorTextInputBox)){
     if (n_text_input_boxes >= n_allocated_text_input_boxes){
         grow_text_input_boxes();
     }
@@ -72,7 +74,7 @@ editorTextInputBox make_text_input_box(editorRect rect, Color background_color, 
     return out;
 }
 
-editorTextBox make_text_box(editorRect rect, Color background_color, Color text_color, void (*getText)(char*)){
+editorTextBox make_text_box(editorRect rect, Color background_color, Color text_color, void (*getText)(char*,editorTextBox)){
     if (n_text_input_boxes >= n_allocated_text_input_boxes){
         grow_text_input_boxes();
     }
@@ -88,6 +90,11 @@ editorTextBox make_text_box(editorRect rect, Color background_color, Color text_
     return out;
 }
 
+void set_text_box_text_color(editorTextBox box, Color text_color){
+    assert(box);
+    box->text_color = text_color;
+}
+
 bool draw_text_input_box(editorTextInputBox box, Vector2 offset){
     assert(box);
     bool not_draggable = false;
@@ -99,7 +106,7 @@ bool draw_text_input_box(editorTextInputBox box, Vector2 offset){
             } else {
                 box->edit_mode = false;
                 if (box->last_edit_mode){
-                    box->setText(box->current_input);
+                    box->setText(box->current_input,box);
                 }
             }
         }
@@ -121,11 +128,11 @@ bool draw_text_input_box(editorTextInputBox box, Vector2 offset){
             }
         }
         if (IsKeyPressed(KEY_ENTER)){
-            box->setText(box->current_input);
+            box->setText(box->current_input,box);
         }
         col = box->edit_color;
     } else {
-        box->getText(box->current_input);
+        box->getText(box->current_input,box);
         col = box->background_color;
     }
 
