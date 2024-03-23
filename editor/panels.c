@@ -30,14 +30,14 @@ static struct editorPanelStruct** allocated_panels = NULL;
 static int n_allocated_panels = 0;
 static int n_panels = 0;
 
-void init_panels(void){
+void editor_init_panels(void){
     n_panels = 0;
     n_allocated_panels = 10;
     assert(allocated_panels == NULL);
     assert(allocated_panels = (struct editorPanelStruct**)malloc(sizeof(struct editorPanelStruct*) * n_allocated_panels));
 }
 
-void delete_panels(void){
+void editor_delete_panels(void){
     for (int i = 0; i < n_panels; i++){
         free(allocated_panels[i]);
     }
@@ -53,7 +53,7 @@ static void grow_panels(void){
     assert(allocated_panels = (struct editorPanelStruct**)realloc(allocated_panels,sizeof(struct editorPanelStruct*) * n_allocated_panels));
 }
 
-editorPanel make_editor_panel(editorRect rect, Color color, bool draggable, editorPos shadow_size, bool top_shadow, bool bottom_shadow, bool left_shadow, bool right_shadow, int layer){
+editorPanel editor_make_editor_panel(editorRect rect, Color color, bool draggable, editorPos shadow_size, bool top_shadow, bool bottom_shadow, bool left_shadow, bool right_shadow, int layer){
     if (n_panels >= n_allocated_panels){
         grow_panels();
     }
@@ -78,7 +78,7 @@ editorPanel make_editor_panel(editorRect rect, Color color, bool draggable, edit
     return out;
 }
 
-void add_button_to_panel(editorPanel panel, editorButton button){
+void editor_add_button_to_panel(editorPanel panel, editorButton button){
     assert(panel);
     assert(button);
     assert(panel->n_buttons < EDITOR_PANEL_MAX_BUTTONS);
@@ -86,7 +86,7 @@ void add_button_to_panel(editorPanel panel, editorButton button){
     panel->n_buttons++;
 }
 
-void add_text_input_box_to_panel(editorPanel panel, editorTextInputBox text_input_box){
+void editor_add_text_input_box_to_panel(editorPanel panel, editorTextInputBox text_input_box){
     assert(panel);
     assert(text_input_box);
     assert(panel->n_input_boxes < EDITOR_PANEL_MAX_TEXT_INPUT_BOXES);
@@ -94,35 +94,35 @@ void add_text_input_box_to_panel(editorPanel panel, editorTextInputBox text_inpu
     panel->n_input_boxes++;
 }
 
-void enable_panel(editorPanel panel){
+void editor_enable_panel(editorPanel panel){
     assert(panel);
     panel->enabled = 1;
 }
-void disable_panel(editorPanel panel){
+void editor_disable_panel(editorPanel panel){
     assert(panel);
     panel->enabled = 0;
 }
 
-void toggle_panel(editorPanel panel){
+void editor_toggle_panel(editorPanel panel){
     assert(panel);
     panel->enabled = !panel->enabled;
 }
 
-void panel_set_layer(editorPanel panel, int layer){
+void editor_panel_set_layer(editorPanel panel, int layer){
     assert(panel);
     panel->layer = layer;
 }
 
-void draw_editor_panel(editorPanel panel){
+void editor_draw_editor_panel(editorPanel panel){
     assert(panel);
     if (!panel->enabled)return;
     bool can_drag = true;
     draw_editor_rect_shadow(panel->rect,panel->color,panel->pos,panel->shadow_size,panel->top_shadow,panel->bottom_shadow,panel->left_shadow,panel->right_shadow);
     for (int i = 0; i < panel->n_buttons; i++){
-        can_drag &= !draw_button(panel->buttons[i],panel->pos);
+        can_drag &= !editor_draw_button(panel->buttons[i],panel->pos);
     }
     for (int i = 0; i < panel->n_input_boxes; i++){
-        can_drag &= !draw_text_input_box(panel->input_boxes[i],panel->pos);
+        can_drag &= !editor_draw_text_input_box(panel->input_boxes[i],panel->pos);
     }
 
     if ((panel->draggable) && can_drag){
@@ -138,20 +138,20 @@ void draw_editor_panel(editorPanel panel){
     }
 }
 
-bool vector_in_panel(editorPanel panel, Vector2 vector){
+bool editor_vector_in_panel(editorPanel panel, Vector2 vector){
     return vector_in_editor_rect(panel->rect,panel->pos,vector);
 }
 
-void draw_panels(void){
+void editor_draw_panels(void){
     for (int layer = 0; layer < 5; layer++){
         for (int i = 0; i < n_panels; i++){
             if (allocated_panels[i]->layer == layer)
-                draw_editor_panel(allocated_panels[i]);
+                editor_draw_editor_panel(allocated_panels[i]);
         }
     }
 }
 
-bool panel_enabled(editorPanel panel){
+bool editor_panel_enabled(editorPanel panel){
     assert(panel);
     return panel->enabled;
 }

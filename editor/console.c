@@ -25,19 +25,19 @@ struct console_command{
 static int n_commands = 0;
 static struct console_command commands[EDITOR_CONSOLE_MAX_COMMANDS];
 
-char console_input[EDITOR_TEXT_INPUT_MAX_CHARS];
+static char console_input[EDITOR_TEXT_INPUT_MAX_CHARS];
 static char* stack[EDITOR_CONSOLE_STACK_SIZE];
-int message_type_stack[EDITOR_CONSOLE_STACK_SIZE];
+static int message_type_stack[EDITOR_CONSOLE_STACK_SIZE];
 static int stack_ptr = 0;
 
-void init_stack(void){
+void editor_init_stack(void){
     for (int i = 0; i < EDITOR_CONSOLE_STACK_SIZE; i++){
         stack[i] = NULL;
     }
     stack_ptr = 0;
 }
 
-void delete_stack(void){
+void editor_delete_stack(void){
     for (int i = 0; i < EDITOR_CONSOLE_STACK_SIZE; i++){
         if (stack[i])free(stack[i]);
     }
@@ -110,7 +110,7 @@ static int n_command_items(const char* command){
     return count;
 }
 
-struct console_command* find_command(const char* name){
+static struct console_command* find_command(const char* name){
     for (int i = 0; i < n_commands; i++){
         if (strcmp(commands[i].name,name) == 0){
             return &commands[i];
@@ -144,7 +144,7 @@ static void parse_command(const char* command){
     console_command->callback(n_args,args);
 }
 
-void set_console_input(char* input,editorTextInputBox box){
+static void set_console_input(char* input,editorTextInputBox box){
     strcpy(console_input,input);
     if (IsKeyPressed(KEY_ENTER)){
         parse_command(console_input);
@@ -153,14 +153,14 @@ void set_console_input(char* input,editorTextInputBox box){
     }
 }
 
-void get_console_input(char* input,editorTextInputBox box){
+static void get_console_input(char* input,editorTextInputBox box){
     strcpy(input,console_input);
 }
 
 static int line_count = 0;
 static int line_start = 0;
 
-void get_line_input(char* input, editorTextBox box){
+static void get_line_input(char* input, editorTextBox box){
     int type;
     const char* line = read_stack(line_count,&type);
     line_count++;
@@ -188,12 +188,12 @@ void get_line_input(char* input, editorTextBox box){
         default: break;
     }
 
-    set_text_box_text_color(box,col);
+    editor_set_text_box_text_color(box,col);
     if (line)
         strcpy(input,line);
 }
 
-void add_console_command(const char* name, flux_console_command_callback callback){
+void editor_add_console_command(const char* name, flux_console_command_callback callback){
     assert(n_commands < EDITOR_CONSOLE_MAX_COMMANDS);
     assert(strlen(name) < EDITOR_CONSOLE_COMMAND_MAX_NAME);
     TraceLog(LOG_FLUX_EDITOR,"adding console command %s",name);
@@ -206,41 +206,41 @@ static void test_console_command(int n_args, const char** args){
     TraceLog(LOG_FLUX_EDITOR,"testing!");
 }
 
-void init_console(void){
+void editor_init_console(void){
     TraceLog(LOG_FLUX_EDITOR,"init_console");
-    float text_size = 0.025;
+    float text_size = 0.017;
     editorRect console_rect = make_rect(
                 make_coord(make_pos_relative(0.1),make_pos_relative(0.1)),
                 make_coord(make_pos_relative(0.9),make_pos_relative(0.9)));
-    console_panel = make_editor_panel(
+    console_panel = editor_make_editor_panel(
         console_rect, EDITOR_WINDOW_COLOR, true, make_pos_relative(0.01), 1,1,1,1,3
     );
     console_input[0] = '\0';
-    add_text_input_box_to_panel(console_panel,
-        make_text_input_box( make_rect(
+    editor_add_text_input_box_to_panel(console_panel,
+        editor_make_text_input_box( make_rect(
             make_coord(make_pos_relative(0.1),make_pos_relative(0.9 - text_size)),
             make_coord(make_pos_relative(0.9),make_pos_relative(0.9))),
         (Color){15,15,15,255},GREEN,WHITE,set_console_input,get_console_input
     ));
     float start = 0.9 - text_size;
-    while (start - 0.00001 > 0.1){
+    while (start - 0.01 > 0.1){
         //printf("AHH\n");
-        add_text_input_box_to_panel(console_panel,
-                make_text_box(make_rect(
+        editor_add_text_input_box_to_panel(console_panel,
+                editor_make_text_box(make_rect(
                     make_coord(make_pos_relative(0.1),make_pos_relative(start-text_size)),
                     make_coord(make_pos_relative(0.9),make_pos_relative(start))),(Color){0,0,0,0},WHITE,get_line_input));
         start -= text_size;
     }
     n_commands = 0;
 
-    add_console_command("test",test_console_command);
+    editor_add_console_command("test",test_console_command);
 }
 
-void update_console(void){
+void editor_update_console(void){
     if (IsKeyPressed(KEY_GRAVE)){
-        toggle_panel(console_panel);
+        editor_toggle_panel(console_panel);
     }
-    if (panel_enabled(console_panel)){
+    if (editor_panel_enabled(console_panel)){
         if (IsKeyPressed(KEY_UP)){
             line_start++;
         }
@@ -251,6 +251,6 @@ void update_console(void){
     }
 }
 
-void delete_console(void){
+void editor_delete_console(void){
 
 }

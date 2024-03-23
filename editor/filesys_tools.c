@@ -33,12 +33,12 @@ static void console_command_ls(int nargs, const char** args){
 
 }
 
-void init_filesys_tools(){
-    add_console_command("pwd",console_command_pwd);
-    add_console_command("cd",console_command_cd);
-    add_console_command("ls",console_command_ls);
+void editor_init_filesys_tools(){
+    editor_add_console_command("pwd",console_command_pwd);
+    editor_add_console_command("cd",console_command_cd);
+    editor_add_console_command("ls",console_command_ls);
 }
 
-void delete_filesys_tools(){
+void editor_delete_filesys_tools(){
 
 }

@@ -26,14 +26,14 @@ static struct editorButtonStruct** allocated_buttons = NULL;
 static int n_allocated_buttons = 0;
 static int n_buttons = 0;
 
-void init_buttons(void){
+void editor_init_buttons(void){
     n_buttons = 0;
     n_allocated_buttons = 10;
     assert(allocated_buttons == NULL);
     assert(allocated_buttons = (struct editorButtonStruct**)malloc(sizeof(struct editorButtonStruct*) * n_allocated_buttons));
 }
 
-void delete_buttons(void){
+void editor_delete_buttons(void){
     for (int i = 0; i < n_buttons; i++){
         free(allocated_buttons[i]);
     }
@@ -49,7 +49,7 @@ static void grow_buttons(void){
     assert(allocated_buttons = (struct editorButtonStruct**)realloc(allocated_buttons,sizeof(struct editorButtonStruct*) * n_allocated_buttons));
 }
 
-editorButton make_button(editorRect rect, Color color_base, Color color_hover, Color color_click, void (*onClick)(struct editorButtonStruct*), void (*onClickOff)(struct editorButtonStruct*), const char* text){
+editorButton editor_make_button(editorRect rect, Color color_base, Color color_hover, Color color_click, void (*onClick)(struct editorButtonStruct*), void (*onClickOff)(struct editorButtonStruct*), const char* text){
     if (n_buttons >= n_allocated_buttons){
         grow_buttons();
     }
@@ -74,22 +74,22 @@ editorButton make_button(editorRect rect, Color color_base, Color color_hover, C
     return out;
 }
 
-void button_stay_clicked(editorButton button){
+void editor_button_stay_clicked(editorButton button){
     assert(button);
     button->last_click_was_me = true;
 }
 
-void disable_button(editorButton button){
+void editor_disable_button(editorButton button){
     assert(button);
     button->enabled = 0;
 }
 
-void enable_button(editorButton button){
+void editor_enable_button(editorButton button){
     assert(button);
     button->enabled = 1;
 }
 
-bool draw_button(editorButton button, Vector2 offset){
+bool editor_draw_button(editorButton button, Vector2 offset){
     assert(button);
     if (!button->enabled)return false;
     bool on_button = false;

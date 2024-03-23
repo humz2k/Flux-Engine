@@ -8,16 +8,16 @@ struct editorTextInputBoxStruct;
 typedef struct editorTextInputBoxStruct* editorTextInputBox;
 typedef editorTextInputBox editorTextBox;
 
-void init_input_boxes(void);
+void editor_init_input_boxes(void);
 
-void delete_input_boxes(void);
+void editor_delete_input_boxes(void);
 
-editorTextInputBox make_text_input_box(editorRect rect, Color background_color, Color edit_color, Color text_color, void (*setText)(char*,editorTextInputBox), void (*getText)(char*,editorTextInputBox));
+editorTextInputBox editor_make_text_input_box(editorRect rect, Color background_color, Color edit_color, Color text_color, void (*setText)(char*,editorTextInputBox), void (*getText)(char*,editorTextInputBox));
 
-editorTextBox make_text_box(editorRect rect, Color background_color, Color text_color, void (*getText)(char*,editorTextBox));
+editorTextBox editor_make_text_box(editorRect rect, Color background_color, Color text_color, void (*getText)(char*,editorTextBox));
 
-void set_text_box_text_color(editorTextBox box, Color text_color);
+void editor_set_text_box_text_color(editorTextBox box, Color text_color);
 
-bool draw_text_input_box(editorTextInputBox box, Vector2 offset);
+bool editor_draw_text_input_box(editorTextInputBox box, Vector2 offset);
 
 #endif

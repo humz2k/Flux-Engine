@@ -37,15 +37,15 @@ static void console_command_quit(int n_args, const char** args){
 
 int main(){
 
-    init_stack();
+    editor_init_stack();
     SetTraceLogCallback(CustomLog);
 
-    init_panels();
-    init_buttons();
-    init_top_tool_bar();
-    init_input_boxes();
-    init_console();
-    init_filesys_tools();
+    editor_init_panels();
+    editor_init_buttons();
+    editor_init_top_tool_bar();
+    editor_init_input_boxes();
+    editor_init_console();
+    editor_init_filesys_tools();
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1200,800,"flux_editor");
@@ -55,24 +55,24 @@ int main(){
 
     editor_font = LoadFontEx(EDITOR_FONT,EDITOR_FONT_BASE_SIZE,NULL,0);
 
-    editorPanel side_tool_bar_panel = make_editor_panel(
+    editorPanel side_tool_bar_panel = editor_make_editor_panel(
                                         EDITOR_SIDE_TOOL_BAR_RECT,
                                         EDITOR_SIDE_TOOL_BAR_COLOR,
                                         false,
                                         EDITOR_TOOL_BAR_SHADOW_SIZE,
                                         0, 0, 0, 0, 1);
 
-    add_console_command("quit",console_command_quit);
+    editor_add_console_command("quit",console_command_quit);
 
     while (!WindowShouldClose() && !do_quit){
 
-        update_console();
+        editor_update_console();
 
         BeginDrawing();
 
         ClearBackground(EDITOR_BACKGROUND_COLOR);
 
-        draw_panels();
+        editor_draw_panels();
 
         draw_status_bar();
 
@@ -84,12 +84,13 @@ int main(){
     UnloadFont(editor_font);
     UnloadTexture(logo);
 
-    delete_filesys_tools();
-    delete_input_boxes();
-    delete_console();
-    delete_panels();
-    delete_buttons();
-    delete_stack();
+    editor_delete_top_tool_bar();
+    editor_delete_filesys_tools();
+    editor_delete_input_boxes();
+    editor_delete_console();
+    editor_delete_panels();
+    editor_delete_buttons();
+    editor_delete_stack();
 
     CloseWindow();
     return 0;
