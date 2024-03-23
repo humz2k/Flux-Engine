@@ -60,7 +60,7 @@ void init_top_tool_bar(){
     top_tool_bar_panel = make_editor_panel(
                             EDITOR_TOP_TOOL_BAR_RECT,
                             EDITOR_TOP_TOOL_BAR_COLOR,
-                            true,
+                            false,
                             EDITOR_TOOL_BAR_SHADOW_SIZE,
                             0, 1, 0, 0,0);
 

@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include "coords.h"
 #include "buttons.h"
+#include "input_boxes.h"
 
 struct editorPanelStruct;
 typedef struct editorPanelStruct* editorPanel;
@@ -18,6 +19,8 @@ void draw_editor_panel(editorPanel panel);
 
 void add_button_to_panel(editorPanel panel, editorButton button);
 
+void add_text_input_box_to_panel(editorPanel panel, editorTextInputBox text_input_box);
+
 void enable_panel(editorPanel panel);
 
 void disable_panel(editorPanel panel);
@@ -27,5 +30,9 @@ bool vector_in_panel(editorPanel panel, Vector2 vector);
 void draw_panels(void);
 
 void panel_set_layer(editorPanel panel, int layer);
+
+void toggle_panel(editorPanel panel);
+
+bool panel_enabled(editorPanel panel);
 
 #endif

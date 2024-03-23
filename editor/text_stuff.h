@@ -25,4 +25,21 @@ static inline void draw_text_in_editor_rect(editorRect rect, Vector2 offset, con
     DrawTextEx(editor_font,text,pos,20 * text_mul, 1 * text_mul,color);
 }
 
+static inline void draw_text_in_editor_rect_left_aligned(editorRect rect, Vector2 offset, const char* text, Color color){
+    Rectangle pix_rect = editor_rect_to_ray_rect(rect);
+    pix_rect.x += offset.x;
+    pix_rect.y += offset.y;
+    Vector2 base_size = MeasureTextEx(editor_font,text,20,1);
+    float text_width_mul = pix_rect.width / base_size.x;
+    float text_height_mul = pix_rect.height / base_size.y;
+    float text_mul = text_width_mul < text_height_mul ? text_width_mul : text_height_mul;
+
+    Vector2 good_size = MeasureTextEx(editor_font,text,20 * text_mul,1 * text_mul);
+    Vector2 pos = (Vector2){pix_rect.x,pix_rect.y + pix_rect.height * 0.5f};
+
+    pos.y -= good_size.y * 0.5;
+
+    DrawTextEx(editor_font,text,pos,20 * text_mul, 1 * text_mul,color);
+}
+
 #endif

@@ -38,19 +38,19 @@ $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9
 
 driver: $(OUTPUTS) $(RAYLIB_DIR)/libraylib.a
-	$(CXX) $^ -o $@ $(RAYLIB_FLAGS)
+	$(CXX) -Wall -Wpedantic -Wno-newline-eof $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer
 
 flux_editor: $(EDITOR_OUTPUTS) $(RAYLIB_DIR)/libraylib.a
-	$(CXX) $^ -o $@ $(RAYLIB_FLAGS)
+	$(CXX) -Wall -Wpedantic -Wno-newline-eof $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer
 
 build/%.o: $(SOURCE_DIR)/%.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CC) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $<
+	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer
 
 build/%.o: %.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CC) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $<
+	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer
 
 build/%.o: $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CXX) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $<
+	$(CXX) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

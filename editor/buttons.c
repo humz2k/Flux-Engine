@@ -21,7 +21,7 @@ struct editorButtonStruct{
     void (*onClickOff)(struct editorButtonStruct*);
 };
 
-static struct editorButtonStruct* allocated_buttons = NULL;
+static struct editorButtonStruct** allocated_buttons = NULL;
 static int n_allocated_buttons = 0;
 static int n_buttons = 0;
 
@@ -29,10 +29,13 @@ void init_buttons(void){
     n_buttons = 0;
     n_allocated_buttons = 10;
     assert(allocated_buttons == NULL);
-    assert(allocated_buttons = (struct editorButtonStruct*)malloc(sizeof(struct editorButtonStruct) * n_allocated_buttons));
+    assert(allocated_buttons = (struct editorButtonStruct**)malloc(sizeof(struct editorButtonStruct*) * n_allocated_buttons));
 }
 
 void delete_buttons(void){
+    for (int i = 0; i < n_buttons; i++){
+        free(allocated_buttons[i]);
+    }
     n_allocated_buttons = 0;
     n_buttons = 0;
     free(allocated_buttons);
@@ -42,7 +45,7 @@ static void grow_buttons(void){
     TraceLog(LOG_INFO,"growing allocated buttons from %d to %d",n_allocated_buttons,n_allocated_buttons * 2);
     n_allocated_buttons *= 2;
     assert(n_allocated_buttons > 0);
-    assert(allocated_buttons = (struct editorButtonStruct*)realloc(allocated_buttons,sizeof(struct editorButtonStruct) * n_allocated_buttons));
+    assert(allocated_buttons = (struct editorButtonStruct**)realloc(allocated_buttons,sizeof(struct editorButtonStruct*) * n_allocated_buttons));
 }
 
 editorButton make_button(editorRect rect, Color color_base, Color color_hover, Color color_click, void (*onClick)(struct editorButtonStruct*), void (*onClickOff)(struct editorButtonStruct*), const char* text){
@@ -50,7 +53,8 @@ editorButton make_button(editorRect rect, Color color_base, Color color_hover, C
         grow_buttons();
     }
     assert(n_buttons < n_allocated_buttons);
-    editorButton out = &allocated_buttons[n_buttons];
+    allocated_buttons[n_buttons] = (struct editorButtonStruct*)malloc(sizeof(struct editorButtonStruct));
+    editorButton out = allocated_buttons[n_buttons];
     n_buttons++;
     out->rect = rect;
     out->color_base = color_base;
