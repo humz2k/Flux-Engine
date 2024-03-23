@@ -143,3 +143,8 @@ bool editor_draw_text_input_box(editorTextInputBox box, Vector2 offset){
     return not_draggable;
 }
 
+void editor_set_text_input_box_edit_mode(editorTextInputBox box, bool mode){
+    assert(box);
+    assert(box->editable);
+    box->edit_mode = mode;
+}

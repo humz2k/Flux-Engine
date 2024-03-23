@@ -20,4 +20,6 @@ void editor_set_text_box_text_color(editorTextBox box, Color text_color);
 
 bool editor_draw_text_input_box(editorTextInputBox box, Vector2 offset);
 
+void editor_set_text_input_box_edit_mode(editorTextInputBox box, bool mode);
+
 #endif

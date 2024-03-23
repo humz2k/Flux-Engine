@@ -37,20 +37,20 @@ $(SOURCE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9
 
-driver: $(OUTPUTS) $(RAYLIB_DIR)/libraylib.a
-	$(CXX) -Wall -Wpedantic -Wno-newline-eof $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer
+driver: drivers/driver.c $(OUTPUTS) $(EDITOR_OUTPUTS) $(RAYLIB_DIR)/libraylib.a
+	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer -fPIC
 
-flux_editor: $(EDITOR_OUTPUTS) $(RAYLIB_DIR)/libraylib.a
-	$(CXX) -Wall -Wpedantic -Wno-newline-eof $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer
+flux_editor: drivers/flux_editor.c $(EDITOR_OUTPUTS) $(RAYLIB_DIR)/libraylib.a
+	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) $^ -o $@ $(RAYLIB_FLAGS) -fsanitize=address -fno-omit-frame-pointer -fPIC
 
 build/%.o: $(SOURCE_DIR)/%.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer
+	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer -fPIC
 
 build/%.o: %.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer
+	$(CC) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer -fPIC
 
 build/%.o: $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
-	$(CXX) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer
+	$(CXX) -Wall -Wpedantic -Wno-newline-eof -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -c -o $@ $< -fsanitize=address -fno-omit-frame-pointer -fPIC
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

@@ -1,12 +1,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "scene.h"
+#include "editor.h"
+#include "console.h"
 
 #define FLUX_PRIVATE_CALLBACKS
 #include "game_callbacks.h"
 
-int main(){
-    InitWindow(400,400,"test");
+static bool do_quit = false;
+
+void flux_quit_game(){
+    do_quit = true;
+}
+
+static void console_command_quit(int nargs, const char** args){
+    flux_quit_game();
+}
+
+int run_game(){
+
+    init_editor_tools();
+
+    InitWindow(1000,800,"test");
+
+    load_editor_tools();
+
+    editor_add_console_command("quit",console_command_quit);
 
     flux_init_game_callbacks();
     flux_init_prefabs();
@@ -21,12 +40,14 @@ int main(){
     flux_scene_instantiate_prefab(fluxPrefab_defaultCamera, camera_transform);
     flux_scene_instantiate_prefab(fluxPrefab_testPrefab, flux_empty_transform());
 
-    while (!WindowShouldClose()){
+    while (!WindowShouldClose() && !do_quit){
         BeginDrawing();
 
         ClearBackground(BLACK);
 
         flux_draw_scene();
+
+        draw_editor_tools();
 
         EndDrawing();
     }
@@ -34,6 +55,8 @@ int main(){
     flux_close_scene();
     flux_game_load();
     flux_game_close();
+
+    close_editor_tools();
 
     CloseWindow();
     return 0;

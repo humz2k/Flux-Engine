@@ -13,6 +13,7 @@
 #include "console.h"
 #include "input_boxes.h"
 #include "filesys_tools.h"
+#include "editor.h"
 
 Font editor_font;
 static bool do_quit = false;
@@ -35,16 +36,37 @@ static void console_command_quit(int n_args, const char** args){
     quit_editor();
 }
 
-int main(){
-
+void init_editor_tools(void){
     editor_init_stack();
     SetTraceLogCallback(CustomLog);
-
     editor_init_panels();
     editor_init_buttons();
-    editor_init_top_tool_bar();
     editor_init_input_boxes();
     editor_init_console();
+}
+
+void close_editor_tools(void){
+    editor_delete_input_boxes();
+    editor_delete_console();
+    editor_delete_panels();
+    editor_delete_buttons();
+    editor_delete_stack();
+}
+
+void draw_editor_tools(void){
+    editor_update_console();
+    editor_draw_panels();
+}
+
+void load_editor_tools(void){
+    editor_font = LoadFontEx(EDITOR_FONT,EDITOR_FONT_BASE_SIZE,NULL,0);
+}
+
+int run_editor(){
+
+    init_editor_tools();
+
+    editor_init_top_tool_bar();
     editor_init_filesys_tools();
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -53,7 +75,7 @@ int main(){
 
     Texture2D logo = LoadTextureFromImage(LoadImage("/Users/humzaqureshi/GitHub/Flux-Engine/logo.png"));
 
-    editor_font = LoadFontEx(EDITOR_FONT,EDITOR_FONT_BASE_SIZE,NULL,0);
+    load_editor_tools();
 
     editorPanel side_tool_bar_panel = editor_make_editor_panel(
                                         EDITOR_SIDE_TOOL_BAR_RECT,
@@ -66,13 +88,11 @@ int main(){
 
     while (!WindowShouldClose() && !do_quit){
 
-        editor_update_console();
-
         BeginDrawing();
 
         ClearBackground(EDITOR_BACKGROUND_COLOR);
 
-        editor_draw_panels();
+        draw_editor_tools();
 
         draw_status_bar();
 
@@ -86,11 +106,8 @@ int main(){
 
     editor_delete_top_tool_bar();
     editor_delete_filesys_tools();
-    editor_delete_input_boxes();
-    editor_delete_console();
-    editor_delete_panels();
-    editor_delete_buttons();
-    editor_delete_stack();
+
+    close_editor_tools();
 
     CloseWindow();
     return 0;

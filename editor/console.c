@@ -16,6 +16,7 @@
 #define LOG_USER 12
 
 static editorPanel console_panel;
+static editorTextInputBox console_input_box;
 
 struct console_command{
     char name[EDITOR_CONSOLE_COMMAND_MAX_NAME];
@@ -216,12 +217,12 @@ void editor_init_console(void){
         console_rect, EDITOR_WINDOW_COLOR, true, make_pos_relative(0.01), 1,1,1,1,3
     );
     console_input[0] = '\0';
-    editor_add_text_input_box_to_panel(console_panel,
-        editor_make_text_input_box( make_rect(
-            make_coord(make_pos_relative(0.1),make_pos_relative(0.9 - text_size)),
-            make_coord(make_pos_relative(0.9),make_pos_relative(0.9))),
-        (Color){15,15,15,255},GREEN,WHITE,set_console_input,get_console_input
-    ));
+    console_input_box = editor_make_text_input_box(
+                            make_rect(
+                                make_coord(make_pos_relative(0.1),make_pos_relative(0.9 - text_size)),
+                                make_coord(make_pos_relative(0.9),make_pos_relative(0.9))),
+                            (Color){15,15,15,255},GREEN,WHITE,set_console_input,get_console_input);
+    editor_add_text_input_box_to_panel(console_panel,console_input_box);
     float start = 0.9 - text_size;
     while (start - 0.01 > 0.1){
         //printf("AHH\n");
@@ -234,11 +235,16 @@ void editor_init_console(void){
     n_commands = 0;
 
     editor_add_console_command("test",test_console_command);
+
+    editor_set_text_input_box_edit_mode(console_input_box,true);
 }
 
 void editor_update_console(void){
     if (IsKeyPressed(KEY_GRAVE)){
         editor_toggle_panel(console_panel);
+        if (editor_panel_enabled(console_panel)){
+            editor_set_text_input_box_edit_mode(console_input_box,true);
+        }
     }
     if (editor_panel_enabled(console_panel)){
         if (IsKeyPressed(KEY_UP)){
