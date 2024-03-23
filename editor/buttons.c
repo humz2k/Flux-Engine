@@ -27,6 +27,7 @@ static int n_allocated_buttons = 0;
 static int n_buttons = 0;
 
 void editor_init_buttons(void){
+    TraceLog(LOG_FLUX_EDITOR,"editor_init_buttons");
     n_buttons = 0;
     n_allocated_buttons = 10;
     assert(allocated_buttons == NULL);
@@ -34,6 +35,7 @@ void editor_init_buttons(void){
 }
 
 void editor_delete_buttons(void){
+    TraceLog(LOG_FLUX_EDITOR,"editor_delete_buttons");
     for (int i = 0; i < n_buttons; i++){
         free(allocated_buttons[i]);
     }

@@ -58,6 +58,7 @@ static void tool_bar_add_button(const char* text, void (*onClick)(struct editorB
 }
 
 void editor_init_top_tool_bar(){
+    TraceLog(LOG_FLUX_EDITOR,"editor_init_top_tool_bar");
     top_tool_bar_panel = editor_make_editor_panel(
                             EDITOR_TOP_TOOL_BAR_RECT,
                             EDITOR_TOP_TOOL_BAR_COLOR,
@@ -79,5 +80,5 @@ void editor_init_top_tool_bar(){
 }
 
 void editor_delete_top_tool_bar(){
-
+    TraceLog(LOG_FLUX_EDITOR,"editor_delete_top_tool_bar");
 }

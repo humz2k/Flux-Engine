@@ -34,11 +34,12 @@ static void console_command_ls(int nargs, const char** args){
 }
 
 void editor_init_filesys_tools(){
+    TraceLog(LOG_FLUX_EDITOR,"editor_init_filesys_tools");
     editor_add_console_command("pwd",console_command_pwd);
     editor_add_console_command("cd",console_command_cd);
     editor_add_console_command("ls",console_command_ls);
 }
 
 void editor_delete_filesys_tools(){
-
+    TraceLog(LOG_FLUX_EDITOR,"editor_delete_filesys_tools");
 }

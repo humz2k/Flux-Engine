@@ -11,7 +11,6 @@
 #include "editor_theme.h"
 #include "editor_config.h"
 #include "console.h"
-#include <time.h>
 
 #define LOG_USER 12
 
@@ -66,11 +65,6 @@ static const char* read_stack(int i, int* type){
 
 void CustomLog(int msgType, const char *text, va_list args)
 {
-    char timeStr[64] = { 0 };
-    time_t now = time(NULL);
-    struct tm *tm_info = localtime(&now);
-
-    strftime(timeStr, sizeof(timeStr), "[%X]", tm_info);
 
     const char* log_type;
 
@@ -89,12 +83,11 @@ void CustomLog(int msgType, const char *text, va_list args)
 
     char msg[512];
 
-    //vprintf(text, args);
     vsprintf(msg,text,args);
 
     char* out;
-    assert(out = (char*)malloc(sizeof(char) * (strlen(timeStr) + strlen(log_type) + strlen(msg) + 5)));
-    sprintf(out,"%s %s%s",timeStr,log_type,msg);
+    assert(out = (char*)malloc(sizeof(char) * (strlen(log_type) + strlen(msg) + 5)));
+    sprintf(out,"%s%s",log_type,msg);
     printf("%s\n",out);
     append_stack(out,msgType);
 }
@@ -237,6 +230,7 @@ void editor_init_console(void){
     editor_add_console_command("test",test_console_command);
 
     editor_set_text_input_box_edit_mode(console_input_box,true);
+    editor_disable_panel(console_panel);
 }
 
 void editor_update_console(void){
@@ -258,5 +252,5 @@ void editor_update_console(void){
 }
 
 void editor_delete_console(void){
-
+    TraceLog(LOG_FLUX_EDITOR,"editor_delete_console");
 }

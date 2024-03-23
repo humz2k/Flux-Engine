@@ -7,7 +7,7 @@ INIH_DIR ?= inih
 
 BUILD_DIR ?= build
 
-SOURCE_DIR ?= engine
+ENGINE_DIR ?= engine
 EDITOR_DIR ?= editor
 RENDERER_DIR ?= renderer
 DRIVERS_DIR ?= drivers
@@ -16,7 +16,7 @@ FLUX_LIB ?= libflux.a
 
 PROJECT_DIR ?= project
 
-FLUX_PRIVATE_INCLUDES := -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR)
+FLUX_PRIVATE_INCLUDES := -I$(RAYLIB_DIR) -I$(ENGINE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -I$(RENDERER_DIR)
 FLUX_LIBRARIES := $(BUILD_DIR)/$(FLUX_LIB) $(RAYLIB_DIR)/libraylib.a
 
 SCRIPT_SOURCES := $(shell find $(PROJECT_DIR)/scripts -name '*.c')
@@ -33,10 +33,9 @@ RENDERER_OUTPUTS := $(RENDERER_OBJECTS:%=build/%)
 
 PREFABS := $(shell find $(PROJECT_DIR)/prefabs -name '*.prefab')
 
-SOURCES := $(shell find $(SOURCE_DIR) -name '*.c') $(shell find $(SOURCE_DIR) -name '*.cpp')
-OBJECTS_1 := $(SOURCES:%.c=%.o)
-OBJECTS := $(OBJECTS_1:%.cpp=%.o)
-OUTPUTS := $(OBJECTS:%=build/%) $(SCRIPT_OUTPUTS)
+ENGINE_SOURCES := $(shell find $(ENGINE_DIR) -name '*.c')
+ENGINE_OBJECTS := $(ENGINE_SOURCES:%.c=%.o)
+ENGINE_OUTPUTS := $(ENGINE_OBJECTS:%=build/%) $(SCRIPT_OUTPUTS)
 
 main: driver flux_editor test_render
 
@@ -50,7 +49,7 @@ $(SOURCE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9
 
-$(BUILD_DIR)/$(FLUX_LIB): $(OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) | $(BUILD_DIR)
+$(BUILD_DIR)/$(FLUX_LIB): $(ENGINE_OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) | $(BUILD_DIR)
 	$(AR) rcs $@ $^
 
 %: $(DRIVERS_DIR)/%.c $(FLUX_LIBRARIES)
@@ -61,7 +60,7 @@ build/%.o: %.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
-	mkdir -p $(BUILD_DIR)/$(SOURCE_DIR)
+	mkdir -p $(BUILD_DIR)/$(ENGINE_DIR)
 	mkdir -p $(BUILD_DIR)/$(EDITOR_DIR)
 	mkdir -p $(BUILD_DIR)/$(PROJECT_DIR)
 	mkdir -p $(BUILD_DIR)/$(RENDERER_DIR)

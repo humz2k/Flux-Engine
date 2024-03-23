@@ -31,6 +31,7 @@ static int n_allocated_panels = 0;
 static int n_panels = 0;
 
 void editor_init_panels(void){
+    TraceLog(LOG_FLUX_EDITOR,"editor_init_panels");
     n_panels = 0;
     n_allocated_panels = 10;
     assert(allocated_panels == NULL);
@@ -38,6 +39,7 @@ void editor_init_panels(void){
 }
 
 void editor_delete_panels(void){
+    TraceLog(LOG_FLUX_EDITOR,"editor_delete_panels");
     for (int i = 0; i < n_panels; i++){
         free(allocated_panels[i]);
     }
