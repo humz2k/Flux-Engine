@@ -107,8 +107,8 @@ int run_editor(){
     editor_delete_top_tool_bar();
     editor_delete_filesys_tools();
 
-    close_editor_tools();
-
     CloseWindow();
+
+    close_editor_tools();
     return 0;
 }

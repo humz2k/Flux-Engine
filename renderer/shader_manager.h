@@ -25,6 +25,11 @@ void render_set_shader_attr_int(renderShaderAttr attr, int val);
 void render_set_shader_attr_vec3(renderShaderAttr attr, Vector3 val);
 void render_set_shader_attr_float(renderShaderAttr attr, float val);
 
+void render_load_skybox(const char* path);
+void render_draw_skybox(void);
+
+void render_calculate_shadows(void);
+
 bool render_light_is_enabled(int i);
 
 bool render_light_is_disabled(int i);

@@ -19,4 +19,6 @@ void CustomLog(int msgType, const char *text, va_list args);
 
 void editor_add_console_command(const char* name, flux_console_command_callback callback);
 
+bool editor_console_active(void);
+
 #endif

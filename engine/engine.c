@@ -56,8 +56,8 @@ int run_game(){
     flux_game_load();
     flux_game_close();
 
-    close_editor_tools();
-
     CloseWindow();
+
+    close_editor_tools();
     return 0;
 }

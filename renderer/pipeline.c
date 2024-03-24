@@ -23,11 +23,13 @@ struct render_object{
 static int n_objects = 0;
 struct render_object objects[RENDERER_MAX_OBJECTS];
 static Shader default_shader;
+static int draw_grid = 0;
+static int n_grid;
+static float spacing_grid;
 
 void render_init(void){
     render_load_default_shader();
     default_shader = render_get_default_shader();
-    //cam_pos_loc = GetShaderLocation(default_shader,"camPos");
 }
 
 static void draw_object(struct render_object obj){
@@ -35,10 +37,21 @@ static void draw_object(struct render_object obj){
     DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
 }
 
+static void draw_object_no_shader(struct render_object obj){
+    DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
+}
+
+void render_draw_all_no_shader(void){
+    for (int i = 0; i < n_objects; i++){
+        draw_object_no_shader(objects[i]);
+    }
+}
+
 void render_begin(Camera3D camera){
     current_camera = camera;
     render_set_cam_pos(current_camera.position);
     n_objects = 0;
+    draw_grid = 0;
 }
 
 void render_model(Model model, fluxTransform transform, Color tint){
@@ -55,14 +68,32 @@ void render_model(Model model, fluxTransform transform, Color tint){
 }
 
 void render_end(void){
+    render_calculate_shadows();
     BeginMode3D(current_camera);
+
+    render_draw_skybox();
+
     for (int i = 0; i < n_objects; i++){
         draw_object(objects[i]);
     }
+
+    if (draw_grid)
+        DrawGrid(n_grid,spacing_grid);
+
     EndMode3D();
+}
+
+void render_draw_grid(int n, float s){
+    draw_grid = 1;
+    n_grid = n;
+    spacing_grid = s;
 }
 
 void render_close(void){
     render_unload_default_shader();
+}
+
+Camera3D render_get_current_cam(void){
+    return current_camera;
 }
 

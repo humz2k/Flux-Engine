@@ -6,6 +6,7 @@
 #include "transform.h"
 #include "pipeline.h"
 #include "shader_manager.h"
+#include "shadow_map_texture.h"
 
 #define FLUX_MAX_LIGHTS 4
 #define Vec32Array(vec) { vec.x, vec.y, vec.z }
@@ -20,6 +21,8 @@ typedef struct Light{
     Color cL;
     Vector3 pos;
     Vector3 L;
+    RenderTexture2D shadow_map;
+    Matrix light_vp;
 
     renderShaderAttr shader_enabled;
     renderShaderAttr shader_type;
@@ -30,12 +33,22 @@ typedef struct Light{
     renderShaderAttr shader_cL;
     renderShaderAttr shader_pos;
     renderShaderAttr shader_L;
+    renderShaderAttr shader_light_vp;
+
+    int shader_shadow_map_loc;
 } Light;
 
 static Shader flux_default_shader;
 static renderShaderAttr shader_ka;
 static renderShaderAttr shader_cam_pos;
+static renderShaderAttr shader_shadow_map_res;
 static Light lights[FLUX_MAX_LIGHTS];
+
+static int skybox_loaded = 0;
+static Shader skybox_shader;
+static Model skybox;
+
+static int shadowMapRes = 4096;
 
 renderShaderAttr render_get_shader_attr(Shader shader, const char* attr){
     renderShaderAttr out;
@@ -59,6 +72,7 @@ void render_set_shader_attr_vec3(renderShaderAttr attr, Vector3 val){
 }
 
 static void init_lights(void){
+    TraceLog(LOG_INFO,"init_lights");
     for (int i = 0; i < FLUX_MAX_LIGHTS; i++){
         lights[i].shader_enabled = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].enabled", i));
         lights[i].shader_type = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].type", i));
@@ -69,26 +83,108 @@ static void init_lights(void){
         lights[i].shader_L = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].L", i));
         lights[i].shader_p = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].p", i));
         lights[i].shader_intensity = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].intensity", i));
+        lights[i].shader_light_vp = render_get_shader_attr(flux_default_shader, TextFormat("light_vp[%i]", i));
+
+        lights[i].shader_shadow_map_loc = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].shadowMap", i)).loc;
+
+        lights[i].shadow_map = LoadShadowmapRenderTexture(shadowMapRes,shadowMapRes);
 
         lights[i].enabled = 0;
         render_set_shader_attr_int(lights[i].shader_enabled,lights[i].enabled);
     }
 }
 
+static void delete_lights(void){
+    TraceLog(LOG_INFO,"delete_lights");
+    for (int i = 0; i < FLUX_MAX_LIGHTS; i++){
+        UnloadShadowmapRenderTexture(lights[i].shadow_map);
+    }
+}
+
 void render_load_default_shader(void){
+    TraceLog(LOG_INFO,"render_load_default_shader");
+    skybox_loaded = 0;
     flux_default_shader = LoadShader("/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/lights.vs","/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/lights.fs");
     shader_ka = render_get_shader_attr(flux_default_shader,"ka");
     shader_cam_pos = render_get_shader_attr(flux_default_shader,"camPos");
+    shader_shadow_map_res = render_get_shader_attr(flux_default_shader,"shadowMapRes");
+    render_set_shader_attr_int(shader_shadow_map_res,shadowMapRes);
     init_lights();
 }
 
+void render_load_skybox(const char* path){
+    TraceLog(LOG_INFO,"render_load_skybox");
+    skybox_loaded = 1;
+    skybox_shader = LoadShader("/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/skybox.vs","/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/skybox.fs");
+    skybox = LoadModelFromMesh(GenMeshCube(1,1,1));
+    skybox.materials[0].shader = skybox_shader;
+    SetShaderValue(skybox.materials[0].shader, GetShaderLocation(skybox.materials[0].shader, "environmentMap"), (int[1]){ MATERIAL_MAP_CUBEMAP }, SHADER_UNIFORM_INT);
+
+    Image img = LoadImage(path);
+
+    skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = LoadTextureCubemap(img, CUBEMAP_LAYOUT_AUTO_DETECT);    // CUBEMAP_LAYOUT_PANORAMA
+    UnloadImage(img);
+}
+
+void render_unload_skybox(void){
+    if (!skybox_loaded)return;
+    TraceLog(LOG_INFO,"render_unload_skybox");
+    UnloadModel(skybox);
+}
+
+void render_draw_skybox(void){
+    if (!skybox_loaded)return;
+    rlDisableBackfaceCulling();
+    rlDisableDepthMask();
+        DrawModel(skybox, render_get_current_cam().position, 1.0f, WHITE);
+    rlEnableBackfaceCulling();
+    rlEnableDepthMask();
+}
+
 void render_unload_default_shader(void){
+    TraceLog(LOG_INFO,"render_unload_default_shader");
+    delete_lights();
     UnloadShader(flux_default_shader);
+    render_unload_skybox();
 }
 
 Shader render_get_default_shader(void){
     return flux_default_shader;
 }
+
+void render_calculate_shadows(void){
+    int slot_start = 15 - FLUX_MAX_LIGHTS;
+    for (int i = 0; i < FLUX_MAX_LIGHTS; i++){
+        if (!lights[i].enabled)continue;
+        Camera3D lightCam = (Camera3D){ 0 };
+        lightCam.position = Vector3Scale(lights[i].L, 15.0f);
+        lightCam.projection = CAMERA_ORTHOGRAPHIC;
+        lightCam.target = Vector3Zero();
+        lightCam.fovy = 20.0f;
+        lightCam.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+
+        Matrix lightView;
+        Matrix lightProj;
+        BeginTextureMode(lights[i].shadow_map);
+            ClearBackground(WHITE);
+            BeginMode3D(lightCam);
+                lightView = rlGetMatrixModelview();
+                lightProj = rlGetMatrixProjection();
+                render_draw_all_no_shader();
+            EndMode3D();
+        EndTextureMode();
+        Matrix lightViewProj = MatrixMultiply(lightView, lightProj);
+        SetShaderValueMatrix(flux_default_shader, lights[i].shader_light_vp.loc, lightViewProj);
+
+        rlEnableShader(flux_default_shader.id);
+        int slot = slot_start + i; // Can be anything 0 to 15, but 0 will probably be taken up
+        rlActiveTextureSlot(slot);
+        rlEnableTexture(lights[i].shadow_map.depth.id);
+        rlSetUniform(lights[i].shader_shadow_map_loc, &slot, SHADER_UNIFORM_INT, 1);
+    }
+}
+
+
 
 void render_set_ka(float ka){
     render_set_shader_attr_float(shader_ka,ka);

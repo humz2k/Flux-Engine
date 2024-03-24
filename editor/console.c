@@ -254,3 +254,7 @@ void editor_update_console(void){
 void editor_delete_console(void){
     TraceLog(LOG_FLUX_EDITOR,"editor_delete_console");
 }
+
+bool editor_console_active(void){
+    return editor_panel_enabled(console_panel);
+}

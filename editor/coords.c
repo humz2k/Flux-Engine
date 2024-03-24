@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "coords.h"
+#include "display_size.h"
 
 editorPos make_pos_pixel(float value){
     editorPos coord;
@@ -28,12 +29,12 @@ Vector2 coord_to_vector2(editorCoord coord){
     if (coord.x.t == pos_pixel){
         out.x = coord.x.value;
     } else {
-        out.x = coord.x.value * ((float)GetScreenWidth());
+        out.x = coord.x.value * ((float)GetDisplayWidth());
     }
     if (coord.y.t == pos_pixel){
         out.y = coord.y.value;
     } else {
-        out.y = coord.y.value * ((float)GetScreenHeight());
+        out.y = coord.y.value * ((float)GetDisplayHeight());
     }
     return out;
 }
@@ -80,8 +81,8 @@ void draw_editor_rect_shadow(editorRect rect, Color color, Vector2 offset, edito
         pix_shadow_x = shadow_size.value;
         pix_shadow_y = shadow_size.value;
     } else {
-        pix_shadow_x = ((float)GetScreenWidth()) * shadow_size.value;
-        pix_shadow_y = ((float)GetScreenHeight()) * shadow_size.value;
+        pix_shadow_x = ((float)GetDisplayWidth()) * shadow_size.value;
+        pix_shadow_y = ((float)GetDisplayHeight()) * shadow_size.value;
     }
     if (top){
         Rectangle top_shadow_rect = pix_rect;
