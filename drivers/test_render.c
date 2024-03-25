@@ -5,6 +5,7 @@
 #include "console.h"
 #include "transform.h"
 #include "display_size.h"
+#include "rlobj.h"
 
 static bool do_quit = false;
 static bool draw_grid = false;
@@ -127,7 +128,7 @@ int main(){
     Model plane = LoadModelFromMesh(GenMeshPlane(50,50,10,10));
     fluxTransform plane_transform = flux_empty_transform();
 
-    //Model gun = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/gun.obj");
+    Model gun = LoadObj("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/city.obj");
 
     //Model thing = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
 
@@ -154,7 +155,7 @@ int main(){
 
     renderModel sphere_rmodel = render_make_model(sphere);
     renderModel plane_model = render_make_model(plane);
-    //renderModel gun_model = render_make_model(gun);
+    renderModel gun_model = render_make_model(gun);
 
     while (!WindowShouldClose() && !do_quit){
 
@@ -173,8 +174,8 @@ int main(){
 
         render_reset_instances(plane_model);
         render_add_model_instance(plane_model,plane_transform);
-        //render_reset_instances(gun_model);
-        //render_add_model_instance(gun_model,flux_empty_transform());
+        render_reset_instances(gun_model);
+        render_add_model_instance(gun_model,flux_empty_transform());
 
         ClearBackground(BLACK);
 
@@ -195,9 +196,9 @@ int main(){
         }
 
         render_begin(active_cam);
-        //render_rmodel(gun_model,WHITE);
-        render_rmodel(sphere_rmodel,WHITE);
-        render_rmodel(plane_model,WHITE);
+        render_rmodel(gun_model,WHITE);
+        //render_rmodel(sphere_rmodel,WHITE);
+        //render_rmodel(plane_model,WHITE);
 
         if (draw_grid){
             render_draw_grid(100,1.0f);
@@ -218,10 +219,10 @@ int main(){
     }
     render_free_model(sphere_rmodel);
     render_free_model(plane_model);
-    //render_free_model(gun_model);
+    render_free_model(gun_model);
     UnloadModel(sphere);
     UnloadModel(plane);
-    //UnloadModel(gun);
+    UnloadModel(gun);
     UnloadRenderTexture(tex);
 
     render_close();
