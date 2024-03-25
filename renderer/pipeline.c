@@ -6,6 +6,7 @@
 #include "transform.h"
 #include "pipeline.h"
 #include "shader_manager.h"
+#include "rlgl.h"
 
 #define Vec32Array(vec) { vec.x, vec.y, vec.z }
 
@@ -28,6 +29,105 @@ typedef struct renderModelInternal{
     Matrix transforms[RENDER_MAX_INSTANCES];
 } renderModelInternal;
 
+typedef struct betterBBox{
+    Vector4 c1,c2,c3,c4,c5,c6,c7,c8;
+} betterBBox;
+
+static Vector4 Vector32Vector4(Vector3 vec){
+    Vector4 out;
+    out.x = vec.x;
+    out.y = vec.y;
+    out.z = vec.z;
+    out.w = 1;
+    return out;
+}
+
+static Vector3 Vector4toVector3(Vector4 vec){
+    Vector3 out;
+    out.x = vec.x;
+    out.y = vec.y;
+    out.z = vec.z;
+    return out;
+}
+
+static betterBBox bbox2better(BoundingBox bbox){
+    betterBBox out;
+    out.c1 = Vector32Vector4(bbox.min);
+    out.c2 = Vector32Vector4(bbox.min);
+    out.c2.z = bbox.max.z;
+    out.c3 = Vector32Vector4(bbox.min);
+    out.c3.x = bbox.max.x;
+    out.c4 = Vector32Vector4(bbox.min);
+    out.c4.y = bbox.max.y;
+    out.c5 = Vector32Vector4(bbox.min);
+    out.c5.x = bbox.max.x;
+    out.c5.z = bbox.max.z;
+    out.c6 = Vector32Vector4(bbox.min);
+    out.c6.y = bbox.max.y;
+    out.c6.z = bbox.max.z;
+    out.c7 = Vector32Vector4(bbox.min);
+    out.c7.y = bbox.max.y;
+    out.c7.x = bbox.max.x;
+    out.c8 = Vector32Vector4(bbox.max);
+    return out;
+}
+
+static Vector4 Vector4Transform(Vector4 v, Matrix mat){
+    Vector4 result = { 0 };
+
+    float x = v.x;
+    float y = v.y;
+    float z = v.z;
+    float w = v.w;
+
+    result.x = mat.m0*x + mat.m4*y + mat.m8*z + mat.m12;
+    result.y = mat.m1*x + mat.m5*y + mat.m9*z + mat.m13;
+    result.z = mat.m2*x + mat.m6*y + mat.m10*z + mat.m14;
+    result.w = mat.m3*x + mat.m7*y + mat.m11*z + mat.m15 * w;
+
+    return result;
+}
+
+static betterBBox bboxTransform(betterBBox bbox, Matrix transform){
+    betterBBox out;
+    out.c1 = Vector4Transform(bbox.c1,transform);
+    out.c2 = Vector4Transform(bbox.c2,transform);
+    out.c3 = Vector4Transform(bbox.c3,transform);
+    out.c4 = Vector4Transform(bbox.c4,transform);
+    out.c5 = Vector4Transform(bbox.c5,transform);
+    out.c6 = Vector4Transform(bbox.c6,transform);
+    out.c7 = Vector4Transform(bbox.c7,transform);
+    out.c8 = Vector4Transform(bbox.c8,transform);
+    return out;
+}
+
+static void drawBBox(betterBBox bbox){
+    DrawLine3D(Vector4toVector3(bbox.c1),Vector4toVector3(bbox.c2),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c1),Vector4toVector3(bbox.c3),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c1),Vector4toVector3(bbox.c4),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c8),Vector4toVector3(bbox.c5),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c8),Vector4toVector3(bbox.c6),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c8),Vector4toVector3(bbox.c7),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c5),Vector4toVector3(bbox.c3),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c5),Vector4toVector3(bbox.c2),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c6),Vector4toVector3(bbox.c4),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c6),Vector4toVector3(bbox.c2),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c7),Vector4toVector3(bbox.c4),GREEN);
+    DrawLine3D(Vector4toVector3(bbox.c7),Vector4toVector3(bbox.c3),GREEN);
+}
+
+static bool bboxVisible(betterBBox bbox){
+    Vector4* points = (Vector4*)&bbox;
+    bool out = false;
+    for (int i = 0; i < 8; i++){
+        //TraceLog(LOG_INFO,"point %g %g %g %g",points[i].x,points[i].y,points[i].z,points[i].w);
+        if (points[i].z <= 0)return true;
+        //if (points[i].w * points[i].z > 0)
+        //    return false;
+    }
+    return out;
+}
+
 static int n_objects = 0;
 static int n_rmodels = 0;
 static struct render_object objects[RENDERER_MAX_OBJECTS];
@@ -36,6 +136,7 @@ static Shader default_shader;
 static int draw_grid = 0;
 static int n_grid;
 static float spacing_grid;
+static int visible_meshes = 0;
 
 renderModel render_make_model(Model model){
     renderModel out = (renderModel)malloc(sizeof(renderModelInternal));
@@ -91,7 +192,7 @@ void render_init(void){
     default_shader = render_get_default_shader();
 }
 
-static void draw_rmodel(renderModel rmodel, Shader shader){
+static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera, Matrix vp){
     Model model = rmodel->model;
 
     Shader old_shader = model.materials[0].shader;
@@ -110,9 +211,26 @@ static void draw_rmodel(renderModel rmodel, Shader shader){
 
         model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
 
+        betterBBox bbox = bbox2better(GetMeshBoundingBox(model.meshes[i]));
+
         //DrawMeshInstanced(model.meshes[i],model.materials[model.meshMaterial[i]],rmodel->transforms,rmodel->n_instances);
         for (int j = 0; j < rmodel->n_instances; j++){
-            DrawMesh(model.meshes[i],model.materials[model.meshMaterial[i]], rmodel->transforms[j]);
+
+            Matrix transform = rmodel->transforms[j];
+            betterBBox transformed = bboxTransform(bbox,transform);
+
+
+            //Matrix mvp = MatrixMultiply(vp,transform);
+            betterBBox projected = bboxTransform(transformed,vp);
+            //if (i == 0)
+            //    TraceLog(LOG_INFO,"proj %g %g %g %g",projected.c1.x,projected.c1.y,projected.c1.z, projected.c1.w);
+            //TraceLog(LOG_INFO,"break");
+            if (bboxVisible(projected)){
+                //TraceLog(LOG_INFO,"drawing\n");
+                visible_meshes++;
+                DrawMesh(model.meshes[i],model.materials[model.meshMaterial[i]], transform);
+                //drawBBox(transformed);
+            }
         }
 
         model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
@@ -121,49 +239,10 @@ static void draw_rmodel(renderModel rmodel, Shader shader){
     model.materials[0].shader = old_shader;
 }
 
-static void draw_object(struct render_object* obj, Shader shader){
-    Shader old_shader = obj->model.materials[0].shader;
-    obj->model.materials[0].shader = shader;
-    Matrix matScale = MatrixScale(obj->scale.x, obj->scale.y, obj->scale.z);
-    Matrix matRotation = MatrixRotate(obj->rotation_axis, obj->rotation_amount*DEG2RAD);
-    Matrix matTranslation = MatrixTranslate(obj->pos.x, obj->pos.y, obj->pos.z);
-    Matrix matTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
-    obj->transform = MatrixMultiply(obj->model.transform, matTransform);
-    //DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
-
-    for (int i = 0; i < obj->model.meshCount; i++)
-    {
-        Color color = obj->model.materials[obj->model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
-        Color colorTint = WHITE;
-        colorTint.r = (unsigned char)((((float)color.r/255.0f)*((float)obj->tint.r/255.0f))*255.0f);
-        colorTint.g = (unsigned char)((((float)color.g/255.0f)*((float)obj->tint.g/255.0f))*255.0f);
-        colorTint.b = (unsigned char)((((float)color.b/255.0f)*((float)obj->tint.b/255.0f))*255.0f);
-        colorTint.a = (unsigned char)((((float)color.a/255.0f)*((float)obj->tint.a/255.0f))*255.0f);
-
-        obj->model.materials[obj->model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
-
-        DrawMeshInstanced(obj->model.meshes[i],obj->model.materials[obj->model.meshMaterial[i]],&obj->transform,1);
-
-        obj->model.materials[obj->model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
-    }
-
-    obj->model.materials[0].shader = old_shader;
-}
-
-/*static void draw_object_no_shader(struct render_object obj){
-    //if(obj.model.materials[0].shader.id == default_shader.id){
-        //TraceLog(LOG_ERROR,"wrong shader!!!");
-    //}
-    DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
-}*/
-
-void render_draw_all_no_shader(void){
-    for (int i = 0; i < n_objects; i++){
-        //draw_object_no_shader(objects[i]);
-        //draw_object(&objects[i],render_get_empty_shader());
-    }
+void render_draw_all_no_shader(Camera3D camera){
+    Matrix view = GetCameraMatrix(camera);
     for (int i = 0; i < n_rmodels; i++){
-        draw_rmodel(rmodels[i],render_get_empty_shader());
+        draw_rmodel(rmodels[i],render_get_empty_shader(),camera, view);
     }
 }
 
@@ -175,26 +254,16 @@ void render_begin(Camera3D camera){
     n_rmodels = 0;
 }
 
-void render_model(Model model, fluxTransform transform, Color tint){
-    assert(n_objects < RENDERER_MAX_OBJECTS);
-    struct render_object* obj = &objects[n_objects];
-    n_objects++;
-
-    obj->model = model;
-    obj->pos = transform.pos;
-    obj->scale = transform.scale;
-    Quaternion qrot = QuaternionFromEuler(Wrap(transform.rot.x,0,2*M_PI),Wrap(transform.rot.y,0,2*M_PI),Wrap(transform.rot.z,0,2*M_PI));
-    QuaternionToAxisAngle(qrot,&obj->rotation_axis,&obj->rotation_amount);
-    obj->tint = tint;
+static void draw_all(Camera3D camera){
+    Matrix view = GetCameraMatrix(camera);
+    visible_meshes = 0;
+    for (int i = 0; i < n_rmodels; i++){
+        draw_rmodel(rmodels[i],default_shader, camera, view);
+    }
 }
 
-static void draw_all(void){
-    for (int i = 0; i < n_objects; i++){
-        //draw_object(&objects[i],default_shader);
-    }
-    for (int i = 0; i < n_rmodels; i++){
-        draw_rmodel(rmodels[i],default_shader);
-    }
+int render_get_visible_meshes(void){
+    return visible_meshes;
 }
 
 void render_end(void){
@@ -204,7 +273,7 @@ void render_end(void){
 
     render_draw_skybox();
 
-    draw_all();
+    draw_all(current_camera);
 
     if (draw_grid)
         DrawGrid(n_grid,spacing_grid);

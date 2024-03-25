@@ -77,6 +77,7 @@ void render_set_shader_attr_vec3(renderShaderAttr attr, Vector3 val){
 
 static void init_lights(void){
     TraceLog(LOG_INFO,"init_lights");
+    TraceLog(LOG_INFO,"shadowMapRes %dx%d",shadowMapRes,shadowMapRes);
     for (int i = 0; i < FLUX_MAX_LIGHTS; i++){
         lights[i].shader_enabled = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].enabled", i));
         lights[i].shader_type = render_get_shader_attr(flux_default_shader, TextFormat("lights[%i].type", i));
@@ -193,7 +194,7 @@ void render_calculate_shadows(void){
             BeginMode3D(lightCam);
                 lightView = rlGetMatrixModelview();
                 lightProj = rlGetMatrixProjection();
-                render_draw_all_no_shader();
+                render_draw_all_no_shader(lightCam);
             EndMode3D();
         EndTextureMode();
         Matrix lightViewProj = MatrixMultiply(lightView, lightProj);

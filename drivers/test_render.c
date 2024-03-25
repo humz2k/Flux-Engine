@@ -66,6 +66,18 @@ static void light_set_fov_callback(int n_args, const char** args){
     render_light_set_fov(atoi(args[1]),atof(args[2]));
 }
 
+static void disable_mouse_callback(int n_args, const char** args){
+    DisableCursor();
+}
+
+static void enable_mouse_callback(int n_args, const char** args){
+    EnableCursor();
+}
+
+static void get_visible_meshes_callback(int n_args, const char** args){
+    TraceLog(LOG_INFO,"%d",render_get_visible_meshes());
+}
+
 int main(){
 
     init_editor_tools();
@@ -87,8 +99,11 @@ int main(){
     editor_add_console_command("default_cam",default_cam_callback);
     editor_add_console_command("light_set_scale",light_set_scale_callback);
     editor_add_console_command("light_set_fov",light_set_fov_callback);
+    editor_add_console_command("enable_mouse",enable_mouse_callback);
+    editor_add_console_command("disable_mouse",disable_mouse_callback);
+    editor_add_console_command("get_visible_meshes",get_visible_meshes_callback);
 
-    SetTargetFPS(200);
+    //SetTargetFPS(200);
 
     int true_render_width = GetDisplayWidth() * 2;
     int true_render_height = GetDisplayHeight() * 2;
@@ -103,7 +118,7 @@ int main(){
     cam.up = (Vector3){0,1,0};
     cam.target = Vector3Zero();
 
-    Model sphere = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/earth.obj");//LoadModelFromMesh(GenMeshSphere(1,10,10));
+    Model sphere = LoadModelFromMesh(GenMeshSphere(1,50,50));//LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/earth.obj");
     fluxTransform sphere_tranform = flux_empty_transform();
     sphere_tranform.pos.y = 1;
 
@@ -136,6 +151,20 @@ int main(){
     renderModel sphere_rmodel = render_make_model(sphere);
     renderModel plane_model = render_make_model(plane);
 
+    render_reset_instances(sphere_rmodel);
+    sphere_tranform.pos.x = -10;
+    for (int i = 0; i < 11; i++){
+        sphere_tranform.pos.z = -10;
+        for (int j = 0; j < 11; j++){
+            render_add_model_instance(sphere_rmodel,sphere_tranform);
+            sphere_tranform.pos.z += 2;
+        }
+        sphere_tranform.pos.x += 2;
+    }
+
+    render_reset_instances(plane_model);
+    render_add_model_instance(plane_model,plane_transform);
+
     double frameStart = 0;
     double frameEnd = 0;
 
@@ -152,6 +181,8 @@ int main(){
                 UpdateCamera(&cam,CAMERA_ORBITAL);
             } else if (camera_mode == 2){
                 UpdateCamera(&cam,CAMERA_THIRD_PERSON);
+            } else if (camera_mode == 3){
+                UpdateCamera(&cam,CAMERA_FREE);
             }
         }
 
@@ -163,26 +194,8 @@ int main(){
 
         render_begin(active_cam);
 
-        render_reset_instances(sphere_rmodel);
-        //render_model(thing,flux_empty_transform(),WHITE);
-        sphere_tranform.pos.x = -5;
-        for (int i = 0; i < 5; i++){
-            sphere_tranform.pos.z = -5;
-            for (int j = 0; j < 5; j++){
-                render_add_model_instance(sphere_rmodel,sphere_tranform);
-                //render_model(sphere,sphere_tranform,WHITE);
-                sphere_tranform.pos.z += 2;
-            }
-            sphere_tranform.pos.x += 2;
-        }
-
         render_rmodel(sphere_rmodel,WHITE);
-
-        render_reset_instances(plane_model);
-        render_add_model_instance(plane_model,plane_transform);
         render_rmodel(plane_model,WHITE);
-
-        //render_model(plane,plane_transform,WHITE);
 
         if (draw_grid){
             render_draw_grid(100,1.0f);
