@@ -80,6 +80,8 @@ static void get_visible_meshes_callback(int n_args, const char** args){
 
 int main(){
 
+    //scanf("%d");
+
     init_editor_tools();
 
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -125,6 +127,8 @@ int main(){
     Model plane = LoadModelFromMesh(GenMeshPlane(50,50,10,10));
     fluxTransform plane_transform = flux_empty_transform();
 
+    //Model gun = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/gun.obj");
+
     //Model thing = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
 
     render_set_ka(0.2);
@@ -150,29 +154,27 @@ int main(){
 
     renderModel sphere_rmodel = render_make_model(sphere);
     renderModel plane_model = render_make_model(plane);
-
-    render_reset_instances(sphere_rmodel);
-    sphere_tranform.pos.x = -10;
-    for (int i = 0; i < 11; i++){
-        sphere_tranform.pos.z = -10;
-        for (int j = 0; j < 11; j++){
-            render_add_model_instance(sphere_rmodel,sphere_tranform);
-            sphere_tranform.pos.z += 2;
-        }
-        sphere_tranform.pos.x += 2;
-    }
-
-    render_reset_instances(plane_model);
-    render_add_model_instance(plane_model,plane_transform);
-
-    double frameStart = 0;
-    double frameEnd = 0;
+    //renderModel gun_model = render_make_model(gun);
 
     while (!WindowShouldClose() && !do_quit){
 
-        frameStart = GetTime();
-
         BeginDrawing();
+
+        render_reset_instances(sphere_rmodel);
+        sphere_tranform.pos.x = -10;
+        for (int i = 0; i < 11; i++){
+            sphere_tranform.pos.z = -10;
+            for (int j = 0; j < 11; j++){
+                render_add_model_instance(sphere_rmodel,sphere_tranform);
+                sphere_tranform.pos.z += 2;
+            }
+            sphere_tranform.pos.x += 2;
+        }
+
+        render_reset_instances(plane_model);
+        render_add_model_instance(plane_model,plane_transform);
+        //render_reset_instances(gun_model);
+        //render_add_model_instance(gun_model,flux_empty_transform());
 
         ClearBackground(BLACK);
 
@@ -193,7 +195,7 @@ int main(){
         }
 
         render_begin(active_cam);
-
+        //render_rmodel(gun_model,WHITE);
         render_rmodel(sphere_rmodel,WHITE);
         render_rmodel(plane_model,WHITE);
 
@@ -210,19 +212,16 @@ int main(){
 
         draw_editor_tools();
         DrawFPS(10,10);
-        char frame_time_str[200];
-        sprintf(frame_time_str,"%f %f",GetFrameTime(),frameStart - frameEnd);
-        DrawText(frame_time_str,30,30,10,GREEN);
         //GetFrameTime();
 
         EndDrawing();
-
-        frameEnd = frameStart;
     }
     render_free_model(sphere_rmodel);
     render_free_model(plane_model);
+    //render_free_model(gun_model);
     UnloadModel(sphere);
     UnloadModel(plane);
+    //UnloadModel(gun);
     UnloadRenderTexture(tex);
 
     render_close();
