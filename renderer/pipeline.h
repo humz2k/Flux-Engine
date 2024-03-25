@@ -7,6 +7,10 @@
 #include "shader_manager.h"
 
 #define RENDERER_MAX_OBJECTS 1000
+#define RENDER_MAX_INSTANCES 1000
+
+struct renderModelInternal;
+typedef struct renderModelInternal* renderModel;
 
 void render_init(void);
 void render_close(void);

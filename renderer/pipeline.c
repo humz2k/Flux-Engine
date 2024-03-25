@@ -20,12 +20,38 @@ struct render_object{
     float rotation_amount;
 };
 
+typedef struct renderModelInternal{
+    Model model;
+    int n_instances;
+    Color tints[RENDER_MAX_INSTANCES];
+    Matrix instances[RENDER_MAX_INSTANCES];
+} renderModelInternal;
+
 static int n_objects = 0;
 struct render_object objects[RENDERER_MAX_OBJECTS];
 static Shader default_shader;
 static int draw_grid = 0;
 static int n_grid;
 static float spacing_grid;
+
+renderModel render_make_model(Model model){
+    renderModel out = (renderModel)malloc(sizeof(renderModelInternal));
+    out->n_instances = 0;
+    out->model = model;
+    return out;
+}
+
+void render_add_model_instance(renderModel model, fluxTransform transform, Color tint){
+    assert(model);
+    assert(model->n_instances < RENDER_MAX_INSTANCES);
+    model->tints[model->n_instances] = tint;
+    // finish me...
+}
+
+void render_free_model(renderModel model){
+    assert(model);
+    free(model);
+}
 
 void render_init(void){
     render_load_default_shader();
