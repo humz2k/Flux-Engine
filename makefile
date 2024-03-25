@@ -1,7 +1,7 @@
 RAYLIB_DIR ?= ext/raylib/src
 RAYLIB_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 
-FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -fsanitize=address -fno-omit-frame-pointer -fPIC
+FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
 
 INIH_DIR ?= inih
 
@@ -46,7 +46,7 @@ $(SOURCE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
 
 .PHONY: $(RAYLIB_DIR)/libraylib.a
 $(RAYLIB_DIR)/libraylib.a:
-	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9
+	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9 CUSTOM_CFLAGS=-fno-inline
 
 $(BUILD_DIR)/$(FLUX_LIB): $(ENGINE_OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) | $(BUILD_DIR)
 	$(AR) rcs $@ $^
@@ -71,4 +71,4 @@ clean:
 	rm -rf driver
 	rm -rf flux_editor
 	rm -rf test_render
-#	cd $(RAYLIB_DIR) && $(MAKE) clean
+	cd $(RAYLIB_DIR) && $(MAKE) clean

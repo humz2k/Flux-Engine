@@ -70,8 +70,9 @@ int main(){
 
     init_editor_tools();
 
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
+    //SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(1200,800,"flux_render_test");
+    //ToggleFullscreen();
 
     SetExitKey(0);
 
@@ -102,7 +103,7 @@ int main(){
     cam.up = (Vector3){0,1,0};
     cam.target = Vector3Zero();
 
-    Model sphere = LoadModelFromMesh(GenMeshSphere(1,100,100));//LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/earth.obj");
+    Model sphere = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/earth.obj");//LoadModelFromMesh(GenMeshSphere(1,10,10));
     fluxTransform sphere_tranform = flux_empty_transform();
     sphere_tranform.pos.y = 1;
 
@@ -132,7 +133,15 @@ int main(){
 
     active_cam = cam;
 
+    renderModel sphere_rmodel = render_make_model(sphere);
+
+    double frameStart = 0;
+    double frameEnd = 0;
+
     while (!WindowShouldClose() && !do_quit){
+
+        frameStart = GetTime();
+
         BeginDrawing();
 
         ClearBackground(BLACK);
@@ -155,18 +164,22 @@ int main(){
 
         render_begin(active_cam);
 
+        render_reset_instances(sphere_rmodel);
         //render_model(thing,flux_empty_transform(),WHITE);
         sphere_tranform.pos.x = -5;
-        for (int i = 0; i < 6; i++){
+        for (int i = 0; i < 5; i++){
             sphere_tranform.pos.z = -5;
-            for (int j = 0; j < 6; j++){
-                render_model(sphere,sphere_tranform,WHITE);
+            for (int j = 0; j < 5; j++){
+                render_add_model_instance(sphere_rmodel,sphere_tranform,WHITE);
+                //render_model(sphere,sphere_tranform,WHITE);
                 sphere_tranform.pos.z += 2;
             }
             sphere_tranform.pos.x += 2;
         }
 
-        render_model(plane,plane_transform,WHITE);
+        render_rmodel(sphere_rmodel);
+
+        //render_model(plane,plane_transform,WHITE);
 
         if (draw_grid){
             render_draw_grid(100,1.0f);
@@ -179,10 +192,16 @@ int main(){
 
         draw_editor_tools();
         DrawFPS(10,10);
+        char frame_time_str[200];
+        sprintf(frame_time_str,"%f %f",GetFrameTime(),frameStart - frameEnd);
+        DrawText(frame_time_str,30,30,10,GREEN);
+        //GetFrameTime();
 
         EndDrawing();
-    }
 
+        frameEnd = frameStart;
+    }
+    render_free_model(sphere_rmodel);
     UnloadModel(sphere);
     UnloadModel(plane);
     UnloadRenderTexture(tex);

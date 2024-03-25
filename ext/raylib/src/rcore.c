@@ -882,6 +882,7 @@ void EndDrawing(void)
     // Wait for some milliseconds...
     if (CORE.Time.frame < CORE.Time.target)
     {
+        //TraceLog(LOG_INFO,"waiting_frame %g %g...",CORE.Time.frame,CORE.Time.target);
         WaitTime(CORE.Time.target - CORE.Time.frame);
 
         CORE.Time.current = GetTime();
@@ -1780,7 +1781,7 @@ void TakeScreenshot(const char *fileName)
 
     char path[512] = { 0 };
     strcpy(path, TextFormat("%s/%s", CORE.Storage.basePath, GetFileName(fileName)));
-    
+
     ExportImage(image, path);           // WARNING: Module required: rtextures
     RL_FREE(imgData);
 

@@ -19,6 +19,8 @@ void render_begin(Camera3D camera);
 
 void render_model(Model model, fluxTransform transform, Color tint);
 
+void render_rmodel(renderModel rmodel);
+
 void render_end(void);
 
 void render_draw_all_no_shader(void);
@@ -26,5 +28,13 @@ void render_draw_all_no_shader(void);
 Camera3D render_get_current_cam(void);
 
 void render_draw_grid(int n, float s);
+
+renderModel render_make_model(Model model);
+
+void render_reset_instances(renderModel model);
+
+void render_add_model_instance(renderModel model, fluxTransform transform, Color tint);
+
+void render_free_model(renderModel model);
 
 #endif
