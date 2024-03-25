@@ -42,6 +42,7 @@ typedef struct Light{
 } Light;
 
 static Shader flux_default_shader;
+static Shader flux_empty_shader;
 static renderShaderAttr shader_ka;
 static renderShaderAttr shader_cam_pos;
 static renderShaderAttr shader_shadow_map_res;
@@ -115,6 +116,12 @@ void render_load_default_shader(void){
     shader_cam_pos = render_get_shader_attr(flux_default_shader,"camPos");
     shader_shadow_map_res = render_get_shader_attr(flux_default_shader,"shadowMapRes");
     render_set_shader_attr_int(shader_shadow_map_res,shadowMapRes);
+    //flux_default_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(flux_default_shader, "mvp");
+    //flux_default_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(flux_default_shader, "instanceTransform");
+
+    flux_empty_shader = LoadShader("/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/lights.vs","/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/empty_lights.fs");
+    //flux_empty_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(flux_empty_shader, "mvp");
+    //flux_empty_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(flux_empty_shader, "instanceTransform");
     init_lights();
 }
 
@@ -151,11 +158,16 @@ void render_unload_default_shader(void){
     TraceLog(LOG_INFO,"render_unload_default_shader");
     delete_lights();
     UnloadShader(flux_default_shader);
+    UnloadShader(flux_empty_shader);
     render_unload_skybox();
 }
 
 Shader render_get_default_shader(void){
     return flux_default_shader;
+}
+
+Shader render_get_empty_shader(void){
+    return flux_empty_shader;
 }
 
 Camera3D render_get_light_cam(int i){

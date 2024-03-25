@@ -15,6 +15,7 @@ void render_load_default_shader(void);
 void render_unload_default_shader(void);
 
 Shader render_get_default_shader(void);
+Shader render_get_empty_shader(void);
 
 void render_set_ka(float ka);
 

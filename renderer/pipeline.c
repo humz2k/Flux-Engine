@@ -18,12 +18,13 @@ struct render_object{
     Color tint;
     Vector3 rotation_axis;
     float rotation_amount;
+    Matrix transform;
 };
 
 typedef struct renderModelInternal{
     Model model;
     int n_instances;
-    Color tints[RENDER_MAX_INSTANCES];
+    Color tint;
     Matrix transforms[RENDER_MAX_INSTANCES];
 } renderModelInternal;
 
@@ -65,17 +66,17 @@ void render_reset_instances(renderModel model){
 }
 
 
-void render_add_model_instance(renderModel model, fluxTransform transform, Color tint){
+void render_add_model_instance(renderModel model, fluxTransform transform){
     assert(model);
     assert(model->n_instances < RENDER_MAX_INSTANCES);
-    model->tints[model->n_instances] = tint;
     model->transforms[model->n_instances] = get_mesh_transform(model->model,transform);
     model->n_instances++;
 }
 
-void render_rmodel(renderModel rmodel){
+void render_rmodel(renderModel rmodel, Color tint){
     assert(rmodel);
     assert(n_rmodels < RENDERER_MAX_OBJECTS);
+    rmodel->tint = tint;
     rmodels[n_rmodels] = rmodel;
     n_rmodels++;
 }
@@ -90,78 +91,79 @@ void render_init(void){
     default_shader = render_get_default_shader();
 }
 
-static void draw_rmodel(renderModel rmodel){
+static void draw_rmodel(renderModel rmodel, Shader shader){
     Model model = rmodel->model;
 
     Shader old_shader = model.materials[0].shader;
-    model.materials[0].shader = default_shader;
+    model.materials[0].shader = shader;
 
-    //TraceLog(LOG_INFO,"%d model_instances",rmodel->n_instances);
+    Color tint = rmodel->tint;
+
     for (int i = 0; i < model.meshCount; i++)
     {
         Color color = model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
+        Color colorTint = WHITE;
+        colorTint.r = (unsigned char)((((float)color.r/255.0f)*((float)tint.r/255.0f))*255.0f);
+        colorTint.g = (unsigned char)((((float)color.g/255.0f)*((float)tint.g/255.0f))*255.0f);
+        colorTint.b = (unsigned char)((((float)color.b/255.0f)*((float)tint.b/255.0f))*255.0f);
+        colorTint.a = (unsigned char)((((float)color.a/255.0f)*((float)tint.a/255.0f))*255.0f);
 
+        model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
+
+        //DrawMeshInstanced(model.meshes[i],model.materials[model.meshMaterial[i]],rmodel->transforms,rmodel->n_instances);
         for (int j = 0; j < rmodel->n_instances; j++){
-            Color tint = rmodel->tints[j];
-            Matrix transform = rmodel->transforms[j];
-            Color colorTint = WHITE;
-            colorTint.r = (unsigned char)((((float)color.r/255.0f)*((float)tint.r/255.0f))*255.0f);
-            colorTint.g = (unsigned char)((((float)color.g/255.0f)*((float)tint.g/255.0f))*255.0f);
-            colorTint.b = (unsigned char)((((float)color.b/255.0f)*((float)tint.b/255.0f))*255.0f);
-            colorTint.a = (unsigned char)((((float)color.a/255.0f)*((float)tint.a/255.0f))*255.0f);
-
-            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
-            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], transform);
-            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
+            DrawMesh(model.meshes[i],model.materials[model.meshMaterial[i]], rmodel->transforms[j]);
         }
+
+        model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
     }
 
     model.materials[0].shader = old_shader;
 }
 
-static void draw_rmodel_no_shader(renderModel rmodel){
-    Model model = rmodel->model;
+static void draw_object(struct render_object* obj, Shader shader){
+    Shader old_shader = obj->model.materials[0].shader;
+    obj->model.materials[0].shader = shader;
+    Matrix matScale = MatrixScale(obj->scale.x, obj->scale.y, obj->scale.z);
+    Matrix matRotation = MatrixRotate(obj->rotation_axis, obj->rotation_amount*DEG2RAD);
+    Matrix matTranslation = MatrixTranslate(obj->pos.x, obj->pos.y, obj->pos.z);
+    Matrix matTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
+    obj->transform = MatrixMultiply(obj->model.transform, matTransform);
+    //DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
 
-    for (int i = 0; i < model.meshCount; i++)
+    for (int i = 0; i < obj->model.meshCount; i++)
     {
-        Color color = model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
+        Color color = obj->model.materials[obj->model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
+        Color colorTint = WHITE;
+        colorTint.r = (unsigned char)((((float)color.r/255.0f)*((float)obj->tint.r/255.0f))*255.0f);
+        colorTint.g = (unsigned char)((((float)color.g/255.0f)*((float)obj->tint.g/255.0f))*255.0f);
+        colorTint.b = (unsigned char)((((float)color.b/255.0f)*((float)obj->tint.b/255.0f))*255.0f);
+        colorTint.a = (unsigned char)((((float)color.a/255.0f)*((float)obj->tint.a/255.0f))*255.0f);
 
-        for (int j = 0; j < rmodel->n_instances; j++){
-            Color tint = rmodel->tints[j];
-            Matrix transform = rmodel->transforms[j];
-            Color colorTint = WHITE;
-            colorTint.r = (unsigned char)((((float)color.r/255.0f)*((float)tint.r/255.0f))*255.0f);
-            colorTint.g = (unsigned char)((((float)color.g/255.0f)*((float)tint.g/255.0f))*255.0f);
-            colorTint.b = (unsigned char)((((float)color.b/255.0f)*((float)tint.b/255.0f))*255.0f);
-            colorTint.a = (unsigned char)((((float)color.a/255.0f)*((float)tint.a/255.0f))*255.0f);
+        obj->model.materials[obj->model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
 
-            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
-            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], transform);
-            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
-        }
+        DrawMeshInstanced(obj->model.meshes[i],obj->model.materials[obj->model.meshMaterial[i]],&obj->transform,1);
+
+        obj->model.materials[obj->model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
     }
+
+    obj->model.materials[0].shader = old_shader;
 }
 
-static void draw_object(struct render_object obj){
-    Shader old_shader = obj.model.materials[0].shader;
-    obj.model.materials[0].shader = default_shader;
-    DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
-    obj.model.materials[0].shader = old_shader;
-}
-
-static void draw_object_no_shader(struct render_object obj){
+/*static void draw_object_no_shader(struct render_object obj){
     //if(obj.model.materials[0].shader.id == default_shader.id){
         //TraceLog(LOG_ERROR,"wrong shader!!!");
     //}
     DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
-}
+}*/
 
 void render_draw_all_no_shader(void){
     for (int i = 0; i < n_objects; i++){
-        draw_object_no_shader(objects[i]);
+        //draw_object_no_shader(objects[i]);
+        //draw_object(&objects[i],render_get_empty_shader());
     }
     for (int i = 0; i < n_rmodels; i++){
-        draw_rmodel_no_shader(rmodels[i]);
+        draw_rmodel(rmodels[i],render_get_empty_shader());
     }
 }
 
@@ -188,15 +190,15 @@ void render_model(Model model, fluxTransform transform, Color tint){
 
 static void draw_all(void){
     for (int i = 0; i < n_objects; i++){
-        draw_object(objects[i]);
+        //draw_object(&objects[i],default_shader);
     }
     for (int i = 0; i < n_rmodels; i++){
-        draw_rmodel(rmodels[i]);
+        draw_rmodel(rmodels[i],default_shader);
     }
 }
 
 void render_end(void){
-    render_calculate_shadows();
+    //render_calculate_shadows();
     ClearBackground(BLACK);
     BeginMode3D(current_camera);
 

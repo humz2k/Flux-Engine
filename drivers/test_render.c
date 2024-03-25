@@ -134,6 +134,7 @@ int main(){
     active_cam = cam;
 
     renderModel sphere_rmodel = render_make_model(sphere);
+    renderModel plane_model = render_make_model(plane);
 
     double frameStart = 0;
     double frameEnd = 0;
@@ -154,8 +155,6 @@ int main(){
             }
         }
 
-        BeginTextureMode(tex);
-
         if (cam_id < 0){
             active_cam = cam;
         } else {
@@ -170,14 +169,18 @@ int main(){
         for (int i = 0; i < 5; i++){
             sphere_tranform.pos.z = -5;
             for (int j = 0; j < 5; j++){
-                render_add_model_instance(sphere_rmodel,sphere_tranform,WHITE);
+                render_add_model_instance(sphere_rmodel,sphere_tranform);
                 //render_model(sphere,sphere_tranform,WHITE);
                 sphere_tranform.pos.z += 2;
             }
             sphere_tranform.pos.x += 2;
         }
 
-        render_rmodel(sphere_rmodel);
+        render_rmodel(sphere_rmodel,WHITE);
+
+        render_reset_instances(plane_model);
+        render_add_model_instance(plane_model,plane_transform);
+        render_rmodel(plane_model,WHITE);
 
         //render_model(plane,plane_transform,WHITE);
 
@@ -185,10 +188,12 @@ int main(){
             render_draw_grid(100,1.0f);
         }
 
+        render_calculate_shadows();
+        BeginTextureMode(tex);
         render_end();
         EndTextureMode();
 
-        DrawTexturePro(tex.texture,(Rectangle){0,0,true_render_width,true_render_height},(Rectangle){0,0,GetDisplayWidth(),GetDisplayHeight()},Vector2Zero(),0,WHITE);
+        DrawTexturePro(tex.texture,(Rectangle){0,0,true_render_width,-true_render_height},(Rectangle){0,0,GetDisplayWidth(),GetDisplayHeight()},Vector2Zero(),0,WHITE);
 
         draw_editor_tools();
         DrawFPS(10,10);
@@ -202,6 +207,7 @@ int main(){
         frameEnd = frameStart;
     }
     render_free_model(sphere_rmodel);
+    render_free_model(plane_model);
     UnloadModel(sphere);
     UnloadModel(plane);
     UnloadRenderTexture(tex);

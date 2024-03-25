@@ -19,7 +19,7 @@ void render_begin(Camera3D camera);
 
 void render_model(Model model, fluxTransform transform, Color tint);
 
-void render_rmodel(renderModel rmodel);
+void render_rmodel(renderModel rmodel, Color tint);
 
 void render_end(void);
 
@@ -33,7 +33,7 @@ renderModel render_make_model(Model model);
 
 void render_reset_instances(renderModel model);
 
-void render_add_model_instance(renderModel model, fluxTransform transform, Color tint);
+void render_add_model_instance(renderModel model, fluxTransform transform);
 
 void render_free_model(renderModel model);
 
