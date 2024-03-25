@@ -33,11 +33,16 @@ void render_init(void){
 }
 
 static void draw_object(struct render_object obj){
+    Shader old_shader = obj.model.materials[0].shader;
     obj.model.materials[0].shader = default_shader;
     DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
+    obj.model.materials[0].shader = old_shader;
 }
 
 static void draw_object_no_shader(struct render_object obj){
+    if(obj.model.materials[0].shader.id == default_shader.id){
+        //TraceLog(LOG_ERROR,"wrong shader!!!");
+    }
     DrawModelEx(obj.model,obj.pos,obj.rotation_axis,obj.rotation_amount,obj.scale,obj.tint);
 }
 

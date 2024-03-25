@@ -10,6 +10,9 @@ static bool do_quit = false;
 static bool draw_grid = false;
 static int camera_mode = 0;
 static int fullscreen = 1;
+static Camera3D active_cam;
+static Camera3D cam;
+static int cam_id = -1;
 
 static void quit_callback(int n_args, const char** args){
     do_quit = true;
@@ -42,6 +45,27 @@ static void query_res_callback(int n_args, const char** args){
     TraceLog(LOG_INFO,"screenSize = %dx%d, renderSize = %dx%d",GetScreenWidth(),GetScreenHeight(),GetRenderWidth(),GetRenderHeight());
 }
 
+static void debug_light_callback(int n_args, const char** args){
+    if (n_args < 2)return;
+    cam_id = atoi(args[1]);
+    //active_cam = render_get_light_cam(atoi(args[1]));
+}
+
+static void default_cam_callback(int n_args, const char** args){
+    cam_id = -1;
+    //active_cam = cam;
+}
+
+static void light_set_scale_callback(int n_args, const char** args){
+    if (n_args < 3)return;
+    render_light_set_scale(atoi(args[1]),atof(args[2]));
+}
+
+static void light_set_fov_callback(int n_args, const char** args){
+    if (n_args < 3)return;
+    render_light_set_fov(atoi(args[1]),atof(args[2]));
+}
+
 int main(){
 
     init_editor_tools();
@@ -58,6 +82,10 @@ int main(){
     editor_add_console_command("camera_mode",camera_mode_callback);
     //editor_add_console_command("fullscreen",fullscreen_callback);
     editor_add_console_command("query_res",query_res_callback);
+    editor_add_console_command("debug_light",debug_light_callback);
+    editor_add_console_command("default_cam",default_cam_callback);
+    editor_add_console_command("light_set_scale",light_set_scale_callback);
+    editor_add_console_command("light_set_fov",light_set_fov_callback);
 
     SetTargetFPS(200);
 
@@ -68,18 +96,17 @@ int main(){
 
     render_init();
 
-    Camera3D cam;
     cam.fovy = 45;
-    cam.position = (Vector3){0,2,-10};
+    cam.position = (Vector3){0,10,-10};
     cam.projection = CAMERA_PERSPECTIVE;
     cam.up = (Vector3){0,1,0};
     cam.target = Vector3Zero();
 
-    Model sphere = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/earth.obj");
+    Model sphere = LoadModelFromMesh(GenMeshSphere(1,100,100));//LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/earth.obj");
     fluxTransform sphere_tranform = flux_empty_transform();
     sphere_tranform.pos.y = 1;
 
-    Model plane = LoadModelFromMesh(GenMeshPlane(10,10,10,10));
+    Model plane = LoadModelFromMesh(GenMeshPlane(50,50,10,10));
     fluxTransform plane_transform = flux_empty_transform();
 
     //Model thing = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
@@ -98,10 +125,12 @@ int main(){
     render_light_set_cL(1,WHITE);
     render_light_set_kd(1,0.7);
     render_light_set_ks(1,0.3);
-    render_light_set_L(1,(Vector3){0,2,-0.5});
+    render_light_set_L(1,(Vector3){0,2,-1});
     render_light_set_p(1,200);
 
     render_load_skybox("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/Daylight Box UV.png");
+
+    active_cam = cam;
 
     while (!WindowShouldClose() && !do_quit){
         BeginDrawing();
@@ -117,11 +146,26 @@ int main(){
         }
 
         BeginTextureMode(tex);
-        render_begin(cam);
+
+        if (cam_id < 0){
+            active_cam = cam;
+        } else {
+            active_cam = render_get_light_cam(cam_id);
+        }
+
+        render_begin(active_cam);
 
         //render_model(thing,flux_empty_transform(),WHITE);
+        sphere_tranform.pos.x = -5;
+        for (int i = 0; i < 6; i++){
+            sphere_tranform.pos.z = -5;
+            for (int j = 0; j < 6; j++){
+                render_model(sphere,sphere_tranform,WHITE);
+                sphere_tranform.pos.z += 2;
+            }
+            sphere_tranform.pos.x += 2;
+        }
 
-        render_model(sphere,sphere_tranform,WHITE);
         render_model(plane,plane_transform,WHITE);
 
         if (draw_grid){

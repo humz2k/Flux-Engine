@@ -72,4 +72,14 @@ float render_light_get_intensity(int i);
 
 void render_light_set_intensity(int i, float intensity);
 
+Camera3D render_get_light_cam(int i);
+
+void render_light_set_scale(int i, float scale);
+
+void render_light_set_fov(int i, float fov);
+
+float render_light_get_scale(int i);
+
+float render_light_get_fov(int i);
+
 #endif

@@ -24,6 +24,9 @@ typedef struct Light{
     RenderTexture2D shadow_map;
     Matrix light_vp;
 
+    float scale;
+    float fov;
+
     renderShaderAttr shader_enabled;
     renderShaderAttr shader_type;
     renderShaderAttr shader_kd;
@@ -89,6 +92,9 @@ static void init_lights(void){
 
         lights[i].shadow_map = LoadShadowmapRenderTexture(shadowMapRes,shadowMapRes);
 
+        lights[i].scale = 15.0f;
+        lights[i].fov = 20.0f;
+
         lights[i].enabled = 0;
         render_set_shader_attr_int(lights[i].shader_enabled,lights[i].enabled);
     }
@@ -152,16 +158,21 @@ Shader render_get_default_shader(void){
     return flux_default_shader;
 }
 
+Camera3D render_get_light_cam(int i){
+    Camera3D lightCam = (Camera3D){ 0 };
+    lightCam.position = Vector3Scale(lights[i].L, lights[i].scale);
+    lightCam.projection = CAMERA_ORTHOGRAPHIC;
+    lightCam.target = Vector3Zero();
+    lightCam.fovy = lights[i].fov;
+    lightCam.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+    return lightCam;
+}
+
 void render_calculate_shadows(void){
     int slot_start = 15 - FLUX_MAX_LIGHTS;
     for (int i = 0; i < FLUX_MAX_LIGHTS; i++){
         if (!lights[i].enabled)continue;
-        Camera3D lightCam = (Camera3D){ 0 };
-        lightCam.position = Vector3Scale(lights[i].L, 15.0f);
-        lightCam.projection = CAMERA_ORTHOGRAPHIC;
-        lightCam.target = Vector3Zero();
-        lightCam.fovy = 20.0f;
-        lightCam.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+        Camera3D lightCam = render_get_light_cam(i);
 
         Matrix lightView;
         Matrix lightProj;
@@ -300,4 +311,22 @@ void render_light_set_intensity(int i, float intensity){
     Light* light = get_light(i);
     light->intensity = intensity;
     render_set_shader_attr_float(light->shader_intensity,light->intensity);
+}
+
+void render_light_set_scale(int i, float scale){
+    Light* light = get_light(i);
+    light->scale = scale;
+}
+
+void render_light_set_fov(int i, float fov){
+    Light* light = get_light(i);
+    light->fov = fov;
+}
+
+float render_light_get_scale(int i){
+    return get_light(i)->scale;
+}
+
+float render_light_get_fov(int i){
+    return get_light(i)->fov;
 }
