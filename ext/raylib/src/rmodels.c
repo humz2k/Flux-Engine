@@ -3952,7 +3952,7 @@ static Model LoadOBJ(const char *fileName)
         model.meshCount = meshCount;
 
         // Set number of materials available
-        // NOTE: There could be more materials available than meshes but it will be resolved at 
+        // NOTE: There could be more materials available than meshes but it will be resolved at
         // model.meshMaterial, just assigning the right material to corresponding mesh
         model.materialCount = materialCount;
         if (model.materialCount == 0)
@@ -3970,7 +3970,7 @@ static Model LoadOBJ(const char *fileName)
         for (int i = 0; i < model.meshCount; i++)
         {
             // WARNING: We need to calculate the mesh triangles manually using meshes[i].face_offset
-            // because in case of triangulated quads, meshes[i].length actually report quads, 
+            // because in case of triangulated quads, meshes[i].length actually report quads,
             // despite the triangulation that is efectively considered on attrib.num_faces
             unsigned int tris = 0;
             if (i == model.meshCount - 1) tris = attrib.num_faces - meshes[i].face_offset;
