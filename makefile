@@ -35,7 +35,7 @@ ifeq ($(PLATFORM_OS), OSX)
 endif
 
 FLUX_DEBUG_FLAGS ?= -O0 -g -fsanitize=address -fno-omit-frame-pointer -fno-inline
-FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fPIC
+FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -g -fPIC
 
 INIH_DIR ?= inih
 
