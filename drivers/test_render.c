@@ -139,7 +139,7 @@ int main(){
     Model plane = LoadModelFromMesh(GenMeshPlane(50,50,10,10));
     fluxTransform plane_transform = flux_empty_transform();
 
-    Model gun = LoadObj("drivers/assets/city.obj");
+    Model gun = LoadObj("drivers/assets/city_low_poly.obj");
 
     //Model thing = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
 
@@ -207,9 +207,9 @@ int main(){
         }
 
         render_begin(active_cam);
-        //render_rmodel(gun_model,WHITE);
-        render_rmodel(sphere_rmodel,WHITE);
-        render_rmodel(plane_model,WHITE);
+        render_rmodel(gun_model,WHITE);
+        //render_rmodel(sphere_rmodel,WHITE);
+        //render_rmodel(plane_model,WHITE);
 
         if (draw_grid){
             render_draw_grid(100,1.0f);

@@ -49,3 +49,5 @@ test_render.exe
 build
 
 FLUX_CONFIGURED
+ext/.DS_Store
+**/.DS_Store
