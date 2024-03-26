@@ -42,6 +42,7 @@ ENGINE_DIR ?= engine
 EDITOR_DIR ?= editor
 RENDERER_DIR ?= renderer
 DRIVERS_DIR ?= drivers
+PARSERS_DIR ?= parsers
 
 FLUX_LIB ?= libflux.a
 
@@ -49,7 +50,7 @@ PROJECT_DIR ?= project
 
 FLUX_CONFIGURED ?= FLUX_CONFIGURED
 
-FLUX_PRIVATE_INCLUDES := -I$(RAYLIB_DIR) -I$(ENGINE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -I$(RENDERER_DIR) -I$(ODE_INCLUDE) -I$(ENET_INCLUDE)
+FLUX_PRIVATE_INCLUDES := -I$(RAYLIB_DIR) -I$(ENGINE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -I$(RENDERER_DIR) -I$(ODE_INCLUDE) -I$(ENET_INCLUDE) -I$(PARSERS_DIR)
 
 SCRIPT_SOURCES := $(shell find $(PROJECT_DIR)/scripts -name '*.c')
 SCRIPT_OBJECTS := $(SCRIPT_SOURCES:%.c=%.o)
@@ -68,6 +69,10 @@ PREFABS := $(shell find $(PROJECT_DIR)/prefabs -name '*.prefab')
 ENGINE_SOURCES := $(shell find $(ENGINE_DIR) -name '*.c')
 ENGINE_OBJECTS := $(ENGINE_SOURCES:%.c=%.o)
 ENGINE_OUTPUTS := $(ENGINE_OBJECTS:%=build/%) $(SCRIPT_OUTPUTS)
+
+PARSER_SOURCES := $(shell find $(PARSERS_DIR) -name '*.c')
+PARSER_OBJECTS := $(PARSER_SOURCES:%.c=%.o)
+PARSER_OUTPUTS := $(PARSER_OBJECTS:%=build/%)
 
 main: driver flux_editor test_render
 
@@ -89,7 +94,7 @@ $(ENET_MAC_LIB): $(FLUX_CONFIGURED)
 $(FLUX_CONFIGURED): | $(BUILD_DIR)
 	python3 configure.py
 
-$(BUILD_DIR)/$(FLUX_LIB): $(ENGINE_OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) | $(BUILD_DIR)
+$(BUILD_DIR)/$(FLUX_LIB): $(ENGINE_OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) $(PARSER_OUTPUTS) | $(BUILD_DIR)
 	$(AR) rcs $@ $^
 
 %: $(DRIVERS_DIR)/%.c $(BUILD_DIR)/$(FLUX_LIB) $(RAYLIB_DIR)/libraylib.a $(ODE_LIB) $(ENET_LIB)
@@ -104,6 +109,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/$(EDITOR_DIR)
 	mkdir -p $(BUILD_DIR)/$(PROJECT_DIR)
 	mkdir -p $(BUILD_DIR)/$(RENDERER_DIR)
+	mkdir -p $(BUILD_DIR)/$(PARSERS_DIR)
 	mkdir -p $(BUILD_DIR)/$(PROJECT_DIR)/scripts
 
 clean:
