@@ -29,17 +29,19 @@ static void camera_mode_callback(int n_args, const char** args){
     camera_mode = atoi(args[1]);
 }
 
-static void fullscreen_callback(int n_args, const char** args){
-    if (n_args < 2)return;
-    int new_fullscreen = atoi(args[1]);
-    if (new_fullscreen < 0)return;
-    if (new_fullscreen > 1)return;
-    if (new_fullscreen == fullscreen)return;
-    fullscreen = new_fullscreen;
+static void toggle_fullscreen_callback(int n_args, const char** args){
     ToggleFullscreen();
-    if (fullscreen == 1){
-        SetWindowSize(GetRenderWidth(),GetRenderHeight());
-    }
+}
+
+static void set_window_size_callback(int n_args, const char** args){
+    if (n_args < 3)return;
+    int width = atoi(args[1]);
+    if (width < 100)return;
+    if (width > 3000)return;
+    int height = atoi(args[2]);
+    if (height < 100)return;
+    if (height > 3000)return;
+    SetWindowSize(width,height);
 }
 
 static void query_res_callback(int n_args, const char** args){
@@ -93,7 +95,7 @@ int main(){
 
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(1920,1080,"flux_render_test");
-    ToggleFullscreen();
+    //ToggleFullscreen();
 
     SetExitKey(0);
 
@@ -112,6 +114,8 @@ int main(){
     editor_add_console_command("disable_mouse",disable_mouse_callback);
     editor_add_console_command("get_visible_meshes",get_visible_meshes_callback);
     editor_add_console_command("fps_max",set_fps_max_callback);
+    editor_add_console_command("toggle_fullscreen",toggle_fullscreen_callback);
+    editor_add_console_command("set_window_size",set_window_size_callback);
 
     SetTargetFPS(200);
 

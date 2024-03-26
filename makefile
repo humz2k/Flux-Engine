@@ -13,13 +13,21 @@ RAYLIB_DIR ?= ext/raylib/src
 RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmmgit
 
-RAYLIB_FLAGS ?= UNSUPPORTED_PLATFORM
+ODE_DIR ?= ext/ODE
+ODE_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
 
+ENET_DIR ?= ext/enet
+ENET_MAC_LIB ?= $(ENET_DIR)/.libs/libenet.a
+ENET_LIB ?= $(ENET_MAC_LIB)
+
+RAYLIB_FLAGS ?= UNSUPPORTED_PLATFORM
 ifeq ($(PLATFORM_OS), WINDOWS)
 	RAYLIB_FLAGS = $(RAYLIB_WINDOWS_FLAGS)
+	ENET_LIB = $(ENET_DIR)/enet64.lib
 endif
 ifeq ($(PLATFORM_OS), OSX)
 	RAYLIB_FLAGS = $(RAYLIB_OSX_FLAGS)
+	ENET_LIB = $(ENET_MAC_LIB)
 endif
 
 FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
@@ -36,6 +44,8 @@ DRIVERS_DIR ?= drivers
 FLUX_LIB ?= libflux.a
 
 PROJECT_DIR ?= project
+
+FLUX_CONFIGURED ?= FLUX_CONFIGURED
 
 FLUX_PRIVATE_INCLUDES := -I$(RAYLIB_DIR) -I$(ENGINE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -I$(RENDERER_DIR)
 
@@ -59,27 +69,36 @@ ENGINE_OUTPUTS := $(ENGINE_OBJECTS:%=build/%) $(SCRIPT_OUTPUTS)
 
 main: driver flux_editor test_render
 
-$(SOURCE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES)
+$(ENGINE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES)
 	python3 ./build_scripts.py $(PROJECT_DIR)
 
-$(SOURCE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
+$(ENGINE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
 	python3 ./build_prefabs.py $(PROJECT_DIR)
 
-.PHONY: $(RAYLIB_DIR)/libraylib.a
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9 CUSTOM_CFLAGS=-fno-inline
+
+$(ODE_LIB): $(FLUX_CONFIGURED)
+	cd $(ODE_DIR) && $(MAKE)
+
+$(ENET_MAC_LIB): $(FLUX_CONFIGURED)
+	cd $(ENET_DIR) && $(MAKE)
+
+$(FLUX_CONFIGURED): | $(BUILD_DIR)
+	python3 configure.py
 
 $(BUILD_DIR)/$(FLUX_LIB): $(ENGINE_OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) | $(BUILD_DIR)
 	$(AR) rcs $@ $^
 
-%: $(DRIVERS_DIR)/%.c $(BUILD_DIR)/$(FLUX_LIB) $(RAYLIB_DIR)/libraylib.a
+%: $(BUILD_DIR)/$(DRIVERS_DIR)/%.o $(BUILD_DIR)/$(FLUX_LIB) $(RAYLIB_DIR)/libraylib.a $(ODE_LIB) $(ENET_LIB)
 	$(CC) $(FLUX_PRIVATE_INCLUDES) $^ -o $@ $(RAYLIB_FLAGS) $(FLUX_CC_FLAGS)
 
-build/%.o: %.c $(SOURCE_DIR)/GENERATED_SCRIPTS.h $(SOURCE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
+build/%.o: %.c $(ENGINE_DIR)/GENERATED_SCRIPTS.h $(ENGINE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
 	$(CC) $(FLUX_PRIVATE_INCLUDES) -c -o $@ $< $(FLUX_CC_FLAGS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/$(DRIVERS_DIR)
 	mkdir -p $(BUILD_DIR)/$(ENGINE_DIR)
 	mkdir -p $(BUILD_DIR)/$(EDITOR_DIR)
 	mkdir -p $(BUILD_DIR)/$(PROJECT_DIR)
@@ -93,3 +112,5 @@ clean:
 	rm -rf flux_editor
 	rm -rf test_render
 	cd $(RAYLIB_DIR) && $(MAKE) clean
+	cd $(ODE_DIR) && $(MAKE) clean
+	cd $(ENET_DIR) && $(MAKE) clean

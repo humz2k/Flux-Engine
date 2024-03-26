@@ -42,3 +42,10 @@ flux_editor
 flux_editor.exe
 test_render
 test_render.exe
+
+!ext/enet/enet.lib
+!ext/enet/enet64.lib
+
+build
+
+FLUX_CONFIGURED
