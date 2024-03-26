@@ -11,7 +11,7 @@ endif
 
 RAYLIB_DIR ?= ext/raylib/src
 RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
-RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmmgit
+RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmm
 
 ODE_DIR ?= ext/ODE
 ODE_NIX_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
