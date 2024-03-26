@@ -1,6 +1,26 @@
+PLATFORM_OS ?= UNKNOWN
+
+ifeq ($(OS),Windows_NT)
+	PLATFORM_OS = WINDOWS
+else
+	UNAMEOS = $(shell uname)
+	ifeq ($(UNAMEOS), Darwin)
+		PLATFORM_OS = OSX
+	endif
+endif
+
 RAYLIB_DIR ?= ext/raylib/src
-RAYLIB_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
+RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmmgit
+
+RAYLIB_FLAGS ?= UNSUPPORTED_PLATFORM
+
+ifeq ($(PLATFORM_OS), WINDOWS)
+	RAYLIB_FLAGS = $(RAYLIB_WINDOWS_FLAGS)
+endif
+ifeq ($(PLATFORM_OS), OSX)
+	RAYLIB_FLAGS = $(RAYLIB_OSX_FLAGS)
+endif
 
 FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
 
