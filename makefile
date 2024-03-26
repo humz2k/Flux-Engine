@@ -1,5 +1,6 @@
 RAYLIB_DIR ?= ext/raylib/src
 RAYLIB_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
+RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmm
 
 FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
 

@@ -112,7 +112,7 @@ static void delete_lights(void){
 void render_load_default_shader(void){
     TraceLog(LOG_INFO,"render_load_default_shader");
     skybox_loaded = 0;
-    flux_default_shader = LoadShader("/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/lights.vs","/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/lights.fs");
+    flux_default_shader = LoadShader("renderer/shaders/lights.vs","renderer/shaders/lights.fs");
     shader_ka = render_get_shader_attr(flux_default_shader,"ka");
     shader_cam_pos = render_get_shader_attr(flux_default_shader,"camPos");
     shader_shadow_map_res = render_get_shader_attr(flux_default_shader,"shadowMapRes");
@@ -120,7 +120,7 @@ void render_load_default_shader(void){
     //flux_default_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(flux_default_shader, "mvp");
     //flux_default_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(flux_default_shader, "instanceTransform");
 
-    flux_empty_shader = LoadShader("/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/lights.vs","/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/empty_lights.fs");
+    flux_empty_shader = LoadShader("renderer/shaders/lights.vs","renderer/shaders/empty_lights.fs");
     //flux_empty_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(flux_empty_shader, "mvp");
     //flux_empty_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(flux_empty_shader, "instanceTransform");
     init_lights();
@@ -129,7 +129,7 @@ void render_load_default_shader(void){
 void render_load_skybox(const char* path){
     TraceLog(LOG_INFO,"render_load_skybox");
     skybox_loaded = 1;
-    skybox_shader = LoadShader("/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/skybox.vs","/Users/humzaqureshi/GitHub/Flux-Engine/renderer/shaders/skybox.fs");
+    skybox_shader = LoadShader("renderer/shaders/skybox.vs","renderer/shaders/skybox.fs");
     skybox = LoadModelFromMesh(GenMeshCube(1,1,1));
     skybox.materials[0].shader = skybox_shader;
     SetShaderValue(skybox.materials[0].shader, GetShaderLocation(skybox.materials[0].shader, "environmentMap"), (int[1]){ MATERIAL_MAP_CUBEMAP }, SHADER_UNIFORM_INT);

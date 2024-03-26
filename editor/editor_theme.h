@@ -19,7 +19,7 @@
 
 #define EDITOR_TOOL_BAR_SIZE 25
 
-#define EDITOR_FONT "/Users/humzaqureshi/GitHub/Flux-Engine/editor/JetBrainsMono-Regular.ttf"
+#define EDITOR_FONT "editor/JetBrainsMono-Regular.ttf"
 #define EDITOR_FONT_BASE_SIZE 128
 
 #define CONSOLE_GL_COLOR GREEN

@@ -35,7 +35,10 @@
 
 engine/GENERATED_**
 driver
+driver.exe
 **/__pycache__
 
 flux_editor
+flux_editor.exe
 test_render
+test_render.exe

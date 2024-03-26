@@ -33,7 +33,7 @@ class PrefabProcessor:
         self.builders += "}\n#endif\n"
 
         # enum output
-        self.enums : str = "\n#ifndef FLUX_PRIVATE_PREFABS\nenum fluxPrefabID{\n    " + ",\n    ".join([i + " = " + str(idx) for idx,i in enumerate(self.prefab_names)]) + "\n};\n#endif\n"
+        self.enums : str = "\n#ifndef FLUX_PRIVATE_PREFABS\nenum fluxPrefabID{\n    " + ",\n    ".join(["fluxEmptyPrefab"] + [i + " = " + str(idx) for idx,i in enumerate(self.prefab_names)]) + "\n};\n#endif\n"
 
         self.output = self.enums + self.builders
         with open(self.output_path,"w") as f:
@@ -88,8 +88,8 @@ class PrefabProcessor:
         children = [mangle_prefab_name(i) for i in prefab.get("prefabChildren",[])]
         n_children = str(len(children))
 
-        scripts_literal = "enum fluxScriptID " + name + "_scripts[] = {" + ",".join(scripts) + "};"
-        children_literal = "enum fluxPrefabID " + name + "_children[] = {" + ",".join(children) + "};"
+        scripts_literal = "enum fluxScriptID " + name + "_scripts[] = {fluxEmptyScript," + ",".join(scripts) + "};"
+        children_literal = "enum fluxPrefabID " + name + "_children[] = {fluxEmptyPrefab," + ",".join(children) + "};"
         call = "flux_register_prefab({0},{1},{2},{3},{4},{5},{6},{7});".format(
             '"' + raw_name + '"', '"' + tag + '"', model_path, is_camera, n_scripts, name + "_scripts", n_children, name + "_children"
         )

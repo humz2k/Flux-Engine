@@ -79,6 +79,12 @@ static void get_visible_meshes_callback(int n_args, const char** args){
     TraceLog(LOG_INFO,"%d",render_get_visible_meshes());
 }
 
+static void set_fps_max_callback(int n_args, const char** args){
+    if (n_args < 2)return;
+    TraceLog(LOG_INFO,"setting fps_max to %d",atoi(args[1]));
+    SetTargetFPS(atoi(args[1]));
+}
+
 int main(){
 
     //scanf("%d");
@@ -86,8 +92,8 @@ int main(){
     init_editor_tools();
 
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(1200,800,"flux_render_test");
-    //ToggleFullscreen();
+    InitWindow(1920,1080,"flux_render_test");
+    ToggleFullscreen();
 
     SetExitKey(0);
 
@@ -105,8 +111,9 @@ int main(){
     editor_add_console_command("enable_mouse",enable_mouse_callback);
     editor_add_console_command("disable_mouse",disable_mouse_callback);
     editor_add_console_command("get_visible_meshes",get_visible_meshes_callback);
+    editor_add_console_command("fps_max",set_fps_max_callback);
 
-    //SetTargetFPS(200);
+    SetTargetFPS(200);
 
     int true_render_width = GetDisplayWidth() * 2;
     int true_render_height = GetDisplayHeight() * 2;
@@ -128,7 +135,7 @@ int main(){
     Model plane = LoadModelFromMesh(GenMeshPlane(50,50,10,10));
     fluxTransform plane_transform = flux_empty_transform();
 
-    Model gun = LoadObj("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/city.obj");
+    Model gun = LoadObj("drivers/assets/city.obj");
 
     //Model thing = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
 
@@ -149,7 +156,7 @@ int main(){
     render_light_set_L(1,(Vector3){0,2,-1});
     render_light_set_p(1,200);
 
-    render_load_skybox("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/Daylight Box UV.png");
+    render_load_skybox("drivers/assets/Daylight Box UV.png");
 
     active_cam = cam;
 
@@ -196,9 +203,9 @@ int main(){
         }
 
         render_begin(active_cam);
-        render_rmodel(gun_model,WHITE);
-        //render_rmodel(sphere_rmodel,WHITE);
-        //render_rmodel(plane_model,WHITE);
+        //render_rmodel(gun_model,WHITE);
+        render_rmodel(sphere_rmodel,WHITE);
+        render_rmodel(plane_model,WHITE);
 
         if (draw_grid){
             render_draw_grid(100,1.0f);

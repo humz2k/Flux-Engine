@@ -73,7 +73,7 @@ int run_editor(){
     InitWindow(1200,800,"flux_editor");
     SetTargetFPS(200);
 
-    Texture2D logo = LoadTextureFromImage(LoadImage("/Users/humzaqureshi/GitHub/Flux-Engine/logo.png"));
+    Texture2D logo = LoadTextureFromImage(LoadImage("logo.png"));
 
     load_editor_tools();
 
