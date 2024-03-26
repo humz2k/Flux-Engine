@@ -132,14 +132,14 @@ int main(){
     cam.up = (Vector3){0,1,0};
     cam.target = Vector3Zero();
 
-    Model sphere = LoadObj("drivers/assets/earth.obj");//LoadModelFromMesh(GenMeshSphere(1,50,50));//
+    Model sphere = LoadModelFromMesh(GenMeshSphere(1,50,50));//LoadObj("drivers/assets/earth.obj");//
     fluxTransform sphere_tranform = flux_empty_transform();
     sphere_tranform.pos.y = 1;
 
     Model plane = LoadModelFromMesh(GenMeshPlane(50,50,10,10));
     fluxTransform plane_transform = flux_empty_transform();
 
-    //Model gun = LoadObj("drivers/assets/city.obj");
+    Model gun = LoadObj("drivers/assets/city.obj");
 
     //Model thing = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
 
@@ -166,7 +166,7 @@ int main(){
 
     renderModel sphere_rmodel = render_make_model(sphere);
     renderModel plane_model = render_make_model(plane);
-    //renderModel gun_model = render_make_model(gun);
+    renderModel gun_model = render_make_model(gun);
 
     while (!WindowShouldClose() && !do_quit){
 
@@ -185,8 +185,8 @@ int main(){
 
         render_reset_instances(plane_model);
         render_add_model_instance(plane_model,plane_transform);
-        //render_reset_instances(gun_model);
-        //render_add_model_instance(gun_model,flux_empty_transform());
+        render_reset_instances(gun_model);
+        render_add_model_instance(gun_model,flux_empty_transform());
 
         ClearBackground(BLACK);
 
@@ -230,10 +230,10 @@ int main(){
     }
     render_free_model(sphere_rmodel);
     render_free_model(plane_model);
-    //render_free_model(gun_model);
+    render_free_model(gun_model);
     UnloadModel(sphere);
     UnloadModel(plane);
-    //UnloadModel(gun);
+    UnloadModel(gun);
     UnloadRenderTexture(tex);
 
     render_close();
