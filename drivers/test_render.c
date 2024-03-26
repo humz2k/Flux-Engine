@@ -94,7 +94,7 @@ int main(){
     init_editor_tools();
 
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(1920,1080,"flux_render_test");
+    InitWindow(1200,800,"flux_render_test");
     //ToggleFullscreen();
 
     SetExitKey(0);
