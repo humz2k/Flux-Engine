@@ -14,7 +14,8 @@ RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -fram
 RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmmgit
 
 ODE_DIR ?= ext/ODE
-ODE_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
+ODE_NIX_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
+ODE_LIB ?=
 ODE_INCLUDE ?= $(ODE_DIR)/include
 
 ENET_DIR ?= ext/enet
@@ -30,6 +31,7 @@ endif
 ifeq ($(PLATFORM_OS), OSX)
 	RAYLIB_FLAGS = $(RAYLIB_OSX_FLAGS)
 	ENET_LIB = $(ENET_MAC_LIB)
+	ODE_LIB = $(ODE_NIX_LIB)
 endif
 
 FLUX_DEBUG_FLAGS ?= -O0 -g -fsanitize=address -fno-omit-frame-pointer -fno-inline
@@ -86,7 +88,7 @@ $(ENGINE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9 CUSTOM_CFLAGS=-fno-inline
 
-$(ODE_LIB): $(FLUX_CONFIGURED)
+$(ODE_NIX_LIB): $(FLUX_CONFIGURED)
 	cd $(ODE_DIR) && $(MAKE)
 
 $(ENET_MAC_LIB): $(FLUX_CONFIGURED)

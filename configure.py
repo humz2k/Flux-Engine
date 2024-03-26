@@ -1,14 +1,13 @@
 import os
 import sys
 
-
-print("Configuring ODE")
-os.chdir("ext/ODE")
-os.system("./configure")
-os.chdir("../../")
-print("Configured ODE")
-
 if os.name != "nt":
+    print("Configuring ODE (OSX ONLY)")
+    os.chdir("ext/ODE")
+    os.system("./configure")
+    os.chdir("../../")
+    print("Configured ODE")
+
     print("Configuring enet for OSX")
     os.chdir("ext/enet")
     os.system("./configure")
