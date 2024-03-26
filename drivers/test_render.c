@@ -132,7 +132,7 @@ int main(){
     cam.up = (Vector3){0,1,0};
     cam.target = Vector3Zero();
 
-    Model sphere = LoadModelFromMesh(GenMeshSphere(1,50,50));//LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/earth.obj");
+    Model sphere = LoadObj("drivers/assets/earth.obj");//LoadModelFromMesh(GenMeshSphere(1,50,50));//
     fluxTransform sphere_tranform = flux_empty_transform();
     sphere_tranform.pos.y = 1;
 
@@ -174,9 +174,9 @@ int main(){
 
         render_reset_instances(sphere_rmodel);
         sphere_tranform.pos.x = -10;
-        for (int i = 0; i < 11; i++){
+        for (int i = 0; i < 1; i++){
             sphere_tranform.pos.z = -10;
-            for (int j = 0; j < 11; j++){
+            for (int j = 0; j < 1; j++){
                 render_add_model_instance(sphere_rmodel,sphere_tranform);
                 sphere_tranform.pos.z += 2;
             }
