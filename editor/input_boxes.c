@@ -87,6 +87,8 @@ editorTextBox editor_make_text_box(editorRect rect, Color background_color, Colo
     out->getText = getText;
     out->current_input[0] = '\0';
     out->editable = false;
+    out->edit_mode = false;
+    out->last_edit_mode = false;
     return out;
 }
 

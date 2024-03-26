@@ -32,7 +32,8 @@ ifeq ($(PLATFORM_OS), OSX)
 	ENET_LIB = $(ENET_MAC_LIB)
 endif
 
-FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
+FLUX_DEBUG_FLAGS ?= -O0 -g -fsanitize=address -fno-omit-frame-pointer -fno-inline
+FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fPIC
 
 INIH_DIR ?= inih
 
@@ -92,7 +93,7 @@ $(ENET_MAC_LIB): $(FLUX_CONFIGURED)
 	cd $(ENET_DIR) && $(MAKE)
 
 $(FLUX_CONFIGURED): | $(BUILD_DIR)
-	python3 configure.py
+	python3 configure.py > $(FLUX_CONFIGURED)
 
 $(BUILD_DIR)/$(FLUX_LIB): $(ENGINE_OUTPUTS) $(EDITOR_OUTPUTS) $(RENDERER_OUTPUTS) $(PARSER_OUTPUTS) | $(BUILD_DIR)
 	$(AR) rcs $@ $^

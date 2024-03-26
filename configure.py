@@ -15,5 +15,5 @@ if os.name != "nt":
     os.chdir("../../")
     print("Configured enet for OSX")
 
-with open("FLUX_CONFIGURED","w") as f:
-    f.write("done")
+#with open("FLUX_CONFIGURED","w") as f:
+#    f.write("done")
