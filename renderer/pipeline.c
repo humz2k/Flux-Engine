@@ -211,6 +211,7 @@ static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera, Matr
 
         model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
 
+        // TODO: only call this on model registration!!!
         betterBBox bbox = bbox2better(GetMeshBoundingBox(model.meshes[i]));
 
         //DrawMeshInstanced(model.meshes[i],model.materials[model.meshMaterial[i]],rmodel->transforms,rmodel->n_instances);
