@@ -1,8 +1,8 @@
 #include "gameobject.h"
 #include <assert.h>
 
-#define fluxConcat_(X,Y) X ## _ ## Y
-#define fluxConcat(X,Y) fluxConcat_(X,Y)
+#define fluxConcat_(X, Y) X##_##Y
+#define fluxConcat(X, Y) fluxConcat_(X, Y)
 
 extern float deltaTime;
 
@@ -10,13 +10,13 @@ extern float deltaTime;
 
 #define fluxCallback static inline void
 
-#define onUpdate fluxConcat(SCRIPT,fluxCallback_onUpdate)
-#define afterUpdate fluxConcat(SCRIPT,fluxCallback_afterUpdate)
-#define onInit fluxConcat(SCRIPT,fluxCallback_onInit)
-#define onDestroy fluxConcat(SCRIPT,fluxCallback_onDestroy)
-#define onDraw fluxConcat(SCRIPT,fluxCallback_onDraw)
-#define onDraw2D fluxConcat(SCRIPT,fluxCallback_onDraw2D)
-#define script_data struct fluxConcat(SCRIPT,fluxData)
+#define onUpdate fluxConcat(SCRIPT, fluxCallback_onUpdate)
+#define afterUpdate fluxConcat(SCRIPT, fluxCallback_afterUpdate)
+#define onInit fluxConcat(SCRIPT, fluxCallback_onInit)
+#define onDestroy fluxConcat(SCRIPT, fluxCallback_onDestroy)
+#define onDraw fluxConcat(SCRIPT, fluxCallback_onDraw)
+#define onDraw2D fluxConcat(SCRIPT, fluxCallback_onDraw2D)
+#define script_data struct fluxConcat(SCRIPT, fluxData)
 
 #else
 

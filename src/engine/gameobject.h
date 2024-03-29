@@ -1,7 +1,6 @@
 #ifndef _FLUX_GAMEOBJECT_H_
 #define _FLUX_GAMEOBJECT_H_
 
-
 // gameobject struct
 struct fluxGameObjectStruct;
 typedef struct fluxGameObjectStruct* fluxGameObject;
@@ -14,13 +13,14 @@ typedef struct fluxGameObjectStruct* fluxGameObject;
 
 #include "scripts.h"
 
-struct fluxDrawObject{
+struct fluxDrawObject {
     Model model;
     Transform transform;
     Color tint;
 };
 
-fluxGameObject flux_allocate_gameobject(const char* name, const char* tag, fluxTransform transform);
+fluxGameObject flux_allocate_gameobject(const char* name, const char* tag,
+                                        fluxTransform transform);
 
 void flux_gameobject_set_model(fluxGameObject obj, Model model, Color tint);
 

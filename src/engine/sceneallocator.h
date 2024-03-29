@@ -1,13 +1,15 @@
 #ifndef _FLUX_SCENEALLOCATOR_H_
 #define _FLUX_SCENEALLOCATOR_H_
 
-#include <stdlib.h>
 #include "raylib.h"
+#include <stdlib.h>
 
-// initializes the scene allocator for the current scene (so should be called every scene load)
+// initializes the scene allocator for the current scene (so should be called
+// every scene load)
 void flux_init_scene_allocator(void);
 
-// closes the scene allocator for the current scene (so should be called every scene close)
+// closes the scene allocator for the current scene (so should be called every
+// scene close)
 void flux_close_scene_allocator(void);
 
 // allocates some heap space that will be cleared on scene close

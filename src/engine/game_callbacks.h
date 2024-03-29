@@ -1,9 +1,10 @@
-enum FluxGameCallback{
+enum FluxGameCallback {
     fluxGameCallback_onGameLoad,
     fluxGameCallback_onGameClose
 };
 
-void flux_register_callback(enum FluxGameCallback event, void (*new_callback)(void));
+void flux_register_callback(enum FluxGameCallback event,
+                            void (*new_callback)(void));
 
 #ifdef FLUX_PRIVATE_CALLBACKS
 

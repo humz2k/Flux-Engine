@@ -71,8 +71,8 @@ typedef struct hqAllocatorInternal {
  * \param name The name of this allocator - a LITERAL string.
  */
 void hq_allocator_init(hqAllocator* allocator, const char* name) {
-    LOG_FUNC_CALL();
-    LOG(DEBUG, "initializing allocator %s", name);
+    //LOG_FUNC_CALL();
+    //LOG(DEBUG, "initializing allocator %s", name);
     assert(*allocator =
                (hqAllocator)malloc(sizeof(struct hqAllocatorInternal)));
     (*allocator)->n_alive = 0;
@@ -81,7 +81,7 @@ void hq_allocator_init(hqAllocator* allocator, const char* name) {
     assert((*allocator)->allocations = (allocation*)malloc(
                sizeof(allocation) * (*allocator)->n_preallocated));
     (*allocator)->name = name;
-    LOG(DEBUG, "initialized allocator %s", name);
+    //LOG(DEBUG, "initialized allocator %s", name);
 }
 
 /*!
@@ -92,35 +92,35 @@ void hq_allocator_init(hqAllocator* allocator, const char* name) {
  * \param allocator The `hqAllocator` to delete.
  */
 void hq_allocator_delete(hqAllocator allocator) {
-    LOG_FUNC_CALL();
+    //LOG_FUNC_CALL();
 
     assert(allocator);
     assert(allocator->allocations);
 
-    LOG(DEBUG, "deleting allocator %s", allocator->name);
+    printf("deleting allocator %s\n", allocator->name);
     int n_alive = 0;
     for (int i = 0; i < allocator->n_total; i++) {
         allocation* this_allocation = &allocator->allocations[i];
         assert(this_allocation);
         if (this_allocation->alive) {
-            PANIC_ON(this_allocation->ptr == NULL,
-                     "allocator thinks ptr (%s:%d) is alive but it isn't",
+            if(this_allocation->ptr == NULL)
+                     printf("allocator thinks ptr (%s:%d) is alive but it isn't\n",
                      this_allocation->file, this_allocation->line);
-            LOG(WARNING, "unfreed pointer %p<%lu bytes> (from %s:%d)",
+            printf("unfreed pointer %p<%lu bytes> (from %s:%d)\n",
                 this_allocation->ptr, this_allocation->sz,
                 this_allocation->file, this_allocation->line);
             free(this_allocation->ptr);
             n_alive++;
         } else {
-            PANIC_ON(this_allocation->ptr != NULL,
-                     "allocator thinks ptr (%s:%d) is dead but it isn't",
+            if (this_allocation->ptr != NULL)
+                     printf("allocator thinks ptr (%s:%d) is dead but it isn't\n",
                      this_allocation->file, this_allocation->line);
         }
     }
-    PANIC_ON(allocator->n_alive != n_alive,
-             "allocator got number of alive pointers wrong");
+    if(allocator->n_alive != n_alive)
+             printf("allocator got number of alive pointers wrong\n");
     free(allocator->allocations);
-    LOG(INFO, "deleted allocator %s (n_total = %d, n_alive = %d)",
+    printf("deleted allocator %s (n_total = %d, n_alive = %d)\n",
         allocator->name, allocator->n_total, allocator->n_alive);
     free(allocator);
 }
@@ -297,7 +297,7 @@ hqAllocator hq_global_allocator;
  * This should be called ONCE before anything else.
  */
 void hq_allocator_init_global(void) {
-    LOG_FUNC_CALL();
+    //LOG_FUNC_CALL();
     hq_allocator_init(&hq_global_allocator, "hq_global_allocator");
 }
 
@@ -309,6 +309,6 @@ void hq_allocator_init_global(void) {
  * This should be called ONCE after everything else.
  */
 void hq_allocator_delete_global(void) {
-    LOG_FUNC_CALL();
+    //LOG_FUNC_CALL();
     hq_allocator_delete(hq_global_allocator);
 }

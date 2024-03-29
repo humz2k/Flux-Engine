@@ -3,7 +3,7 @@
 
 #include "raylib.h"
 
-typedef struct renderShaderAttr{
+typedef struct renderShaderAttr {
     Shader shader;
     const char* attr;
     int loc;

@@ -3,15 +3,15 @@
 
 #include "raylib.h"
 
-static int GetDisplayWidth(){
-    if (IsWindowFullscreen()){
+static int GetDisplayWidth() {
+    if (IsWindowFullscreen()) {
         return GetRenderWidth();
     }
     return GetScreenWidth();
 }
 
-static int GetDisplayHeight(){
-    if (IsWindowFullscreen()){
+static int GetDisplayHeight() {
+    if (IsWindowFullscreen()) {
         return GetRenderHeight();
     }
     return GetScreenHeight();

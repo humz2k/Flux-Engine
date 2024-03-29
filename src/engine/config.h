@@ -8,6 +8,8 @@
 
 #include "raylib.h"
 
-#define FLUX_ASSERT(cond,...) if (!(cond))TraceLog(LOG_FATAL,__VA_ARGS__)
+#define FLUX_ASSERT(cond, ...)                                                 \
+    if (!(cond))                                                               \
+    TraceLog(LOG_FATAL, __VA_ARGS__)
 
 #endif

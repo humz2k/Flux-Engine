@@ -1,12 +1,12 @@
 #ifndef _SHADOW_MAP_TEXTURE_
 #define _SHADOW_MAP_TEXTURE_
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "raylib.h"
 #include "raymath.h"
 #include "rlgl.h"
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 RenderTexture2D LoadShadowmapRenderTexture(int width, int height);
 

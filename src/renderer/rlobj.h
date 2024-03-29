@@ -18,10 +18,10 @@ extern "C" {
 
 // Naming is important to avoid linker errors
 // raylib has a LoadOBJ
-Model LoadObj(const char *filename);
+Model LoadObj(const char* filename);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif //RLOBJ_LIBRARY_H
+#endif // RLOBJ_LIBRARY_H

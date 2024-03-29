@@ -1,5 +1,3 @@
 
 
-int parser_test(void){
-    return 0;
-}
+int parser_test(void) { return 0; }

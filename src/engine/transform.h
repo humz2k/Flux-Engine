@@ -4,13 +4,13 @@
 #include "raylib.h"
 #include "raymath.h"
 
-typedef struct fluxTransform{
+typedef struct fluxTransform {
     Vector3 pos;
     Vector3 rot;
     Vector3 scale;
 } fluxTransform;
 
-static inline fluxTransform flux_empty_transform(void){
+static inline fluxTransform flux_empty_transform(void) {
     fluxTransform out;
     out.pos = Vector3Zero();
     out.rot = Vector3Zero();
