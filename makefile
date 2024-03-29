@@ -43,11 +43,7 @@ BUILD_DIR ?= build
 
 SOURCE_DIR ?= src
 
-# ENGINE_DIR ?= engine
-# EDITOR_DIR ?= editor
-# RENDERER_DIR ?= renderer
 DRIVERS_DIR ?= drivers
-# PARSERS_DIR ?= parsers
 
 FLUX_LIB ?= libflux.a
 
@@ -64,17 +60,11 @@ PARSERS_DIR := $(SOURCE_DIR)/parsers
 
 FLUX_PRIVATE_INCLUDES := -I$(TOOLS_DIR)/include -I$(RAYLIB_DIR) -I$(ENGINE_DIR) -I$(PROJECT_DIR) -I$(EDITOR_DIR) -I$(RENDERER_DIR) -I$(ODE_INCLUDE) -I$(ENET_INCLUDE) -I$(PARSERS_DIR)
 
-#SCRIPT_SOURCES := $(shell find $(PROJECT_DIR)/scripts -name '*.c')
-#SCRIPT_OBJECTS := $(SCRIPT_SOURCES:%.c=%.o)
-#SCRIPT_OUTPUTS := $(SCRIPT_OBJECTS:%=build/%)
-
 PREFABS := $(shell find $(PROJECT_DIR)/prefabs -name '*.prefab')
 
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.c') $(shell find $(TOOLS_DIR) -name '*.c') $(shell find $(PROJECT_DIR)/scripts -name '*.c')
 OBJECTS := $(SOURCES:%.c=%.o)
-OUTPUTS := $(OBJECTS:%=build/%) #$(SCRIPT_OUTPUTS)
-
-#TOOLS_SOURCES := $(shell find $(TOOLS_DIR) -name '*.c')
+OUTPUTS := $(OBJECTS:%=build/%)
 
 main: build/driver build/flux_editor build/test_render
 
@@ -114,6 +104,6 @@ clean:
 	rm -rf driver
 	rm -rf flux_editor
 	rm -rf test_render
-#	cd $(RAYLIB_DIR) && $(MAKE) clean
-#	cd $(ODE_DIR) && $(MAKE) clean
-#	cd $(ENET_DIR) && $(MAKE) clean
+	cd $(RAYLIB_DIR) && $(MAKE) clean
+	cd $(ODE_DIR) && $(MAKE) clean
+	cd $(ENET_DIR) && $(MAKE) clean
