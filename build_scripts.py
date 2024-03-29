@@ -9,7 +9,7 @@ SCRIPT_CALLBACKS = [
 
 # processes all Flux scripts and creates `struct script`
 class ScriptProcessor:
-    def __init__(self, project_path : str = "project", scripts_folder : str = "scripts", engine_path : str = "engine", output_file : str = "GENERATED_SCRIPTS.h"):
+    def __init__(self, project_path : str = "project", scripts_folder : str = "scripts", engine_path : str = "src/engine", output_file : str = "GENERATED_SCRIPTS.h"):
         # path of the project (where project_path/scripts is where all the scripts are)
         self.project_path : str = project_path
         # name of the scripts folder

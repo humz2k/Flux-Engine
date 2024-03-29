@@ -6,6 +6,7 @@
 #include "transform.h"
 #include "display_size.h"
 #include "rlobj.h"
+#include "hqtools/hqtools.h"
 
 static bool do_quit = false;
 static bool draw_grid = false;

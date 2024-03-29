@@ -5,7 +5,7 @@ import json
 from pputils import *
 
 class PrefabProcessor:
-    def __init__(self, project_path : str = "project", prefabs_folder : str = "prefabs", engine_path : str = "engine", output_file : str = "GENERATED_PREFABS.h"):
+    def __init__(self, project_path : str = "project", prefabs_folder : str = "prefabs", engine_path : str = "src/engine", output_file : str = "GENERATED_PREFABS.h"):
         # path of the project (where project_path/scripts is where all the scripts are)
         self.project_path : str = project_path
         # name of the prefabs folder

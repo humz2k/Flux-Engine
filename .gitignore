@@ -55,3 +55,5 @@ driver.dSYM/Contents/Info.plist
 flux_editor.dSYM/Contents/Info.plist
 test_render.dSYM/Contents/Info.plist
 **/.dSYM
+ext/.DS_Store
+ext/.DS_Store
