@@ -22,16 +22,17 @@ struct render_object{
     Matrix transform;
 };
 
+typedef struct betterBBox{
+    Vector4 c1,c2,c3,c4,c5,c6,c7,c8;
+} betterBBox;
+
 typedef struct renderModelInternal{
     Model model;
     int n_instances;
     Color tint;
     Matrix transforms[RENDER_MAX_INSTANCES];
+    betterBBox* mesh_bounding_boxes;
 } renderModelInternal;
-
-typedef struct betterBBox{
-    Vector4 c1,c2,c3,c4,c5,c6,c7,c8;
-} betterBBox;
 
 static Vector4 Vector32Vector4(Vector3 vec){
     Vector4 out;
@@ -139,9 +140,14 @@ static float spacing_grid;
 static int visible_meshes = 0;
 
 renderModel render_make_model(Model model){
-    renderModel out = (renderModel)malloc(sizeof(renderModelInternal));
+    renderModel out;
+    assert(out = (renderModel)malloc(sizeof(renderModelInternal)));
     out->n_instances = 0;
     out->model = model;
+    assert(out->mesh_bounding_boxes = (betterBBox*)malloc(sizeof(betterBBox) * model.meshCount));
+    for (int i = 0; i < model.meshCount; i++){
+        out->mesh_bounding_boxes[i] = bbox2better(GetMeshBoundingBox(model.meshes[i]));
+    }
     return out;
 }
 
@@ -184,6 +190,8 @@ void render_rmodel(renderModel rmodel, Color tint){
 
 void render_free_model(renderModel model){
     assert(model);
+    assert(model->mesh_bounding_boxes);
+    free(model->mesh_bounding_boxes);
     free(model);
 }
 
@@ -197,6 +205,8 @@ static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera, Matr
 
     Shader old_shader = model.materials[0].shader;
     model.materials[0].shader = shader;
+
+    betterBBox* bboxes = rmodel->mesh_bounding_boxes;
 
     Color tint = rmodel->tint;
 
@@ -212,7 +222,7 @@ static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera, Matr
         model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
 
         // TODO: only call this on model registration!!!
-        betterBBox bbox = bbox2better(GetMeshBoundingBox(model.meshes[i]));
+        betterBBox bbox = bboxes[i];//bbox2better(GetMeshBoundingBox(model.meshes[i]));
 
         //DrawMeshInstanced(model.meshes[i],model.materials[model.meshMaterial[i]],rmodel->transforms,rmodel->n_instances);
         for (int j = 0; j < rmodel->n_instances; j++){
