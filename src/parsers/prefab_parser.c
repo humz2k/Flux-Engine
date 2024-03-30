@@ -148,7 +148,19 @@ fluxParsedPrefab parser_read_prefab(const char* raw_path){
     hstrArray lines = hstr_split(file_str,"\n");
 
     for (int i = 0; i < hstr_array_len(lines); i++){
-        TraceLog(LOG_INFO,"line %d: %s",i,hstr_unpack(hstr_array_get(lines,i)));
+        hstr line = hstr_incref(hstr_array_get(lines,i));
+
+        hstrArray arguments = hstr_split(line,":");
+
+        if (hstr_array_len(arguments) >= 2){
+
+            TraceLog(LOG_INFO,"ARGUMENT: %s : %s",hstr_unpack(hstr_array_get(arguments,0)),hstr_unpack(hstr_array_get(arguments,1)));
+
+        }
+        //TraceLog(LOG_INFO,"line %d: %s",i,hstr_unpack(line));
+
+        hstr_array_delete(arguments);
+        hstr_decref(line);
     }
 
     hstr_array_delete(lines);
