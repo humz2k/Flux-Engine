@@ -1,7 +1,6 @@
 #include "config.h"
 #include "gameobject.h"
 #include "hqtools/hqtools.h"
-#include "prefabs.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "sceneallocator.h"
@@ -23,7 +22,7 @@ void flux_reset_scene(void) {
 
 void flux_close_scene(void) { flux_close_scene_allocator(); }
 
-void flux_scene_instantiate_prefab(enum fluxPrefabID prefab,
+/*void flux_scene_instantiate_prefab(enum fluxPrefabID prefab,
                                    fluxTransform transform) {
     FLUX_ASSERT(n_objects < FLUX_MAX_GAMEOBJECTS,
                 "FLUX<scene.c>: too many objects instantiated (%d >= %d)",
@@ -38,7 +37,7 @@ void flux_scene_instantiate_prefab(enum fluxPrefabID prefab,
                  flux_gameobject_get_id(obj));
         active_camera = obj;
     }
-}
+}*/
 
 void flux_draw_scene(void) {
     if (!active_camera)

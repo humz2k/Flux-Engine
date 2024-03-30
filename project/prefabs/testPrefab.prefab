@@ -1,5 +1,3 @@
-{
-    "prefabName": "testPrefab",
-    "prefabModel": "SPHERE",
-    "prefabScripts": ["test"]
-}
+prefabName: testPrefab
+prefabModel: SPHERE
+prefabScripts: ["test","test1"]

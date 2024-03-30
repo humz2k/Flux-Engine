@@ -250,7 +250,7 @@ hstrArray hstr_split(hstr str, const char* delim) {
     }
     while (token) {
         // printf("\nstrlen %s %d\n",token,strlen(token));
-        hstr_array_append(out, hstr_concat(hstr_new(token), hstr_new(delim)));
+        hstr_array_append(out, hstr_new(token));//hstr_concat(hstr_new(token), hstr_new(delim)));
         token = strtok(NULL, delim);
     }
 

@@ -34,8 +34,14 @@ ifeq ($(PLATFORM_OS), OSX)
 	ODE_LIB = $(ODE_NIX_LIB)
 endif
 
+DEBUG ?= false
+
 FLUX_DEBUG_FLAGS ?= -O0 -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline
-FLUX_CC_FLAGS ?= -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
+ifeq ($(DEBUG),true)
+FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof $(FLUX_DEBUG_FLAGS) -fno-inline -fPIC
+else
+FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
+endif
 
 INIH_DIR ?= inih
 
@@ -66,15 +72,15 @@ SOURCES := $(shell find $(SOURCE_DIR) -name '*.c') $(shell find $(TOOLS_DIR) -na
 OBJECTS := $(SOURCES:%.c=%.o)
 OUTPUTS := $(OBJECTS:%=build/%)
 
-main: build/driver build/flux_editor build/test_render
+main: build/driver build/flux_editor build/test_render build/parser_test
 
 .secondary: $(OUTPUTS)
 
 $(ENGINE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES)
 	python3 ./build_scripts.py $(PROJECT_DIR)
 
-$(ENGINE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
-	python3 ./build_prefabs.py $(PROJECT_DIR)
+#$(ENGINE_DIR)/GENERATED_PREFABS.h: $(PREFABS)
+#	python3 ./build_prefabs.py $(PROJECT_DIR)
 
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9 CUSTOM_CFLAGS=-fno-inline
@@ -91,7 +97,7 @@ $(FLUX_CONFIGURED): | $(BUILD_DIR)
 $(BUILD_DIR)/%: $(DRIVERS_DIR)/%.c $(OUTPUTS) $(RAYLIB_DIR)/libraylib.a $(ODE_LIB) $(ENET_LIB)
 	$(CC) $(FLUX_PRIVATE_INCLUDES) $^ -o $@ $(RAYLIB_FLAGS) $(FLUX_CC_FLAGS)
 
-$(BUILD_DIR)/%.o: %.c $(ENGINE_DIR)/GENERATED_SCRIPTS.h $(ENGINE_DIR)/GENERATED_PREFABS.h | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: %.c $(ENGINE_DIR)/GENERATED_SCRIPTS.h | $(BUILD_DIR)
 	mkdir -p $(@D)
 	$(CC) -c $(FLUX_PRIVATE_INCLUDES) -o $@ $< $(FLUX_CC_FLAGS)
 
