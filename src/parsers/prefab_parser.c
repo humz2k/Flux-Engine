@@ -30,11 +30,7 @@ typedef struct fluxParsedPrefabStruct{
     /*! \brief the names of the children of this prefab */
     hstrArray children;
 
-    /*! \brief the initial transform of this prefab (do I need this???) */
-    fluxTransform transform;
 } fluxParsedPrefabStruct;
-
-typedef fluxParsedPrefabStruct* fluxParsedPrefab;
 
 static fluxParsedPrefab alloc_parsed_prefab_internal(void){
     fluxParsedPrefab out = (fluxParsedPrefab)malloc(sizeof(fluxParsedPrefabStruct));
