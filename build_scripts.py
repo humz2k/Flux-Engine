@@ -34,7 +34,7 @@ class ScriptProcessor:
         # we can then add the script id enum to the start of output
         self.output += "\n#endif\n" + self.generate_enum_script_id() + self.generate_struct_script() + self.generate_all_callbacks() + self.generate_script_allocator()
         # we also want to forward declare all data scripts
-        self.output = self.generate_forward_declarations() + self.output
+        self.output = self.generate_forward_declarations() + self.output + self.generate_string_table()
         # now write to the output file
         with open(self.output_path,"w") as f:
             f.write(self.output)
@@ -81,7 +81,12 @@ class ScriptProcessor:
 
     # generates `enum fluxScriptID`
     def generate_enum_script_id(self):
-        return "\nenum fluxScriptID{" + ",".join(["fluxEmptyScript"] + [get_script_enum_name(i) for i in self.script_names]) + "};\n"
+        enum =  "\nenum fluxScriptID{" + ",".join(["fluxEmptyScript"] + [get_script_enum_name(i) for i in self.script_names]) + "};\n"
+        return enum
+
+    def generate_string_table(self):
+        out = "\n#ifdef FLUX_SCRIPTS_IMPLEMENTATION\nstatic const char* SCRIPT_NAME_TO_ENUM[" + str(len(self.script_names) + 1) + "]={" + ",".join(['[fluxEmptyScript] = "empty_script"'] + ["[" + get_script_enum_name(i) + '] = "' + i + '"' for i in self.script_names]) + "};\n#endif\n"
+        return out
 
     def get_script_data_name(self,script_name : str) -> str:
         return script_name + "_fluxData"

@@ -68,9 +68,11 @@ FLUX_PRIVATE_INCLUDES := -I$(TOOLS_DIR)/include -I$(RAYLIB_DIR) -I$(ENGINE_DIR) 
 
 PREFABS := $(shell find $(PROJECT_DIR)/prefabs -name '*.prefab')
 
-SOURCES := $(shell find $(SOURCE_DIR) -name '*.c') $(shell find $(TOOLS_DIR) -name '*.c') $(shell find $(PROJECT_DIR)/scripts -name '*.c')
+SOURCES := $(shell find $(SOURCE_DIR) -name '*.c') $(shell find $(TOOLS_DIR) -name '*.c')
 OBJECTS := $(SOURCES:%.c=%.o)
 OUTPUTS := $(OBJECTS:%=build/%)
+
+SCRIPT_SOURCES := $(shell find $(PROJECT_DIR)/scripts -name '*.c')
 
 main: build/driver build/flux_editor build/test_render build/parser_test
 

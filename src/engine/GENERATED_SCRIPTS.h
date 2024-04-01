@@ -242,3 +242,7 @@ fluxScript flux_allocate_script(enum fluxScriptID id)
 ;
 #endif
 
+
+#ifdef FLUX_SCRIPTS_IMPLEMENTATION
+static const char* SCRIPT_NAME_TO_ENUM[3]={[fluxEmptyScript] = "empty_script",[fluxScript_test] = "test",[fluxScript_test2] = "test2"};
+#endif
