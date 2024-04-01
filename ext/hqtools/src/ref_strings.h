@@ -27,4 +27,5 @@ hstr hstr_array_get(hstrArray arr, int i);
 int hstr_array_len(hstrArray arr);
 
 int hq_string_is_null_terminated(const char* str, int sz);
+hstr hstr_strip(hstr str);
 #endif

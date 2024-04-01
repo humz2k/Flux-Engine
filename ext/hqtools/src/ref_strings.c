@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 /*! \struct hstrInternal
  * \brief Internal state for `hstr`
@@ -302,4 +303,37 @@ int hq_string_is_null_terminated(const char* str, int sz) {
             return 1;
     }
     return 0;
+}
+
+static char *trimwhitespace(char *str)
+{
+  char *end;
+
+  // Trim leading space
+  while(isspace((unsigned char)*str)) str++;
+
+  if(*str == 0)  // All spaces?
+    return str;
+
+  // Trim trailing space
+  end = str + strlen(str) - 1;
+  while(end > str && isspace((unsigned char)*end)) end--;
+
+  // Write new null terminator character
+  end[1] = '\0';
+
+  return str;
+}
+
+hstr hstr_strip(hstr str){
+    assert(str);
+    hstr_incref(str);
+
+    char raw[strlen(hstr_unpack(str)) + 2];
+    strcpy(raw,hstr_unpack(str));
+    char* stripped = trimwhitespace(raw);
+    hstr out = hstr_new(stripped);
+
+    hstr_decref(str);
+    return out;
 }

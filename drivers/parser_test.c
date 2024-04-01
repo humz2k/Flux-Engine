@@ -10,9 +10,11 @@ int main(){
 
     hq_allocator_init_global();
 
-    fluxParsedPrefab prefab = parser_read_prefab("/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab");
+    fluxParsedPrefab testPrefab = parser_read_prefab("/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab");
+    fluxParsedPrefab defaultCamera = parser_read_prefab("/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/defaultCamera.prefab");
 
-    parser_delete_parsed_prefab(prefab);
+    parser_delete_parsed_prefab(testPrefab);
+    parser_delete_parsed_prefab(defaultCamera);
 
     hq_allocator_delete_global();
 
