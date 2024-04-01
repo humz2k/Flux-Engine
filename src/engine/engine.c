@@ -27,7 +27,7 @@ int run_game() {
     editor_add_console_command("quit", console_command_quit);
 
     flux_init_game_callbacks();
-    //flux_init_prefabs();
+    // flux_init_prefabs();
     flux_reset_scene();
 
     fluxTransform camera_transform;
@@ -35,9 +35,9 @@ int run_game() {
     camera_transform.rot = (Vector3){-0.3, 0, 0};
     camera_transform.scale = Vector3One();
 
-    //flux_scene_instantiate_prefab(fluxPrefab_defaultCamera, camera_transform);
-    //flux_scene_instantiate_prefab(fluxPrefab_testPrefab,
-    //                             flux_empty_transform());
+    // flux_scene_instantiate_prefab(fluxPrefab_defaultCamera,
+    // camera_transform); flux_scene_instantiate_prefab(fluxPrefab_testPrefab,
+    //                              flux_empty_transform());
 
     while (!WindowShouldClose() && !do_quit) {
         BeginDrawing();

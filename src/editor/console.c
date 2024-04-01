@@ -3,6 +3,7 @@
 #include "coords.h"
 #include "editor_config.h"
 #include "editor_theme.h"
+#include "hqtools/hqtools.h"
 #include "panels.h"
 #include "raylib.h"
 #include "raymath.h"
@@ -11,8 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hqtools/hqtools.h"
-
 
 #define LOG_USER 12
 

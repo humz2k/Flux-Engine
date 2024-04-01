@@ -1,8 +1,8 @@
 #ifndef _FLUX_ENGINE_CONSOLE_H_
 #define _FLUX_ENGINE_CONSOLE_H_
 
-#include <stdio.h>
 #include "raylib.h"
+#include <stdio.h>
 
 typedef void (*flux_console_command_callback)(int, const char**);
 

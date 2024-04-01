@@ -47,7 +47,7 @@ static void console_command_quit(int n_args, const char** args) {
 void init_editor_tools(void) {
     editor_init_stack();
     SetTraceLogCallback(CustomLog);
-    //hq_allocator_init_global();
+    // hq_allocator_init_global();
     editor_init_panels();
     editor_init_buttons();
     editor_init_input_boxes();
@@ -59,7 +59,7 @@ void close_editor_tools(void) {
     editor_delete_console();
     editor_delete_panels();
     editor_delete_buttons();
-    //hq_allocator_delete_global();
+    // hq_allocator_delete_global();
     editor_delete_stack();
 }
 
