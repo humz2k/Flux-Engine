@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "raylib.h"
 #include "hqtools/hqtools.h"
-#include "prefab.h"
+#include "prefab_parser.h"
 
 int main(){
 

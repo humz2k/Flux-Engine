@@ -3,7 +3,7 @@
 #include "raylib.h"
 #include "transform.h"
 #include "hqtools/hqtools.h"
-#include "prefab.h"
+#include "prefab_parser.h"
 
 /*! \struct fluxParsedPrefabStruct
  * A parsed prefab
@@ -156,7 +156,7 @@ fluxParsedPrefab parser_read_prefab(const char* raw_path){
     for (int i = 0; i < hstr_array_len(lines); i++){
         hstr line = hstr_incref(hstr_array_get(lines,i));
 
-        hstrArray arguments = hstr_split(line,":");
+        hstrArray arguments = hstr_split(line,"=");
 
         if (hstr_array_len(arguments) == 2){
 

@@ -1,9 +1,6 @@
 #ifndef _PARSER_PREFAB_H_
 #define _PARSER_PREFAB_H_
 
-struct fluxPrefabStruct;
-typedef struct fluxPrefabStruct* fluxPrefab;
-
 struct fluxParsedPrefabStruct;
 typedef struct fluxParsedPrefabStruct* fluxParsedPrefab;
 

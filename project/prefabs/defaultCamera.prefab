@@ -1,2 +1,2 @@
-prefabName: defaultCamera
-prefabIsCamera: true
+prefabName = defaultCamera
+prefabIsCamera = true
