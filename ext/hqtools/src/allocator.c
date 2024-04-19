@@ -215,7 +215,7 @@ void* hq_allocator_realloc(hqAllocator allocator, void* ptr, size_t sz,
     assert(allocator);
 
     if (ptr == NULL) {
-        LOG(ERROR, "tried to realloc a NULL pointer (%s:%d)", file, line);
+        LOG(WARNING, "tried to realloc a NULL pointer (%s:%d)", file, line);
         return hq_allocator_alloc(allocator,sz,file,line);
         //exit(1);
     }

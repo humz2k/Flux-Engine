@@ -1,0 +1,2 @@
+sceneName = testScene
+scenePrefabs = /Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/defaultCamera.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab

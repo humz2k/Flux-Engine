@@ -1,3 +1,6 @@
+#ifndef _FLUX_GAME_CALLBACKS_H_
+#define _FLUX_GAME_CALLBACKS_H_
+
 enum FluxGameCallback {
     fluxGameCallback_onGameLoad,
     fluxGameCallback_onGameClose
@@ -14,4 +17,5 @@ void flux_game_load(void);
 
 void flux_game_close(void);
 
+#endif
 #endif

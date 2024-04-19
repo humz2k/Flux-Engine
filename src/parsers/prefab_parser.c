@@ -1,4 +1,5 @@
 #include "prefab_parser.h"
+#include "file_tools.h"
 #include "hqtools/hqtools.h"
 #include "raylib.h"
 #include "transform.h"
@@ -31,6 +32,36 @@ typedef struct fluxParsedPrefabStruct {
     hstrArray children;
 
 } fluxParsedPrefabStruct;
+
+hstr parser_parsed_prefab_get_path(fluxParsedPrefab prefab) {
+    assert(prefab);
+    return prefab->path;
+}
+
+hstr parser_parsed_prefab_get_name(fluxParsedPrefab prefab) {
+    assert(prefab);
+    return prefab->name;
+}
+
+bool parser_parsed_prefab_has_model(fluxParsedPrefab prefab) {
+    assert(prefab);
+    return prefab->has_model;
+}
+
+hstr parser_parsed_prefab_get_model_path(fluxParsedPrefab prefab) {
+    assert(prefab);
+    return prefab->model_path;
+}
+
+bool parser_parsed_prefab_is_camera(fluxParsedPrefab prefab) {
+    assert(prefab);
+    return prefab->is_camera;
+}
+
+hstrArray parser_parsed_prefab_get_scripts(fluxParsedPrefab prefab) {
+    assert(prefab);
+    return prefab->scripts;
+}
 
 static fluxParsedPrefab alloc_parsed_prefab_internal(void) {
     fluxParsedPrefab out =
@@ -115,24 +146,6 @@ void parser_delete_parsed_prefab(fluxParsedPrefab prefab) {
     assert(prefab->children);
     hstr_array_delete(prefab->children);
     free(prefab);
-}
-
-static size_t get_file_length(FILE* fptr) {
-    assert(fptr);
-    fseek(fptr, 0L, SEEK_END);
-    size_t sz = ftell(fptr);
-    rewind(fptr);
-    return sz;
-}
-
-static hstr read_whole_file(FILE* fptr) {
-    hstr file_str = hstr_new("");
-
-    char buffer[100];
-    while (fgets(buffer, 100, fptr)) {
-        file_str = hstr_concat(file_str, hstr_new(buffer));
-    }
-    return file_str;
 }
 
 fluxParsedPrefab parser_read_prefab(const char* raw_path) {

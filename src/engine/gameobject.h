@@ -13,12 +13,6 @@ typedef struct fluxGameObjectStruct* fluxGameObject;
 
 #include "scripts.h"
 
-struct fluxDrawObject {
-    Model model;
-    Transform transform;
-    Color tint;
-};
-
 fluxGameObject flux_allocate_gameobject(const char* name, const char* tag,
                                         fluxTransform transform);
 
