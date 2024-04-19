@@ -1,8 +1,11 @@
 #include "config.h"
 #include "gameobject.h"
 #include "hqtools/hqtools.h"
+#include "prefab_parser.h"
+#include "prefabs.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "scene_parser.h"
 #include "sceneallocator.h"
 #include "scripts.h"
 #include "transform.h"
@@ -11,6 +14,8 @@
 #include <stdlib.h>
 
 static fluxGameObject game_objects[FLUX_MAX_GAMEOBJECTS];
+static fluxPrefab prefabs[FLUX_MAX_GAMEOBJECTS];
+static int n_prefabs = 0;
 static int n_objects = 0;
 static fluxGameObject active_camera;
 
@@ -22,22 +27,9 @@ void flux_reset_scene(void) {
 
 void flux_close_scene(void) { flux_close_scene_allocator(); }
 
-/*void flux_scene_instantiate_prefab(enum fluxPrefabID prefab,
-                                   fluxTransform transform) {
-    FLUX_ASSERT(n_objects < FLUX_MAX_GAMEOBJECTS,
-                "FLUX<scene.c>: too many objects instantiated (%d >= %d)",
-                n_objects, FLUX_MAX_GAMEOBJECTS);
-    fluxGameObject obj = flux_instantiate_prefab(prefab, transform);
-    game_objects[n_objects] = obj;
-    n_objects++;
-    if (flux_gameobject_is_camera(obj) && (active_camera == NULL)) {
-        TraceLog(LOG_INFO,
-                 "FLUX<scene.c>: setting scene active camera to gameobject "
-                 "with id %d",
-                 flux_gameobject_get_id(obj));
-        active_camera = obj;
-    }
-}*/
+void flux_load_scene(const char* path) {
+    // fluxParsedScene parsed_scene =
+}
 
 void flux_draw_scene(void) {
     if (!active_camera)
@@ -53,7 +45,7 @@ void flux_draw_scene(void) {
     DrawGrid(100, 0.1);
 
     for (int i = 0; i < n_objects; i++) {
-        flux_gameobject_draw(game_objects[i]);
+        // flux_gameobject_draw(game_objects[i]);
     }
 
     EndMode3D();

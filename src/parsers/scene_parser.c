@@ -7,6 +7,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct fluxParsedGameObjectStruct {
+    hstr prefab_name;
+    fluxTransform transform;
+} fluxParsedGameObjectStruct;
+
+static fluxParsedGameObject make_parsed_gameobject(hstr prefab_name,
+                                                   fluxTransform transform) {
+    assert(prefab_name);
+    TraceLog(LOG_INFO, "making gameobject from %s", hstr_unpack(prefab_name));
+    fluxParsedGameObject out;
+    assert(
+        out = (fluxParsedGameObject)malloc(sizeof(fluxParsedGameObjectStruct)));
+    memset(out, 0, sizeof(fluxParsedGameObjectStruct));
+    out->prefab_name = hstr_incref(prefab_name);
+    out->transform = transform;
+    return out;
+}
+
+static void delete_parsed_gameobject(fluxParsedGameObject gameobject) {
+    assert(gameobject);
+    hstr_decref(gameobject->prefab_name);
+    free(gameobject);
+}
+
+hstr parser_parsed_gameobject_get_prefab_name(fluxParsedGameObject gameobject) {
+    assert(gameobject);
+    return gameobject->prefab_name;
+}
+
+fluxTransform
+parser_parsed_gameobject_get_transform(fluxParsedGameObject gameobject) {
+    assert(gameobject);
+    return gameobject->transform;
+}
+
 /*! \struct fluxParsedSceneStruct
  * A parsed scene
  */
@@ -20,6 +55,9 @@ typedef struct fluxParsedSceneStruct {
     // prefabs in scene
     int n_prefabs;
     fluxParsedPrefab* prefabs;
+
+    int n_gameobjects;
+    fluxParsedGameObject* gameobjects;
 
 } fluxParsedSceneStruct;
 
@@ -59,6 +97,18 @@ static void parsed_scene_add_prefab(fluxParsedScene scene,
     scene->prefabs[scene->n_prefabs - 1] = prefab;
 }
 
+static void parsed_scene_add_gameobject(fluxParsedScene scene,
+                                        fluxParsedGameObject gameobject) {
+    assert(scene);
+    assert(gameobject);
+    assert(scene->n_gameobjects >= 0);
+    scene->n_gameobjects++;
+    scene->gameobjects =
+        realloc(scene->gameobjects,
+                sizeof(fluxParsedGameObject) * scene->n_gameobjects);
+    scene->gameobjects[scene->n_gameobjects - 1] = gameobject;
+}
+
 void parser_delete_parsed_scene(fluxParsedScene scene) {
     assert(scene);
     if (scene->path)
@@ -68,8 +118,42 @@ void parser_delete_parsed_scene(fluxParsedScene scene) {
     for (int i = 0; i < scene->n_prefabs; i++) {
         parser_delete_parsed_prefab(scene->prefabs[i]);
     }
+    for (int i = 0; i < scene->n_gameobjects; i++) {
+        delete_parsed_gameobject(scene->gameobjects[i]);
+    }
+    free(scene->gameobjects);
     free(scene->prefabs);
     free(scene);
+}
+
+hstr parser_parsed_scene_get_name(fluxParsedScene scene) {
+    assert(scene);
+    return scene->name;
+}
+
+int parser_parsed_scene_get_n_prefabs(fluxParsedScene scene) {
+    assert(scene);
+    return scene->n_prefabs;
+}
+
+fluxParsedPrefab parser_parsed_scene_get_prefab(fluxParsedScene scene, int i) {
+    assert(scene);
+    assert(i >= 0);
+    assert(i < scene->n_prefabs);
+    return scene->prefabs[i];
+}
+
+int parser_parsed_scene_get_n_gameobjects(fluxParsedScene scene) {
+    assert(scene);
+    return scene->n_gameobjects;
+}
+
+fluxParsedGameObject parser_parsed_scene_get_gameobject(fluxParsedScene scene,
+                                                        int i) {
+    assert(scene);
+    assert(i >= 0);
+    assert(i < scene->n_gameobjects);
+    return scene->gameobjects[i];
 }
 
 fluxParsedScene parser_read_scene(const char* raw_path) {
@@ -104,7 +188,7 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
             hstr argument =
                 hstr_incref(hstr_strip(hstr_array_get(arguments, 1)));
 
-            hstr argument_list = hstr_split(argument, ",");
+            hstrArray argument_list = hstr_split(argument, ",");
 
             // TraceLog(LOG_INFO,"ARGUMENT: %s :
             // %s",hstr_unpack(command),hstr_unpack(argument));
@@ -121,7 +205,35 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
                     parsed_scene_add_prefab(out, prefab);
                     hstr_decref(prefab_path);
                 }
-            } /* else if (strcmp(hstr_unpack(command), "prefabChildren") == 0) {
+            } else if (strcmp(hstr_unpack(command), "sceneGameObject") == 0) {
+                assert(hstr_array_len(argument_list) == 10);
+                hstr prefab_name =
+                    hstr_incref(hstr_array_get(argument_list, 0));
+                fluxTransform transform;
+                transform.pos.x =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 1)));
+                transform.pos.y =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 2)));
+                transform.pos.z =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 3)));
+                transform.rot.x =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 4)));
+                transform.rot.y =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 5)));
+                transform.rot.z =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 6)));
+                transform.scale.x =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 7)));
+                transform.scale.y =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 8)));
+                transform.scale.z =
+                    atof(hstr_unpack(hstr_array_get(argument_list, 9)));
+                parsed_scene_add_gameobject(
+                    out, make_parsed_gameobject(prefab_name, transform));
+                hstr_decref(prefab_name);
+            }
+
+            /* else if (strcmp(hstr_unpack(command), "prefabChildren") == 0) {
                  for (int k = 0; k < hstr_array_len(argument_list); k++) {
                      hstr child_name = hstr_incref(
                          hstr_strip(hstr_array_get(argument_list, k)));

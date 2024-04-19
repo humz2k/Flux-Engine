@@ -12,16 +12,16 @@ int main(){
 
     hq_allocator_init_global();
 
-    //fluxParsedScene testScene = parser_read_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/testScene.scene");
+    fluxParsedScene testScene = parser_read_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/testScene.scene");
 
-    //parser_delete_parsed_scene(testScene);
-    fluxParsedPrefab parsed_prefab = parser_read_prefab("/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab");
+    parser_delete_parsed_scene(testScene);
+    //fluxParsedPrefab parsed_prefab = parser_read_prefab("/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab");
 
-    fluxPrefab prefab = flux_load_prefab(parsed_prefab);
+    //fluxPrefab prefab = flux_load_prefab(parsed_prefab);
 
-    flux_delete_prefab(prefab);
+    //flux_delete_prefab(prefab);
 
-    parser_delete_parsed_prefab(parsed_prefab);
+    //parser_delete_parsed_prefab(parsed_prefab);
 
     hq_allocator_delete_global();
 
