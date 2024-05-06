@@ -57,3 +57,4 @@ test_render.dSYM/Contents/Info.plist
 **/.dSYM
 ext/.DS_Store
 ext/.DS_Store
+src/engine/GENERATED_SCRIPTS.h
