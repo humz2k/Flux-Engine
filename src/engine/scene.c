@@ -158,6 +158,8 @@ void flux_draw_scene(void) {
 
     render_end();
 
+    flux_scene_script_callback(ONDRAW2D);
+
     //TraceLog(LOG_INFO,"camera found");
     /*Camera3D cam = flux_gameobject_get_raylib_camera(active_camera);
     TraceLog(LOG_DEBUG,

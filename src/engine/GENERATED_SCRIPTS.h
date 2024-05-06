@@ -67,6 +67,9 @@ fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
                 data->ka = atof(value);
                 TraceLog(LOG_INFO,"ka = %g",data->ka);
             }
+            if (strcmp(argument,"skybox") == 0){
+                render_load_skybox(value);
+            }
         }
         hstr_array_delete(split);
         hstr_decref(arg);
