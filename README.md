@@ -13,6 +13,11 @@
   * ENET (networking)
 * Pure C (including scripting).
 
+## Building
+First run `python3 configure.py`, then `make`.
+
+If building in debug mode, `make DEBUG=true`.
+
 ## Architecture
 Four modules:
 
