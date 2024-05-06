@@ -37,19 +37,22 @@ int run_game() {
 
     flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/testScene.scene");
 
-
     fluxTransform camera_transform;
     camera_transform.pos = (Vector3){0, 1, -3};
     camera_transform.rot = (Vector3){-0.3, 0, 0};
     camera_transform.scale = Vector3One();
 
-    render_set_ka(0.2);
+    //render_set_ka(0.2);
 
     // flux_scene_instantiate_prefab(fluxPrefab_defaultCamera,
     // camera_transform); flux_scene_instantiate_prefab(fluxPrefab_testPrefab,
     //                              flux_empty_transform());
 
     while (!WindowShouldClose() && !do_quit) {
+
+        flux_scene_script_callback(ONUPDATE);
+        flux_scene_script_callback(AFTERUPDATE);
+
         BeginDrawing();
 
         ClearBackground(BLACK);

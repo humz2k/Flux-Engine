@@ -1,4 +1,7 @@
 sceneName = testScene
-scenePrefabs = /Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/defaultCamera.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab
+scenePrefabs = /Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/defaultCamera.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/lightmanager.prefab
 sceneGameObject = defaultCamera,0,0,-10,0,0,0,1,1,1
 sceneGameObject = testPrefab,0,0,0,0,0,0,1,1,1
+sceneGameObject = testPrefab,2,0,0,0,0,0,1,1,1
+sceneGameObject = testPrefab,-2,0,0,0,0,0,1,1,1
+sceneGameObject = lightmanager,0,0,0,0,0,0,1,1,1

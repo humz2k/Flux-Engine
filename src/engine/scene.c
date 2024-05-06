@@ -9,6 +9,7 @@
 #include "sceneallocator.h"
 #include "scripts.h"
 #include "transform.h"
+#include "scene.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +27,7 @@ void flux_reset_scene(void) {
 }
 
 void flux_close_scene(void) {
+    flux_scene_script_callback(ONDESTROY);
     if (prefabs){
         for (int i = 0; i < n_prefabs; i++){
             flux_delete_prefab(prefabs[i]);
@@ -70,7 +72,7 @@ void flux_load_scene(const char* path) {
         hstr prefab_name = hstr_incref(parser_parsed_gameobject_get_prefab_name(parsed_gameobject));
         fluxPrefab to_instantiate = NULL;
         for (int j = 0; j < n_prefabs; j++){
-            fluxPrefab prefab = prefabs[i];
+            fluxPrefab prefab = prefabs[j];
             if (strcmp(hstr_unpack(flux_prefab_get_name(prefab)),hstr_unpack(prefab_name)) != 0)continue;
             to_instantiate = prefab;
         }
@@ -90,7 +92,42 @@ void flux_load_scene(const char* path) {
     }
 
     parser_delete_parsed_scene(parsed_scene);
+
+    flux_scene_script_callback(ONINIT);
 }
+
+void flux_scene_script_callback(script_callback_t callback){
+    void(*func)(fluxGameObject,fluxScript);
+    switch(callback){
+        case ONUPDATE:
+            func = fluxCallback_onUpdate;
+            break;
+        case AFTERUPDATE:
+            func = fluxCallback_afterUpdate;
+            break;
+        case ONINIT:
+            func = fluxCallback_onInit;
+            break;
+        case ONDESTROY:
+            func = fluxCallback_onDestroy;
+            break;
+        case ONDRAW:
+            func = fluxCallback_onDraw;
+            break;
+        case ONDRAW2D:
+            func = fluxCallback_onDraw2D;
+            break;
+    }
+    //TraceLog(LOG_INFO,"doing callback???");
+    for (int i = 0; i < n_objects; i++){
+        fluxGameObject obj = game_objects[i];
+        for (int j = 0; j < flux_gameobject_get_n_scripts(obj); j++){
+            fluxScript script = flux_gameobject_get_script(obj,j);
+            //TraceLog(LOG_INFO,"calling...");
+            func(obj,script);
+        }
+    }
+};
 
 void flux_draw_scene(void) {
     if (!active_camera)

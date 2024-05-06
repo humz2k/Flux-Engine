@@ -87,7 +87,7 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
             hstr_unpack(parser_parsed_prefab_get_model_path(parsed));
         TraceLog(LOG_INFO,"loading model %s",model_path);
         if (strcmp(model_path, "SPHERE") == 0) {
-            out->raw_model = LoadModelFromMesh(GenMeshSphere(1, 10, 10));
+            out->raw_model = LoadModelFromMesh(GenMeshSphere(1, 50, 50));
         } else {
             out->raw_model = LoadModel(model_path);
         }

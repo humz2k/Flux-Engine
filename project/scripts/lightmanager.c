@@ -1,13 +1,12 @@
-#define SCRIPT test
+#define SCRIPT lightmanager
 #include "fluxScript.h"
 
 script_data{
-    int x;
+
 };
 
 fluxCallback onInit(fluxGameObject obj, script_data* data){
-    data->x = 0;
-    /*render_set_ka(0.2);
+    render_set_ka(0.2);
     render_light_enable(0);
     render_light_set_type(0,0);
     render_light_set_cL(0,WHITE);
@@ -22,10 +21,9 @@ fluxCallback onInit(fluxGameObject obj, script_data* data){
     render_light_set_kd(1,0.7);
     render_light_set_ks(1,0.3);
     render_light_set_L(1,(Vector3){0,2,-1});
-    render_light_set_p(1,200);*/
+    render_light_set_p(1,200);
 }
 
 fluxCallback onUpdate(fluxGameObject obj, script_data* data){
-    //TraceLog(LOG_INFO,"UPDATE...");
-    data->x++;
+
 }

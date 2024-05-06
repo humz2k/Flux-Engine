@@ -107,6 +107,13 @@ fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform, fluxPre
     return out;
 }
 
+fluxScript flux_gameobject_get_script(fluxGameObject obj, int i){
+    assert(obj);
+    assert(i >= 0);
+    assert(i < obj->n_scripts);
+    return obj->scripts[i];
+}
+
 void flux_destroy_gameobject(fluxGameObject obj){
     assert(obj);
     if (obj->scripts){

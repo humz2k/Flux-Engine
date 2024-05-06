@@ -37,5 +37,7 @@ bool flux_gameobject_has_model(fluxGameObject obj);
 
 Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj);
 
+fluxScript flux_gameobject_get_script(fluxGameObject obj, int i);
+
 #endif
 #endif
