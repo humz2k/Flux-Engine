@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 static fluxGameObject game_objects[FLUX_MAX_GAMEOBJECTS];
-static fluxPrefab prefabs[FLUX_MAX_GAMEOBJECTS];
+static fluxPrefab* prefabs = NULL;
 static int n_prefabs = 0;
 static int n_objects = 0;
 static fluxGameObject active_camera;
@@ -25,10 +25,36 @@ void flux_reset_scene(void) {
     active_camera = NULL;
 }
 
-void flux_close_scene(void) { flux_close_scene_allocator(); }
+void flux_close_scene(void) {
+    if (prefabs){
+        for (int i = 0; i < n_prefabs; i++){
+            flux_delete_prefab(prefabs[i]);
+        }
+        free(prefabs);
+        prefabs = NULL;
+        n_prefabs = 0;
+    }
+    flux_close_scene_allocator();
+}
 
 void flux_load_scene(const char* path) {
-    // fluxParsedScene parsed_scene =
+    assert(path);
+    assert(prefabs == NULL);
+    assert(n_prefabs == 0);
+    TraceLog(LOG_INFO,"loading scene %s",path);
+    fluxParsedScene parsed_scene = parser_read_scene(path);
+
+    TraceLog(LOG_INFO,"scene name: %s",hstr_unpack(parser_parsed_scene_get_name(parsed_scene)));
+
+    for (int i = 0; i < parser_parsed_scene_get_n_prefabs(parsed_scene); i++){
+        fluxParsedPrefab parsed_prefab = parser_parsed_scene_get_prefab(parsed_scene,i);
+        fluxPrefab prefab = flux_load_prefab(parsed_prefab);
+        prefabs = realloc(prefabs,sizeof(fluxPrefab) * (n_prefabs + 1));
+        prefabs[n_prefabs] = prefab;
+        n_prefabs++;
+    }
+
+    parser_delete_parsed_scene(parsed_scene);
 }
 
 void flux_draw_scene(void) {

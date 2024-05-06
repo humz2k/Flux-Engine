@@ -29,6 +29,10 @@ int run_game() {
     flux_init_game_callbacks();
     // flux_init_prefabs();
     flux_reset_scene();
+    flux_game_load();
+
+    flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/testScene.scene");
+
 
     fluxTransform camera_transform;
     camera_transform.pos = (Vector3){0, 1, -3};
@@ -52,7 +56,6 @@ int run_game() {
     }
 
     flux_close_scene();
-    flux_game_load();
     flux_game_close();
 
     CloseWindow();

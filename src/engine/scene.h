@@ -4,6 +4,8 @@
 // #include "prefabs.h"
 #include "transform.h"
 
+void flux_load_scene(const char* path);
+
 void flux_reset_scene(void);
 
 void flux_close_scene(void);

@@ -51,7 +51,7 @@ void flux_delete_prefab(fluxPrefab prefab) {
         UnloadModel(prefab->raw_model);
         render_free_model(prefab->model);
     }
-    if (prefab->n_scripts > 0)
+    if (prefab->scripts)
         free(prefab->scripts);
     free(prefab);
 }
