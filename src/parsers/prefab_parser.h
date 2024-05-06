@@ -27,6 +27,7 @@ int parser_parsed_prefab_get_projection(fluxParsedPrefab prefab);
 
 void parser_parsed_prefab_set_fov(fluxParsedPrefab prefab, float fov);
 
-void parser_parsed_prefab_set_projection(fluxParsedPrefab prefab, int projection);
+void parser_parsed_prefab_set_projection(fluxParsedPrefab prefab,
+                                         int projection);
 
 #endif

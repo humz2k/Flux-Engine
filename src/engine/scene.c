@@ -1,3 +1,4 @@
+#include "scene.h"
 #include "config.h"
 #include "gameobject.h"
 #include "hqtools/hqtools.h"
@@ -9,7 +10,6 @@
 #include "sceneallocator.h"
 #include "scripts.h"
 #include "transform.h"
-#include "scene.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,16 +28,16 @@ void flux_reset_scene(void) {
 
 void flux_close_scene(void) {
     flux_scene_script_callback(ONDESTROY);
-    if (prefabs){
-        for (int i = 0; i < n_prefabs; i++){
+    if (prefabs) {
+        for (int i = 0; i < n_prefabs; i++) {
             flux_delete_prefab(prefabs[i]);
         }
         free(prefabs);
         prefabs = NULL;
         n_prefabs = 0;
     }
-    if (game_objects){
-        for (int i = 0; i < n_objects; i++){
+    if (game_objects) {
+        for (int i = 0; i < n_objects; i++) {
             flux_destroy_gameobject(game_objects[i]);
         }
         free(game_objects);
@@ -51,42 +51,53 @@ void flux_load_scene(const char* path) {
     assert(path);
     assert(prefabs == NULL);
     assert(n_prefabs == 0);
-    TraceLog(LOG_INFO,"loading scene %s",path);
+    TraceLog(LOG_INFO, "loading scene %s", path);
     fluxParsedScene parsed_scene = parser_read_scene(path);
 
     active_camera = NULL;
 
-    TraceLog(LOG_INFO,"scene name: %s",hstr_unpack(parser_parsed_scene_get_name(parsed_scene)));
+    TraceLog(LOG_INFO, "scene name: %s",
+             hstr_unpack(parser_parsed_scene_get_name(parsed_scene)));
 
-    for (int i = 0; i < parser_parsed_scene_get_n_prefabs(parsed_scene); i++){
-        fluxParsedPrefab parsed_prefab = parser_parsed_scene_get_prefab(parsed_scene,i);
+    for (int i = 0; i < parser_parsed_scene_get_n_prefabs(parsed_scene); i++) {
+        fluxParsedPrefab parsed_prefab =
+            parser_parsed_scene_get_prefab(parsed_scene, i);
         fluxPrefab prefab = flux_load_prefab(parsed_prefab);
-        prefabs = realloc(prefabs,sizeof(fluxPrefab) * (n_prefabs + 1));
+        prefabs = realloc(prefabs, sizeof(fluxPrefab) * (n_prefabs + 1));
         prefabs[n_prefabs] = prefab;
         n_prefabs++;
     }
 
-    for (int i = 0; i < parser_parsed_scene_get_n_gameobjects(parsed_scene); i++){
-        fluxParsedGameObject parsed_gameobject = parser_parsed_scene_get_gameobject(parsed_scene,i);
-        fluxTransform transform = parser_parsed_gameobject_get_transform(parsed_gameobject);
-        hstr prefab_name = hstr_incref(parser_parsed_gameobject_get_prefab_name(parsed_gameobject));
+    for (int i = 0; i < parser_parsed_scene_get_n_gameobjects(parsed_scene);
+         i++) {
+        fluxParsedGameObject parsed_gameobject =
+            parser_parsed_scene_get_gameobject(parsed_scene, i);
+        fluxTransform transform =
+            parser_parsed_gameobject_get_transform(parsed_gameobject);
+        hstr prefab_name = hstr_incref(
+            parser_parsed_gameobject_get_prefab_name(parsed_gameobject));
         fluxPrefab to_instantiate = NULL;
-        for (int j = 0; j < n_prefabs; j++){
+        for (int j = 0; j < n_prefabs; j++) {
             fluxPrefab prefab = prefabs[j];
-            if (strcmp(hstr_unpack(flux_prefab_get_name(prefab)),hstr_unpack(prefab_name)) != 0)continue;
+            if (strcmp(hstr_unpack(flux_prefab_get_name(prefab)),
+                       hstr_unpack(prefab_name)) != 0)
+                continue;
             to_instantiate = prefab;
         }
 
         assert(to_instantiate != NULL);
         hstr_decref(prefab_name);
 
-        fluxGameObject allocated = flux_allocate_gameobject(i,transform,to_instantiate, parser_parsed_gameobject_get_args(parsed_gameobject));
+        fluxGameObject allocated = flux_allocate_gameobject(
+            i, transform, to_instantiate,
+            parser_parsed_gameobject_get_args(parsed_gameobject));
 
-        if (flux_gameobject_is_camera(allocated) && (active_camera == NULL)){
+        if (flux_gameobject_is_camera(allocated) && (active_camera == NULL)) {
             active_camera = allocated;
         }
 
-        game_objects = realloc(game_objects, sizeof(fluxGameObject) * (n_objects + 1));
+        game_objects =
+            realloc(game_objects, sizeof(fluxGameObject) * (n_objects + 1));
         game_objects[n_objects] = allocated;
         n_objects++;
     }
@@ -94,35 +105,35 @@ void flux_load_scene(const char* path) {
     parser_delete_parsed_scene(parsed_scene);
 }
 
-void flux_scene_script_callback(script_callback_t callback){
-    void(*func)(fluxGameObject,fluxScript);
-    switch(callback){
-        case ONUPDATE:
-            func = fluxCallback_onUpdate;
-            break;
-        case AFTERUPDATE:
-            func = fluxCallback_afterUpdate;
-            break;
-        //case ONINIT:
-        //    func = fluxCallback_onInit;
-        //    break;
-        case ONDESTROY:
-            func = fluxCallback_onDestroy;
-            break;
-        case ONDRAW:
-            func = fluxCallback_onDraw;
-            break;
-        case ONDRAW2D:
-            func = fluxCallback_onDraw2D;
-            break;
+void flux_scene_script_callback(script_callback_t callback) {
+    void (*func)(fluxGameObject, fluxScript);
+    switch (callback) {
+    case ONUPDATE:
+        func = fluxCallback_onUpdate;
+        break;
+    case AFTERUPDATE:
+        func = fluxCallback_afterUpdate;
+        break;
+    // case ONINIT:
+    //     func = fluxCallback_onInit;
+    //     break;
+    case ONDESTROY:
+        func = fluxCallback_onDestroy;
+        break;
+    case ONDRAW:
+        func = fluxCallback_onDraw;
+        break;
+    case ONDRAW2D:
+        func = fluxCallback_onDraw2D;
+        break;
     }
-    //TraceLog(LOG_INFO,"doing callback???");
-    for (int i = 0; i < n_objects; i++){
+    // TraceLog(LOG_INFO,"doing callback???");
+    for (int i = 0; i < n_objects; i++) {
         fluxGameObject obj = game_objects[i];
-        for (int j = 0; j < flux_gameobject_get_n_scripts(obj); j++){
-            fluxScript script = flux_gameobject_get_script(obj,j);
-            //TraceLog(LOG_INFO,"calling...");
-            func(obj,script);
+        for (int j = 0; j < flux_gameobject_get_n_scripts(obj); j++) {
+            fluxScript script = flux_gameobject_get_script(obj, j);
+            // TraceLog(LOG_INFO,"calling...");
+            func(obj, script);
         }
     }
 };
@@ -131,27 +142,34 @@ void flux_draw_scene(void) {
     if (!active_camera)
         return;
 
-    for (int i = 0; i < n_prefabs; i++){
-        if (flux_prefab_is_camera(prefabs[i]))continue;
-        if (flux_prefab_get_model(prefabs[i]) == NULL)continue;
+    for (int i = 0; i < n_prefabs; i++) {
+        if (flux_prefab_is_camera(prefabs[i]))
+            continue;
+        if (flux_prefab_get_model(prefabs[i]) == NULL)
+            continue;
         render_reset_instances(flux_prefab_get_model(prefabs[i]));
     }
 
-    for (int i = 0; i < n_objects; i++){
+    for (int i = 0; i < n_objects; i++) {
         fluxGameObject obj = game_objects[i];
-        if (flux_gameobject_is_camera(obj))continue;
-        if (!flux_gameobject_has_model(obj))continue;
-        render_add_model_instance(flux_gameobject_get_model(obj),flux_gameobject_get_transform(obj));
+        if (flux_gameobject_is_camera(obj))
+            continue;
+        if (!flux_gameobject_has_model(obj))
+            continue;
+        render_add_model_instance(flux_gameobject_get_model(obj),
+                                  flux_gameobject_get_transform(obj));
     }
 
     Camera3D cam = flux_gameobject_get_raylib_camera(active_camera);
 
     render_begin(cam);
 
-    for (int i = 0; i < n_prefabs; i++){
-        if (flux_prefab_is_camera(prefabs[i]))continue;
-        if (flux_prefab_get_model(prefabs[i]) == NULL)continue;
-        render_rmodel(flux_prefab_get_model(prefabs[i]),WHITE);
+    for (int i = 0; i < n_prefabs; i++) {
+        if (flux_prefab_is_camera(prefabs[i]))
+            continue;
+        if (flux_prefab_get_model(prefabs[i]) == NULL)
+            continue;
+        render_rmodel(flux_prefab_get_model(prefabs[i]), WHITE);
     }
 
     render_calculate_shadows();
@@ -160,7 +178,7 @@ void flux_draw_scene(void) {
 
     flux_scene_script_callback(ONDRAW2D);
 
-    //TraceLog(LOG_INFO,"camera found");
+    // TraceLog(LOG_INFO,"camera found");
     /*Camera3D cam = flux_gameobject_get_raylib_camera(active_camera);
     TraceLog(LOG_DEBUG,
              "FLUX<scene.c>: drawing scene with camera: position = {%g %g %g}, "

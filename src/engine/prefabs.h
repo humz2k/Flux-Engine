@@ -1,8 +1,8 @@
 #ifndef _FLUX_PREFABS_H_
 #define _FLUX_PREFABS_H_
 
-#include "prefab_parser.h"
 #include "pipeline.h"
+#include "prefab_parser.h"
 #include "scripts.h"
 
 struct fluxPrefabStruct;

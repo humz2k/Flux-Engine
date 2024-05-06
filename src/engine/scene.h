@@ -4,7 +4,7 @@
 // #include "prefabs.h"
 #include "transform.h"
 
-typedef enum{
+typedef enum {
     ONUPDATE,
     AFTERUPDATE,
     ONDESTROY,

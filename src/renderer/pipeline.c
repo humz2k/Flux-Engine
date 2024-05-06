@@ -154,7 +154,7 @@ renderModel render_make_model(Model model) {
         out->mesh_bounding_boxes[i] =
             bbox2better(GetMeshBoundingBox(model.meshes[i]));
     }
-    TraceLog(LOG_INFO,"made model, %d meshes",model.meshCount);
+    TraceLog(LOG_INFO, "made model, %d meshes", model.meshCount);
     return out;
 }
 
@@ -192,7 +192,8 @@ void render_add_model_instance(renderModel model, fluxTransform transform) {
     model->transforms[model->n_instances] =
         get_mesh_transform(model->model, transform);
     model->n_instances++;
-    //TraceLog(LOG_INFO,"adding model instances, %g %g %g, %g %g %g, %g %g %g",transform.pos.x,transform.pos.y,transform.pos.z,transform.rot.x,transform.rot.y,transform.rot.z,transform.scale.x,transform.scale.y,transform.scale.z);
+    // TraceLog(LOG_INFO,"adding model instances, %g %g %g, %g %g %g, %g %g
+    // %g",transform.pos.x,transform.pos.y,transform.pos.z,transform.rot.x,transform.rot.y,transform.rot.z,transform.scale.x,transform.scale.y,transform.scale.z);
 }
 
 void render_rmodel(renderModel rmodel, Color tint) {

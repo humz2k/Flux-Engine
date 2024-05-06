@@ -14,7 +14,8 @@ typedef struct fluxParsedGameObjectStruct {
 } fluxParsedGameObjectStruct;
 
 static fluxParsedGameObject make_parsed_gameobject(hstr prefab_name,
-                                                   fluxTransform transform, hstrArray args) {
+                                                   fluxTransform transform,
+                                                   hstrArray args) {
     assert(prefab_name);
     TraceLog(LOG_INFO, "making gameobject from %s", hstr_unpack(prefab_name));
     fluxParsedGameObject out;
@@ -27,7 +28,7 @@ static fluxParsedGameObject make_parsed_gameobject(hstr prefab_name,
     return out;
 }
 
-hstrArray parser_parsed_gameobject_get_args(fluxParsedGameObject gameobject){
+hstrArray parser_parsed_gameobject_get_args(fluxParsedGameObject gameobject) {
     assert(gameobject);
     return gameobject->args;
 }
@@ -237,8 +238,8 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
                 transform.scale.z =
                     atof(hstr_unpack(hstr_array_get(argument_list, 9)));
                 hstrArray args = hstr_array_make();
-                for (int m = 10; m < hstr_array_len(argument_list); m++){
-                    hstr_array_append(args,hstr_array_get(argument_list,m));
+                for (int m = 10; m < hstr_array_len(argument_list); m++) {
+                    hstr_array_append(args, hstr_array_get(argument_list, m));
                 }
                 parsed_scene_add_gameobject(
                     out, make_parsed_gameobject(prefab_name, transform, args));

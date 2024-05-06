@@ -178,7 +178,7 @@ void render_unload_skybox(void) {
 void render_draw_skybox(void) {
     if (!skybox_loaded)
         return;
-    //TraceLog(LOG_INFO,"rendering skybox");
+    // TraceLog(LOG_INFO,"rendering skybox");
     rlDisableBackfaceCulling();
     rlDisableDepthMask();
     DrawModel(skybox, render_get_current_cam().position, 1.0f, WHITE);

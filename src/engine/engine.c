@@ -1,8 +1,8 @@
 #include "console.h"
 #include "editor.h"
 #include "hqtools/hqtools.h"
-#include "scene.h"
 #include "pipeline.h"
+#include "scene.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,7 +34,8 @@ int run_game() {
     flux_reset_scene();
     flux_game_load();
 
-    flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/testScene.scene");
+    flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
+                    "testScene.scene");
 
     while (!WindowShouldClose() && !do_quit) {
 
