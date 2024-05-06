@@ -5,7 +5,7 @@ script_data{
     float y;
 };
 
-fluxCallback onInit(fluxGameObject obj, script_data* data){
+fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
     data->y = 0;
 }
 

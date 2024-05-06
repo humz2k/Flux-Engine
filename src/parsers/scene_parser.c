@@ -10,10 +10,11 @@
 typedef struct fluxParsedGameObjectStruct {
     hstr prefab_name;
     fluxTransform transform;
+    hstrArray args;
 } fluxParsedGameObjectStruct;
 
 static fluxParsedGameObject make_parsed_gameobject(hstr prefab_name,
-                                                   fluxTransform transform) {
+                                                   fluxTransform transform, hstrArray args) {
     assert(prefab_name);
     TraceLog(LOG_INFO, "making gameobject from %s", hstr_unpack(prefab_name));
     fluxParsedGameObject out;
@@ -22,12 +23,19 @@ static fluxParsedGameObject make_parsed_gameobject(hstr prefab_name,
     memset(out, 0, sizeof(fluxParsedGameObjectStruct));
     out->prefab_name = hstr_incref(prefab_name);
     out->transform = transform;
+    out->args = args;
     return out;
+}
+
+hstrArray parser_parsed_gameobject_get_args(fluxParsedGameObject gameobject){
+    assert(gameobject);
+    return gameobject->args;
 }
 
 static void delete_parsed_gameobject(fluxParsedGameObject gameobject) {
     assert(gameobject);
     hstr_decref(gameobject->prefab_name);
+    hstr_array_delete(gameobject->args);
     free(gameobject);
 }
 
@@ -206,7 +214,7 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
                     hstr_decref(prefab_path);
                 }
             } else if (strcmp(hstr_unpack(command), "sceneGameObject") == 0) {
-                assert(hstr_array_len(argument_list) == 10);
+                assert(hstr_array_len(argument_list) >= 10);
                 hstr prefab_name =
                     hstr_incref(hstr_array_get(argument_list, 0));
                 fluxTransform transform;
@@ -228,8 +236,12 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
                     atof(hstr_unpack(hstr_array_get(argument_list, 8)));
                 transform.scale.z =
                     atof(hstr_unpack(hstr_array_get(argument_list, 9)));
+                hstrArray args = hstr_array_make();
+                for (int m = 10; m < hstr_array_len(argument_list); m++){
+                    hstr_array_append(args,hstr_array_get(argument_list,m));
+                }
                 parsed_scene_add_gameobject(
-                    out, make_parsed_gameobject(prefab_name, transform));
+                    out, make_parsed_gameobject(prefab_name, transform, args));
                 hstr_decref(prefab_name);
             }
 

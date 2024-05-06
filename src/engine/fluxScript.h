@@ -1,4 +1,5 @@
 #include "gameobject.h"
+#include "hqtools/hqtools.h"
 #include <assert.h>
 
 #define fluxConcat_(X, Y) X##_##Y

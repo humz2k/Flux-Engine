@@ -1,9 +1,16 @@
 #ifndef _FLUX_GAMEOBJECT_H_
 #define _FLUX_GAMEOBJECT_H_
 
+#include "transform.h"
+#include "hqtools/hqtools.h"
+
 // gameobject struct
 struct fluxGameObjectStruct;
 typedef struct fluxGameObjectStruct* fluxGameObject;
+
+fluxTransform flux_gameobject_get_transform(fluxGameObject obj);
+
+void flux_gameobject_set_transform(fluxGameObject obj, fluxTransform transform);
 
 #ifndef FLUX_GAMEOBJECT_TYPE_ONLY
 
@@ -17,15 +24,11 @@ typedef struct fluxGameObjectStruct* fluxGameObject;
 
 #include "prefabs.h"
 
-fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform, fluxPrefab prefab);
+fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform, fluxPrefab prefab, hstrArray args);
 
 void flux_destroy_gameobject(fluxGameObject obj);
 
 int flux_gameobject_get_id(fluxGameObject obj);
-
-fluxTransform flux_gameobject_get_transform(fluxGameObject obj);
-
-void flux_gameobject_set_transform(fluxGameObject obj, fluxTransform transform);
 
 int flux_gameobject_get_n_scripts(fluxGameObject obj);
 

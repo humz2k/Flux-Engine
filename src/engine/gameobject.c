@@ -87,7 +87,7 @@ Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj){
     return out;
 }
 
-fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform, fluxPrefab prefab){
+fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform, fluxPrefab prefab, hstrArray args){
     fluxGameObject out;
     assert(out = malloc(sizeof(struct fluxGameObjectStruct)));
     out->id = id;
@@ -100,6 +100,7 @@ fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform, fluxPre
         assert(out->scripts = malloc(sizeof(fluxScript) * out->n_scripts));
         for (int i = 0; i < out->n_scripts; i++){
             out->scripts[i] = flux_allocate_script(flux_prefab_get_scripts(prefab)[i]);
+            fluxCallback_onInit(out,out->scripts[i],args);
         }
     }
     out->fov = flux_prefab_get_fov(prefab);

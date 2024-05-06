@@ -7,7 +7,6 @@
 typedef enum{
     ONUPDATE,
     AFTERUPDATE,
-    ONINIT,
     ONDESTROY,
     ONDRAW,
     ONDRAW2D

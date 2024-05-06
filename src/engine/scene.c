@@ -80,7 +80,7 @@ void flux_load_scene(const char* path) {
         assert(to_instantiate != NULL);
         hstr_decref(prefab_name);
 
-        fluxGameObject allocated = flux_allocate_gameobject(i,transform,to_instantiate);
+        fluxGameObject allocated = flux_allocate_gameobject(i,transform,to_instantiate, parser_parsed_gameobject_get_args(parsed_gameobject));
 
         if (flux_gameobject_is_camera(allocated) && (active_camera == NULL)){
             active_camera = allocated;
@@ -92,8 +92,6 @@ void flux_load_scene(const char* path) {
     }
 
     parser_delete_parsed_scene(parsed_scene);
-
-    flux_scene_script_callback(ONINIT);
 }
 
 void flux_scene_script_callback(script_callback_t callback){
@@ -105,9 +103,9 @@ void flux_scene_script_callback(script_callback_t callback){
         case AFTERUPDATE:
             func = fluxCallback_afterUpdate;
             break;
-        case ONINIT:
-            func = fluxCallback_onInit;
-            break;
+        //case ONINIT:
+        //    func = fluxCallback_onInit;
+        //    break;
         case ONDESTROY:
             func = fluxCallback_onDestroy;
             break;
