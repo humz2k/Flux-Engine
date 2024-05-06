@@ -1,6 +1,8 @@
 #ifndef _FLUX_SCRIPTS_H_
 #define _FLUX_SCRIPTS_H_
 
+#include "hqtools/hqtools.h"
+
 #undef FLUX_SCRIPTS_IMPLEMENTATION
 #include "GENERATED_SCRIPTS.h"
 

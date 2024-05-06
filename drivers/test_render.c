@@ -208,9 +208,9 @@ int main(){
         }
 
         render_begin(active_cam);
-        render_rmodel(gun_model,WHITE);
-        //render_rmodel(sphere_rmodel,WHITE);
-        //render_rmodel(plane_model,WHITE);
+        //render_rmodel(gun_model,WHITE);
+        render_rmodel(sphere_rmodel,WHITE);
+        render_rmodel(plane_model,WHITE);
 
         if (draw_grid){
             render_draw_grid(100,1.0f);

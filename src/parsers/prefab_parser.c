@@ -25,6 +25,9 @@ typedef struct fluxParsedPrefabStruct {
     /*! \brief whether this prefab is a camera */
     bool is_camera;
 
+    float fov;
+    int projection;
+
     /*! \brief the names of any scripts attached to this prefab */
     hstrArray scripts;
 
@@ -32,6 +35,26 @@ typedef struct fluxParsedPrefabStruct {
     hstrArray children;
 
 } fluxParsedPrefabStruct;
+
+float parser_parsed_prefab_get_fov(fluxParsedPrefab prefab){
+    assert(prefab);
+    return prefab->fov;
+}
+
+int parser_parsed_prefab_get_projection(fluxParsedPrefab prefab){
+    assert(prefab);
+    return prefab->projection;
+}
+
+void parser_parsed_prefab_set_fov(fluxParsedPrefab prefab, float fov){
+    assert(prefab);
+    prefab->fov = fov;
+}
+
+void parser_parsed_prefab_set_projection(fluxParsedPrefab prefab, int projection){
+    assert(prefab);
+    prefab->projection = projection;
+}
 
 hstr parser_parsed_prefab_get_path(fluxParsedPrefab prefab) {
     assert(prefab);
@@ -69,6 +92,8 @@ static fluxParsedPrefab alloc_parsed_prefab_internal(void) {
     memset(out, 0, sizeof(fluxParsedPrefabStruct));
     out->scripts = hstr_array_make();
     out->children = hstr_array_make();
+    out->fov = 45;
+    out->projection = CAMERA_PERSPECTIVE;
     return out;
 }
 

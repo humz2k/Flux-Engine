@@ -54,6 +54,8 @@ class ScriptProcessor:
     # given a callback name, return an empty `implementation`
     # i.e., a function that doesn't do anything
     def get_empty_implementation(self,callback : str) -> str:
+        if (callback) == 'onInit':
+            return "fluxCallback {0}(fluxGameObject obj, script_data* data, hstrArray args){{}}".format(callback)
         return "fluxCallback {0}(fluxGameObject obj, script_data* data){{}}".format(callback)
 
     # gets implementations for all not implemented callbacks
@@ -115,6 +117,12 @@ struct fluxScriptStruct{
 
     # generates the switch statement callback `callback` for the script `script_name`
     def generate_switch_script_callback(self,callback : str, script_name : str) -> str:
+        if (callback == "onInit"):
+            return """
+        case {0}:
+            {1}(obj,script->{2},args);
+            break;
+""".format(get_script_enum_name(script_name),self.get_mangled_callback(callback,script_name),self.get_script_data_name(script_name))
         return """
         case {0}:
             {1}(obj,script->{2});
@@ -123,6 +131,24 @@ struct fluxScriptStruct{
 
     # generates the callback `callback` for `struct fluxScriptStruct`
     def generate_callback(self,callback : str) -> str:
+        if (callback == "onInit"):
+            return """
+
+void fluxCallback_{0}(fluxGameObject obj, fluxScript script, hstrArray args)
+#ifdef FLUX_SCRIPTS_IMPLEMENTATION
+{{
+    switch(script->id){{
+        {1}
+        default:
+            //assert((1 == 0) && "something terrible happened at compile time!");
+            break;
+    }}
+}}
+#else
+;
+#endif
+
+""".format(callback,"\n".join([self.generate_switch_script_callback(callback,i) for i in self.script_names]))
         return """
 
 void fluxCallback_{0}(fluxGameObject obj, fluxScript script)

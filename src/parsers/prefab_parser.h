@@ -21,4 +21,12 @@ bool parser_parsed_prefab_is_camera(fluxParsedPrefab prefab);
 
 hstrArray parser_parsed_prefab_get_scripts(fluxParsedPrefab prefab);
 
+float parser_parsed_prefab_get_fov(fluxParsedPrefab prefab);
+
+int parser_parsed_prefab_get_projection(fluxParsedPrefab prefab);
+
+void parser_parsed_prefab_set_fov(fluxParsedPrefab prefab, float fov);
+
+void parser_parsed_prefab_set_projection(fluxParsedPrefab prefab, int projection);
+
 #endif

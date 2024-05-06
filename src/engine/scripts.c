@@ -1,4 +1,5 @@
 #include "hqtools/hqtools.h"
+#include "pipeline.h"
 
 #include <string.h>
 

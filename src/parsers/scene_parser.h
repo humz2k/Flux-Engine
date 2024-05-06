@@ -30,4 +30,6 @@ hstr parser_parsed_gameobject_get_prefab_name(fluxParsedGameObject gameobject);
 fluxTransform
 parser_parsed_gameobject_get_transform(fluxParsedGameObject gameobject);
 
+hstrArray parser_parsed_gameobject_get_args(fluxParsedGameObject gameobject);
+
 #endif
