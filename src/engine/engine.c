@@ -2,6 +2,7 @@
 #include "editor.h"
 #include "hqtools/hqtools.h"
 #include "scene.h"
+#include "pipeline.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -27,6 +28,9 @@ int run_game() {
     editor_add_console_command("quit", console_command_quit);
 
     flux_init_game_callbacks();
+
+    render_init();
+
     // flux_init_prefabs();
     flux_reset_scene();
     flux_game_load();
@@ -38,6 +42,8 @@ int run_game() {
     camera_transform.pos = (Vector3){0, 1, -3};
     camera_transform.rot = (Vector3){-0.3, 0, 0};
     camera_transform.scale = Vector3One();
+
+    render_set_ka(0.2);
 
     // flux_scene_instantiate_prefab(fluxPrefab_defaultCamera,
     // camera_transform); flux_scene_instantiate_prefab(fluxPrefab_testPrefab,
@@ -57,6 +63,7 @@ int run_game() {
 
     flux_close_scene();
     flux_game_close();
+    render_close();
 
     CloseWindow();
 

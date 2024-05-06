@@ -14,7 +14,64 @@ typedef struct fluxPrefabStruct {
     bool is_camera;
     int n_scripts;
     enum fluxScriptID* scripts;
+    int projection;
+    float fov;
 } fluxPrefabStruct;
+
+hstr flux_prefab_get_name(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->name;
+}
+
+int flux_prefab_get_projection(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->projection;
+}
+
+void flux_prefab_set_projection(fluxPrefab prefab, int projection){
+    assert(prefab);
+    prefab->projection = projection;
+}
+
+float flux_prefab_get_fov(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->fov;
+}
+
+void flux_prefab_set_fov(fluxPrefab prefab, float fov){
+    assert(prefab);
+    prefab->fov = fov;
+}
+
+bool flux_prefab_has_model(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->has_model;
+}
+
+Model flux_prefab_get_raw_model(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->raw_model;
+}
+
+renderModel flux_prefab_get_model(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->model;
+}
+
+bool flux_prefab_is_camera(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->is_camera;
+}
+
+int flux_prefab_get_n_scripts(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->n_scripts;
+}
+
+enum fluxScriptID* flux_prefab_get_scripts(fluxPrefab prefab){
+    assert(prefab);
+    return prefab->scripts;
+}
 
 fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
     assert(parsed);
@@ -23,9 +80,12 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
     memset(out, 0, sizeof(fluxPrefabStruct));
     out->name = hstr_incref(parser_parsed_prefab_get_name(parsed));
     out->has_model = parser_parsed_prefab_has_model(parsed);
+    //out->raw_model = NULL;
+    out->model = NULL;
     if (out->has_model) {
         const char* model_path =
             hstr_unpack(parser_parsed_prefab_get_model_path(parsed));
+        TraceLog(LOG_INFO,"loading model %s",model_path);
         if (strcmp(model_path, "SPHERE") == 0) {
             out->raw_model = LoadModelFromMesh(GenMeshSphere(1, 10, 10));
         } else {
@@ -41,6 +101,8 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
         out->scripts[i] =
             flux_script_name_to_enum(hstr_unpack(hstr_array_get(scripts, i)));
     }
+    out->projection = parser_parsed_prefab_get_projection(parsed);
+    out->fov = parser_parsed_prefab_get_fov(parsed);
     return out;
 }
 
