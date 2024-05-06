@@ -1,11 +1,11 @@
 /**
  * @file pipeline.c
- * @brief This file implements the rendering pipeline for a 3D graphics engine using Raylib.
- *        It provides functions to manage and render 3D models with support for multiple
- *        instances, bounding box calculations, and a custom shader system. It uses advanced
- *        rendering techniques including matrix transformations for model positioning and
- *        viewing, bounding box visibility checks, and dynamic memory management for render
- *        models.
+ * @brief This file implements the rendering pipeline for a 3D graphics engine
+ *using Raylib. It provides functions to manage and render 3D models with
+ *support for multiple instances, bounding box calculations, and a custom shader
+ *system. It uses advanced rendering techniques including matrix transformations
+ *for model positioning and viewing, bounding box visibility checks, and dynamic
+ *memory management for render models.
  **/
 
 #include "pipeline.h"
@@ -20,7 +20,8 @@
 #include <stdlib.h>
 
 /**
- * @brief Converts a Vector3 to an array format, typically for OpenGL interoperation.
+ * @brief Converts a Vector3 to an array format, typically for OpenGL
+ * interoperation.
  * @param vec Vector3 structure to be converted.
  */
 #define Vec32Array(vec)                                                        \
@@ -31,7 +32,8 @@ static Camera3D current_camera;
 
 /**
  * @struct render_object
- * @brief Represents a 3D object including its model data and transformation attributes.
+ * @brief Represents a 3D object including its model data and transformation
+ * attributes.
  *
  * @var Model model
  * @var Vector3 pos Position vector.
@@ -53,22 +55,24 @@ struct render_object {
 
 /**
  * @typedef betterBBox
- * @brief Enhanced bounding box structure with eight corners defined in 4D space.
+ * @brief Enhanced bounding box structure with eight corners defined in 4D
+ * space.
  */
 typedef struct betterBBox {
     Vector4 c1, c2, c3, c4, c5, c6, c7, c8;
 } betterBBox;
 
-
 /**
  * @struct renderModelInternal
- * @brief Manages a model and its instances for batch rendering, including transformations and bounding boxes.
+ * @brief Manages a model and its instances for batch rendering, including
+ * transformations and bounding boxes.
  *
  * @var Model model
  * @var int n_instances Number of instances of the model.
  * @var Color tint Color tint applied to all instances.
  * @var Matrix transforms Array of transformation matrices for each instance.
- * @var betterBBox* mesh_bounding_boxes Pointer to bounding boxes for each mesh in the model.
+ * @var betterBBox* mesh_bounding_boxes Pointer to bounding boxes for each mesh
+ * in the model.
  */
 typedef struct renderModelInternal {
     Model model;
@@ -106,7 +110,8 @@ static Vector3 Vector4toVector3(Vector4 vec) {
 }
 
 /**
- * @brief Converts a standard BoundingBox to a betterBBox format with corners defined in 4D space.
+ * @brief Converts a standard BoundingBox to a betterBBox format with corners
+ * defined in 4D space.
  * @param bbox Standard BoundingBox to convert.
  * @return Converted betterBBox structure.
  */
@@ -209,25 +214,29 @@ static bool bboxVisible(betterBBox bbox) {
 
 /**
  * @var static int n_objects
- * @brief Counter for the number of render objects currently managed by the pipeline.
+ * @brief Counter for the number of render objects currently managed by the
+ * pipeline.
  */
 static int n_objects = 0;
 
 /**
  * @var static int n_rmodels
- * @brief Counter for the number of render models currently registered for rendering.
+ * @brief Counter for the number of render models currently registered for
+ * rendering.
  */
 static int n_rmodels = 0;
 
 /**
  * @var static struct render_object objects[RENDERER_MAX_OBJECTS]
- * @brief Array of render objects, storing up to RENDERER_MAX_OBJECTS items for rendering.
+ * @brief Array of render objects, storing up to RENDERER_MAX_OBJECTS items for
+ * rendering.
  */
 static struct render_object objects[RENDERER_MAX_OBJECTS];
 
 /**
  * @var static renderModel rmodels[RENDERER_MAX_OBJECTS]
- * @brief Array of render models, capable of storing up to RENDERER_MAX_OBJECTS models for batch rendering.
+ * @brief Array of render models, capable of storing up to RENDERER_MAX_OBJECTS
+ * models for batch rendering.
  */
 static renderModel rmodels[RENDERER_MAX_OBJECTS];
 
@@ -239,7 +248,8 @@ static Shader default_shader;
 
 /**
  * @var static int draw_grid
- * @brief Flag indicating whether a grid should be drawn in the scene (1) or not (0).
+ * @brief Flag indicating whether a grid should be drawn in the scene (1) or not
+ * (0).
  */
 static int draw_grid = 0;
 
@@ -257,15 +267,19 @@ static float spacing_grid;
 
 /**
  * @var static int visible_meshes
- * @brief Counter for the number of meshes that are currently visible in the scene.
+ * @brief Counter for the number of meshes that are currently visible in the
+ * scene.
  */
 static int visible_meshes = 0;
 
 /**
- * @brief Creates a new render model from a given model, initializing its bounding boxes and setting instance count to zero.
+ * @brief Creates a new render model from a given model, initializing its
+ * bounding boxes and setting instance count to zero.
  * @param model The base model from which to create the render model.
- * @return Newly created renderModel with initialized fields and allocated bounding boxes for each mesh.
- * @note This function asserts that memory allocation succeeds and logs the creation process.
+ * @return Newly created renderModel with initialized fields and allocated
+ * bounding boxes for each mesh.
+ * @note This function asserts that memory allocation succeeds and logs the
+ * creation process.
  */
 renderModel render_make_model(Model model) {
     renderModel out;
@@ -283,11 +297,17 @@ renderModel render_make_model(Model model) {
 }
 
 /**
- * @brief Computes the transformation matrix for a model based on specified rotation, scale, and translation parameters.
+ * @brief Computes the transformation matrix for a model based on specified
+ * rotation, scale, and translation parameters.
  * @param model The model to transform.
- * @param transform The fluxTransform structure containing rotation (in radians), scale, and translation vectors.
- * @return The combined transformation matrix resulting from applying the scale, rotation, and translation to the model.
- * @details This function first converts quaternion rotations to axis-angle, then constructs individual transformation matrices for scale, rotation, and translation, and finally combines them in the correct order (scale, then rotation, then translation) to form the final transformation matrix.
+ * @param transform The fluxTransform structure containing rotation (in
+ * radians), scale, and translation vectors.
+ * @return The combined transformation matrix resulting from applying the scale,
+ * rotation, and translation to the model.
+ * @details This function first converts quaternion rotations to axis-angle,
+ * then constructs individual transformation matrices for scale, rotation, and
+ * translation, and finally combines them in the correct order (scale, then
+ * rotation, then translation) to form the final transformation matrix.
  */
 static Matrix get_mesh_transform(Model model, fluxTransform transform) {
     // Calculate transformation matrix from function parameters
@@ -322,7 +342,8 @@ void render_reset_instances(renderModel model) {
 }
 
 /**
- * @brief Adds a model instance to the rendering queue with a specified transformation.
+ * @brief Adds a model instance to the rendering queue with a specified
+ * transformation.
  * @param model Render model to modify.
  * @param transform Transformation to apply to the model instance.
  */
@@ -337,10 +358,12 @@ void render_add_model_instance(renderModel model, fluxTransform transform) {
 }
 
 /**
- * @brief Registers a render model for rendering, setting its tint color and adding it to the rendering queue.
+ * @brief Registers a render model for rendering, setting its tint color and
+ * adding it to the rendering queue.
  * @param rmodel The render model to be rendered.
  * @param tint The color tint to apply to the model.
- * @note Asserts that the render model is not NULL and that the total number of render models does not exceed the maximum allowed.
+ * @note Asserts that the render model is not NULL and that the total number of
+ * render models does not exceed the maximum allowed.
  */
 void render_rmodel(renderModel rmodel, Color tint) {
     assert(rmodel);
@@ -362,7 +385,8 @@ void render_free_model(renderModel model) {
 }
 
 /**
- * @brief Initializes render models, loads the default shader, and sets initial rendering configurations.
+ * @brief Initializes render models, loads the default shader, and sets initial
+ * rendering configurations.
  */
 void render_init(void) {
     render_load_default_shader();
@@ -370,7 +394,8 @@ void render_init(void) {
 }
 
 /**
- * @brief Renders a model using a specified shader and camera, applying viewport transformations.
+ * @brief Renders a model using a specified shader and camera, applying viewport
+ * transformations.
  * @param rmodel Render model to draw.
  * @param shader Shader to use for rendering.
  * @param camera Camera to use for the current view.
@@ -410,8 +435,7 @@ static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera,
             .color = colorTint;
 
         // TODO: only call this on model registration!!!
-        betterBBox bbox =
-            bboxes[i];
+        betterBBox bbox = bboxes[i];
 
         for (int j = 0; j < rmodel->n_instances; j++) {
 
@@ -435,7 +459,8 @@ static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera,
 }
 
 /**
- * @brief Draws all registered models using a default shader and custom camera setup.
+ * @brief Draws all registered models using a default shader and custom camera
+ * setup.
  * @param camera Custom camera configuration.
  */
 void render_draw_all_no_shader(Camera3D camera) {
@@ -446,7 +471,8 @@ void render_draw_all_no_shader(Camera3D camera) {
 }
 
 /**
- * @brief Starts the rendering process, updating the camera position and resetting rendering counters.
+ * @brief Starts the rendering process, updating the camera position and
+ * resetting rendering counters.
  * @param camera Camera configuration for the current frame.
  */
 void render_begin(Camera3D camera) {
@@ -458,7 +484,8 @@ void render_begin(Camera3D camera) {
 }
 
 /**
- * @brief Draws all render models with the current settings and updates the display.
+ * @brief Draws all render models with the current settings and updates the
+ * display.
  * @param camera Current camera configuration.
  */
 static void draw_all(Camera3D camera) {
@@ -476,7 +503,8 @@ static void draw_all(Camera3D camera) {
 int render_get_visible_meshes(void) { return visible_meshes; }
 
 /**
- * @brief Ends the rendering frame, handles post-processing tasks, and updates the viewport.
+ * @brief Ends the rendering frame, handles post-processing tasks, and updates
+ * the viewport.
  */
 void render_end(void) {
     // render_calculate_shadows();
@@ -505,12 +533,14 @@ void render_draw_grid(int n, float s) {
 }
 
 /**
- * @brief Cleans up rendering resources and unloads shaders at application closure.
+ * @brief Cleans up rendering resources and unloads shaders at application
+ * closure.
  */
 void render_close(void) { render_unload_default_shader(); }
 
 /**
- * @brief Retrieves the current camera configuration used in the rendering pipeline.
+ * @brief Retrieves the current camera configuration used in the rendering
+ * pipeline.
  * @return Current camera setup.
  */
 Camera3D render_get_current_cam(void) { return current_camera; }
