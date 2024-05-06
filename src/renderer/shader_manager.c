@@ -135,17 +135,9 @@ void render_load_default_shader(void) {
     shader_shadow_map_res =
         render_get_shader_attr(flux_default_shader, "shadowMapRes");
     render_set_shader_attr_int(shader_shadow_map_res, shadowMapRes);
-    // flux_default_shader.locs[SHADER_LOC_MATRIX_MVP] =
-    // GetShaderLocation(flux_default_shader, "mvp");
-    // flux_default_shader.locs[SHADER_LOC_MATRIX_MODEL] =
-    // GetShaderLocationAttrib(flux_default_shader, "instanceTransform");
 
     flux_empty_shader = LoadShader("src/renderer/shaders/lights.vs",
                                    "src/renderer/shaders/empty_lights.fs");
-    // flux_empty_shader.locs[SHADER_LOC_MATRIX_MVP] =
-    // GetShaderLocation(flux_empty_shader, "mvp");
-    // flux_empty_shader.locs[SHADER_LOC_MATRIX_MODEL] =
-    // GetShaderLocationAttrib(flux_empty_shader, "instanceTransform");
     init_lights();
 }
 
@@ -178,7 +170,6 @@ void render_unload_skybox(void) {
 void render_draw_skybox(void) {
     if (!skybox_loaded)
         return;
-    // TraceLog(LOG_INFO,"rendering skybox");
     rlDisableBackfaceCulling();
     rlDisableDepthMask();
     DrawModel(skybox, render_get_current_cam().position, 1.0f, WHITE);
