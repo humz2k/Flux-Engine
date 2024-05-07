@@ -34,8 +34,11 @@
  *  @{
  */
 
-struct renderModelInternal;
-typedef struct renderModelInternal* renderModel;
+/** @struct renderModelInternal */
+typedef struct renderModelInternal renderModelInternal;
+
+/** @typedef renderModelInternal* renderModel */
+typedef renderModelInternal* renderModel;
 
 void render_init(void);
 
