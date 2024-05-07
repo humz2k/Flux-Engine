@@ -1,3 +1,7 @@
+/**
+ * @file editor_theme.h
+ **/
+
 #ifndef _FLUX_EDITOR_THEME_H_
 #define _FLUX_EDITOR_THEME_H_
 

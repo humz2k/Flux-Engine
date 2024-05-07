@@ -1,3 +1,7 @@
+/**
+ * @file skybox.fs
+ **/
+
 #version 330
 
 // Input vertex attributes (from vertex shader)

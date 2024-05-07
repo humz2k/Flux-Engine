@@ -1,3 +1,7 @@
+/**
+ * @file editor.c
+ **/
+
 #include "editor.h"
 #include "buttons.h"
 #include "console.h"

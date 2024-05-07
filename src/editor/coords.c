@@ -1,3 +1,7 @@
+/**
+ * @file coords.c
+ **/
+
 #include "coords.h"
 #include "display_size.h"
 #include "hqtools/hqtools.h"

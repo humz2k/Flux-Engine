@@ -1,3 +1,7 @@
+/**
+ * @file lights_instancing.vs
+ **/
+
 #version 330
 
 // Input vertex attributes

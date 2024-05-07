@@ -1,3 +1,7 @@
+/**
+ * @file coords.h
+ **/
+
 #ifndef _FLUX_EDITOR_COORDS_H_
 #define _FLUX_EDITOR_COORDS_H_
 

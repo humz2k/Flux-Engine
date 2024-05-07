@@ -1,3 +1,7 @@
+/**
+ * @file buttons.c
+ **/
+
 #include "buttons.h"
 #include "coords.h"
 #include "editor_config.h"

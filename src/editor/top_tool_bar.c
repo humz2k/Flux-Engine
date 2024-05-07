@@ -1,3 +1,7 @@
+/**
+ * @file top_tool_bar.c
+ **/
+
 #include "top_tool_bar.h"
 #include "buttons.h"
 #include "coords.h"

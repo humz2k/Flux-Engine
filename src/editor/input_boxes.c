@@ -1,3 +1,7 @@
+/**
+ * @file input_boxes.c
+ **/
+
 #include "input_boxes.h"
 #include "buttons.h"
 #include "coords.h"

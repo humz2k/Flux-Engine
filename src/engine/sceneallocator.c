@@ -1,3 +1,7 @@
+/**
+ * @file sceneallocator.c
+ **/
+
 #include "sceneallocator.h"
 #include "config.h"
 #include "gameobject.h"

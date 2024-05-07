@@ -1,3 +1,7 @@
+/**
+ * @file scripts.h
+ **/
+
 #ifndef _FLUX_SCRIPTS_H_
 #define _FLUX_SCRIPTS_H_
 

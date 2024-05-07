@@ -1,3 +1,7 @@
+/**
+ * @file top_tool_bar.h
+ **/
+
 #ifndef _FLUX_EDITOR_TOP_TOOL_BAR_H_
 #define _FLUX_EDITOR_TOP_TOOL_BAR_H_
 

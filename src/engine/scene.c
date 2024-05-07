@@ -1,3 +1,7 @@
+/**
+ * @file scene.c
+ **/
+
 #include "scene.h"
 #include "config.h"
 #include "gameobject.h"

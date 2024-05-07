@@ -1,3 +1,7 @@
+/**
+ * @file config.h
+ **/
+
 #ifndef _FLUX_CONFIG_H_
 #define _FLUX_CONFIG_H_
 

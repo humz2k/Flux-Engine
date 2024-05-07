@@ -1,3 +1,7 @@
+/**
+ * @file console.h
+ **/
+
 #ifndef _FLUX_ENGINE_CONSOLE_H_
 #define _FLUX_ENGINE_CONSOLE_H_
 

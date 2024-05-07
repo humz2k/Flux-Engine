@@ -1,3 +1,7 @@
+/**
+ * @file display_size.h
+ **/
+
 #ifndef _FLUX_EDITOR_DISPLAY_SIZE_H_
 #define _FLUX_EDITOR_DISPLAY_SIZE_H_
 

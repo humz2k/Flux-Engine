@@ -1,3 +1,7 @@
+/**
+ * @file panels.h
+ **/
+
 #ifndef _FLUX_EDITOR_PANELS_H_
 #define _FLUX_EDITOR_PANELS_H_
 

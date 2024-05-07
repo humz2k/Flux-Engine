@@ -1,3 +1,7 @@
+/**
+ * @file lights.fs
+ **/
+
 #version 330
 
 in vec3 fragPosition;

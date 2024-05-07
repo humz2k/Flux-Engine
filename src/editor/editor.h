@@ -1,3 +1,7 @@
+/**
+ * @file editor.h
+ **/
+
 #ifndef _FLUX_EDITOR_EDITOR_H_
 #define _FLUX_EDITOR_EDITOR_H_
 

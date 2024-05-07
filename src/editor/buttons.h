@@ -1,3 +1,7 @@
+/**
+ * @file buttons.h
+ **/
+
 #ifndef _FLUX_EDITOR_BUTTONS_H_
 #define _FLUX_EDITOR_BUTTONS_H_
 

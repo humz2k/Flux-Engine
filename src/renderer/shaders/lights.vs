@@ -1,3 +1,7 @@
+/**
+ * @file lights.vs
+ **/
+
 #version 330
 
 // Input vertex attributes

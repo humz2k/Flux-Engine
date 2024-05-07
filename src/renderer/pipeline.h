@@ -1,3 +1,7 @@
+/**
+ * @file pipeline.h
+ **/
+
 #ifndef _FLUX_RENDERER_PIPELINE_H_
 #define _FLUX_RENDERER_PIPELINE_H_
 

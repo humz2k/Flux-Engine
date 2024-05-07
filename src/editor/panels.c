@@ -1,3 +1,7 @@
+/**
+ * @file panels.c
+ **/
+
 #include "panels.h"
 #include "buttons.h"
 #include "coords.h"

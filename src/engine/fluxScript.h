@@ -1,3 +1,7 @@
+/**
+ * @file fluxScript.h
+ **/
+
 #include "gameobject.h"
 #include "hqtools/hqtools.h"
 #include <assert.h>

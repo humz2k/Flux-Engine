@@ -1,3 +1,6 @@
+/**
+ * @file shader_manager.h
+ **/
 #ifndef _FLUX_RENDERER_SHADER_MANAGER_H_
 #define _FLUX_RENDERER_SHADER_MANAGER_H_
 

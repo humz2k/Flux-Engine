@@ -1,3 +1,7 @@
+/**
+ * @file text_stuff.h
+ **/
+
 #ifndef _FLUX_EDITOR_TEXT_STUFF_H_
 #define _FLUX_EDITOR_TEXT_STUFF_H_
 

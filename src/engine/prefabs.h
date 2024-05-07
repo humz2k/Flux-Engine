@@ -1,3 +1,7 @@
+/**
+ * @file prefabs.h
+ **/
+
 #ifndef _FLUX_PREFABS_H_
 #define _FLUX_PREFABS_H_
 

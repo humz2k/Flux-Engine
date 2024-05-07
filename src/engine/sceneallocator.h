@@ -1,3 +1,7 @@
+/**
+ * @file sceneallocator.h
+ **/
+
 #ifndef _FLUX_SCENEALLOCATOR_H_
 #define _FLUX_SCENEALLOCATOR_H_
 

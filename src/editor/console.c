@@ -1,3 +1,7 @@
+/**
+ * @file console.c
+ **/
+
 #include "console.h"
 #include "buttons.h"
 #include "coords.h"

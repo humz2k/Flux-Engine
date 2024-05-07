@@ -1,3 +1,7 @@
+/**
+ * @file shadow_map_texture.h
+ **/
+
 #ifndef _SHADOW_MAP_TEXTURE_
 #define _SHADOW_MAP_TEXTURE_
 

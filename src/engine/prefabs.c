@@ -8,6 +8,11 @@
  | |
  |_|
 */
+
+/**
+ * @file prefabs.c
+ **/
+
 #include "prefabs.h"
 #include "hqtools/hqtools.h"
 #include "pipeline.h"

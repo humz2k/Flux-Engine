@@ -1,3 +1,7 @@
+/**
+ * @file scene_parser.h
+ **/
+
 #ifndef _PARSER_SCENE_H_
 #define _PARSER_SCENE_H_
 

@@ -1,3 +1,7 @@
+/**
+ * @file input_boxes.h
+ **/
+
 #ifndef _FLUX_EDITOR_INPUT_BOXES_H_
 #define _FLUX_EDITOR_INPUT_BOXES_H_
 

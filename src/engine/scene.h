@@ -1,3 +1,7 @@
+/**
+ * @file scene.h
+ **/
+
 #ifndef _FLUX_SCENE_H_
 #define _FLUX_SCENE_H_
 

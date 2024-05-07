@@ -1,4 +1,3 @@
-
 /*
                    _
                   (_)
@@ -9,6 +8,10 @@
               __/ |
              |___/
 */
+
+/**
+ * @file engine.c
+ **/
 
 #include "console.h"
 #include "editor.h"

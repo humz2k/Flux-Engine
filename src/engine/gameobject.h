@@ -1,3 +1,7 @@
+/**
+ * @file gameobject.h
+ **/
+
 #ifndef _FLUX_GAMEOBJECT_H_
 #define _FLUX_GAMEOBJECT_H_
 

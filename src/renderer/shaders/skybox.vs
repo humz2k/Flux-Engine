@@ -1,3 +1,7 @@
+/**
+ * @file skybox.vs
+ **/
+
 #version 330
 
 // Input vertex attributes

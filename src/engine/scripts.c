@@ -1,3 +1,7 @@
+/**
+ * @file scripts.c
+ **/
+
 #include "hqtools/hqtools.h"
 #include "pipeline.h"
 

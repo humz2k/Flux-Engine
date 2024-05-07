@@ -1,3 +1,7 @@
+/**
+ * @file filesys_tools.h
+ **/
+
 #ifndef _FLUX_EDITOR_FILESYS_TOOLS_H_
 #define _FLUX_EDITOR_FILESYS_TOOLS_H_
 

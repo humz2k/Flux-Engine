@@ -1,3 +1,7 @@
+/**
+ * @file rlobj.h
+ **/
+
 // rlobj (c) Nikolas Wipper 2021
 
 /* This Source Code Form is subject to the terms of the Mozilla Public

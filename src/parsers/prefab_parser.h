@@ -1,3 +1,7 @@
+/**
+ * @file prefab_parser.h
+ **/
+
 #ifndef _PARSER_PREFAB_H_
 #define _PARSER_PREFAB_H_
 
