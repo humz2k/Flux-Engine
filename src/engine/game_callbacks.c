@@ -11,7 +11,8 @@
 
 /**
  * @file game_callbacks.c
- * @brief Manages callback functions for specific game events like game loading and closing.
+ * @brief Manages callback functions for specific game events like game loading
+ * and closing.
  */
 
 #include "config.h"
@@ -25,17 +26,21 @@
 
 /**
  * @struct GameCallback
- * @brief Holds a list of callback functions to be executed on specific game events.
+ * @brief Holds a list of callback functions to be executed on specific game
+ * events.
  *
- * This structure contains an array of function pointers that are called during game events such as load and close.
+ * This structure contains an array of function pointers that are called during
+ * game events such as load and close.
  */
 struct GameCallback {
-    void (*callback[FLUX_MAX_GAME_CALLBACKS])(void); /**< Array of callback functions. */
+    void (*callback[FLUX_MAX_GAME_CALLBACKS])(
+        void);       /**< Array of callback functions. */
     int n_callbacks; /**< Number of callback functions registered. */
 };
 
 /**
- * @brief Initializes a GameCallback structure by setting the number of callbacks to zero.
+ * @brief Initializes a GameCallback structure by setting the number of
+ * callbacks to zero.
  * @param callbacks Pointer to the GameCallback structure to initialize.
  */
 static void init_game_callback(struct GameCallback* callbacks) {
@@ -44,7 +49,8 @@ static void init_game_callback(struct GameCallback* callbacks) {
 
 /**
  * @brief Adds a callback function to a GameCallback structure.
- * @param callbacks Pointer to the GameCallback structure where the callback should be added.
+ * @param callbacks Pointer to the GameCallback structure where the callback
+ * should be added.
  * @param new_callback Function pointer to the callback to add.
  */
 static void add_callback(struct GameCallback* callbacks,
@@ -55,13 +61,16 @@ static void add_callback(struct GameCallback* callbacks,
     callbacks->n_callbacks++;
 }
 
-static struct GameCallback onGameLoadCallbacks; /**< Callbacks to execute when the game loads. */
-static struct GameCallback onGameCloseCallbacks; /**< Callbacks to execute when the game closes. */
+static struct GameCallback
+    onGameLoadCallbacks; /**< Callbacks to execute when the game loads. */
+static struct GameCallback
+    onGameCloseCallbacks; /**< Callbacks to execute when the game closes. */
 
 /**
  * @brief Initializes game event callback structures.
  *
- * Calls `init_game_callback` for both game load and game close events, preparing them to receive callback functions.
+ * Calls `init_game_callback` for both game load and game close events,
+ * preparing them to receive callback functions.
  */
 void flux_init_game_callbacks(void) {
     TraceLog(LOG_INFO,
@@ -72,7 +81,8 @@ void flux_init_game_callbacks(void) {
 
 /**
  * @brief Registers a callback function for a specified game event.
- * @param event Type of game event to register the callback for, specified by an enum FluxGameCallback.
+ * @param event Type of game event to register the callback for, specified by an
+ * enum FluxGameCallback.
  * @param new_callback Function pointer to the callback to register.
  */
 void flux_register_callback(enum FluxGameCallback event,

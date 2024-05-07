@@ -37,17 +37,21 @@
  * @struct fluxGameObjectStruct
  * @brief Represents a game object within a scene.
  *
- * Game objects can have models, cameras, scripts, and child objects, enabling them to represent a wide variety of elements within the game.
+ * Game objects can have models, cameras, scripts, and child objects, enabling
+ * them to represent a wide variety of elements within the game.
  */
 struct fluxGameObjectStruct {
     int id; ///< Unique ID of the game object.
-    fluxTransform transform; ///< Transformation data for position, rotation, and scaling.
-    renderModel model; ///< Renderable model associated with the game object.
-    int n_scripts; ///< Number of scripts attached to the game object.
+    fluxTransform
+        transform; ///< Transformation data for position, rotation, and scaling.
+    renderModel model;   ///< Renderable model associated with the game object.
+    int n_scripts;       ///< Number of scripts attached to the game object.
     fluxScript* scripts; ///< Array of scripts attached to the game object.
-    bool is_camera; ///< Flag indicating whether the game object functions as a camera.
-    float fov; ///< Field of view, relevant if the object is a camera.
-    int projection; ///< Camera projection type (e.g., orthographic or perspective).
+    bool is_camera; ///< Flag indicating whether the game object functions as a
+                    ///< camera.
+    float fov;      ///< Field of view, relevant if the object is a camera.
+    int projection; ///< Camera projection type (e.g., orthographic or
+                    ///< perspective).
 };
 
 /**
@@ -122,9 +126,11 @@ bool flux_gameobject_has_model(fluxGameObject obj) {
 }
 
 /**
- * @brief Retrieves a Camera3D structure initialized based on the game object's properties.
+ * @brief Retrieves a Camera3D structure initialized based on the game object's
+ * properties.
  * @param obj Pointer to the game object configured as a camera.
- * @return A Camera3D structure initialized to the game object's camera settings.
+ * @return A Camera3D structure initialized to the game object's camera
+ * settings.
  */
 Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj) {
     assert(obj);
@@ -142,7 +148,8 @@ Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj) {
 }
 
 /**
- * @brief Allocates and initializes a new game object from a prefab and arguments.
+ * @brief Allocates and initializes a new game object from a prefab and
+ * arguments.
  * @param id Unique identifier for the new game object.
  * @param transform Initial transformation settings.
  * @param prefab Prefab to initialize the game object from.

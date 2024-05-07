@@ -1,7 +1,8 @@
 /**
  * @file shader_manager.c
- * @brief This file contains all the shader management functions including initialization,
- * loading, setting, and cleaning up shaders for the rendering system using Raylib.
+ * @brief This file contains all the shader management functions including
+ * initialization, loading, setting, and cleaning up shaders for the rendering
+ * system using Raylib.
  */
 
 #include "shader_manager.h"
@@ -34,45 +35,54 @@
  * type, position, color, and related shader attributes.
  */
 typedef struct Light {
-    int enabled;                /**< Flag to indicate if the light is enabled. */
-    int type;                   /**< Type of the light. */
-    float kd;                   /**< Diffuse reflectivity. */
-    float ks;                   /**< Specular reflectivity. */
-    float p;                    /**< Shininess factor for specular highlights. */
-    float intensity;            /**< Light intensity. */
-    Color cL;                   /**< Color of the light. */
-    Vector3 pos;                /**< Position of the light in 3D space. */
-    Vector3 L;                  /**< Direction of the light. */
+    int enabled;     /**< Flag to indicate if the light is enabled. */
+    int type;        /**< Type of the light. */
+    float kd;        /**< Diffuse reflectivity. */
+    float ks;        /**< Specular reflectivity. */
+    float p;         /**< Shininess factor for specular highlights. */
+    float intensity; /**< Light intensity. */
+    Color cL;        /**< Color of the light. */
+    Vector3 pos;     /**< Position of the light in 3D space. */
+    Vector3 L;       /**< Direction of the light. */
     RenderTexture2D shadow_map; /**< Texture for shadow mapping. */
     Matrix light_vp;            /**< View-projection matrix for the light. */
 
-    float scale;                /**< Scale factor for the light's influence. */
-    float fov;                  /**< Field of view for the light. */
+    float scale; /**< Scale factor for the light's influence. */
+    float fov;   /**< Field of view for the light. */
 
-    renderShaderAttr shader_enabled; /**< Shader attribute for light enable state. */
+    renderShaderAttr
+        shader_enabled; /**< Shader attribute for light enable state. */
     renderShaderAttr shader_type; /**< Shader attribute for light type. */
-    renderShaderAttr shader_kd; /**< Shader attribute for diffuse reflectivity. */
-    renderShaderAttr shader_ks; /**< Shader attribute for specular reflectivity. */
+    renderShaderAttr
+        shader_kd; /**< Shader attribute for diffuse reflectivity. */
+    renderShaderAttr
+        shader_ks; /**< Shader attribute for specular reflectivity. */
     renderShaderAttr shader_p; /**< Shader attribute for shininess factor. */
-    renderShaderAttr shader_intensity; /**< Shader attribute for light intensity. */
-    renderShaderAttr shader_cL; /**< Shader attribute for light color. */
+    renderShaderAttr
+        shader_intensity;        /**< Shader attribute for light intensity. */
+    renderShaderAttr shader_cL;  /**< Shader attribute for light color. */
     renderShaderAttr shader_pos; /**< Shader attribute for light position. */
-    renderShaderAttr shader_L; /**< Shader attribute for light direction. */
-    renderShaderAttr shader_light_vp; /**< Shader attribute for light view-projection matrix. */
+    renderShaderAttr shader_L;   /**< Shader attribute for light direction. */
+    renderShaderAttr shader_light_vp; /**< Shader attribute for light
+                                         view-projection matrix. */
 
-    int shader_shadow_map_loc; /**< Location index for the shadow map in the shader. */
+    int shader_shadow_map_loc; /**< Location index for the shadow map in the
+                                  shader. */
 } Light;
 
 static Shader flux_default_shader; /**< Default shader used for rendering. */
 static Shader flux_empty_shader; /**< Shader used when no lights are active. */
-static renderShaderAttr shader_ka; /**< Ambient light coefficient shader attribute. */
-static renderShaderAttr shader_cam_pos; /**< Camera position shader attribute. */
-static renderShaderAttr shader_shadow_map_res; /**< Shadow map resolution shader attribute. */
+static renderShaderAttr
+    shader_ka; /**< Ambient light coefficient shader attribute. */
+static renderShaderAttr
+    shader_cam_pos; /**< Camera position shader attribute. */
+static renderShaderAttr
+    shader_shadow_map_res; /**< Shadow map resolution shader attribute. */
 static Light lights[FLUX_MAX_LIGHTS]; /**< Array of light structures. */
 
 static int skybox_loaded = 0; /**< Flag to check if the skybox is loaded. */
-static Shader skybox_shader; /**< Shader for rendering the skybox. */
-static Model skybox; /**< 3D model for the skybox. */
+static Shader skybox_shader;  /**< Shader for rendering the skybox. */
+static Model skybox;          /**< 3D model for the skybox. */
 
 static int shadowMapRes = 4096; /**< Resolution of the shadow map. */
 
@@ -80,7 +90,8 @@ static int shadowMapRes = 4096; /**< Resolution of the shadow map. */
  * @brief Retrieves a shader attribute location for a specified attribute name.
  * @param shader Shader to query.
  * @param attr Attribute name as a string.
- * @return A renderShaderAttr structure with the location of the shader attribute.
+ * @return A renderShaderAttr structure with the location of the shader
+ * attribute.
  */
 renderShaderAttr render_get_shader_attr(Shader shader, const char* attr) {
     renderShaderAttr out;
@@ -120,7 +131,8 @@ void render_set_shader_attr_vec3(renderShaderAttr attr, Vector3 val) {
 
 /**
  * @brief Initializes all light structures and their shader attributes.
- * Initializes shadow maps for lights and sets initial values for lights properties.
+ * Initializes shadow maps for lights and sets initial values for lights
+ * properties.
  */
 static void init_lights(void) {
     TraceLog(LOG_INFO, "init_lights");
@@ -176,7 +188,8 @@ static void delete_lights(void) {
 
 /**
  * @brief Loads the default shader and initializes light properties.
- * This function is responsible for setting up the shader used for most of the rendering tasks.
+ * This function is responsible for setting up the shader used for most of the
+ * rendering tasks.
  */
 void render_load_default_shader(void) {
     TraceLog(LOG_INFO, "render_load_default_shader");
@@ -229,7 +242,8 @@ void render_unload_skybox(void) {
 
 /**
  * @brief Renders the skybox if it is loaded.
- * Handles enabling and disabling of depth mask and backface culling for correct skybox rendering.
+ * Handles enabling and disabling of depth mask and backface culling for correct
+ * skybox rendering.
  */
 void render_draw_skybox(void) {
     if (!skybox_loaded)
@@ -266,8 +280,8 @@ Shader render_get_default_shader(void) { return flux_default_shader; }
 Shader render_get_empty_shader(void) { return flux_empty_shader; }
 
 /**
- * @brief Calculates and returns a camera configuration for a light based on its index.
- * This camera is used for shadow mapping.
+ * @brief Calculates and returns a camera configuration for a light based on its
+ * index. This camera is used for shadow mapping.
  * @param i Index of the light.
  * @return Configured Camera3D structure.
  */
@@ -367,7 +381,6 @@ void render_light_set_enabled(int i, int val) {
     render_set_shader_attr_int(light->shader_enabled, light->enabled);
 }
 
-
 /**
  * @brief Enables a light at the specified index.
  * @param i Index of the light to enable.
@@ -419,14 +432,16 @@ void render_light_set_cL(int i, Color col) {
 }
 
 /**
- * @brief Retrieves the diffuse reflectivity coefficient of a light based on its index.
+ * @brief Retrieves the diffuse reflectivity coefficient of a light based on its
+ * index.
  * @param i Index of the light whose diffuse reflectivity is to be retrieved.
  * @return The diffuse reflectivity coefficient as a float.
  */
 float render_light_get_kd(int i) { return get_light(i)->kd; }
 
 /**
- * @brief Sets the diffuse reflectivity coefficient of a light based on the given index and coefficient.
+ * @brief Sets the diffuse reflectivity coefficient of a light based on the
+ * given index and coefficient.
  * @param i Index of the light to modify.
  * @param kd The new diffuse reflectivity coefficient to set.
  */
@@ -437,14 +452,16 @@ void render_light_set_kd(int i, float kd) {
 }
 
 /**
- * @brief Retrieves the specular reflectivity coefficient of a light based on its index.
+ * @brief Retrieves the specular reflectivity coefficient of a light based on
+ * its index.
  * @param i Index of the light whose specular reflectivity is to be retrieved.
  * @return The specular reflectivity coefficient as a float.
  */
 float render_light_get_ks(int i) { return get_light(i)->ks; }
 
 /**
- * @brief Sets the specular reflectivity coefficient of a light based on the given index and coefficient.
+ * @brief Sets the specular reflectivity coefficient of a light based on the
+ * given index and coefficient.
  * @param i Index of the light to modify.
  * @param ks The new specular reflectivity coefficient to set.
  */
@@ -499,7 +516,8 @@ void render_light_set_L(int i, Vector3 L) {
 float render_light_get_p(int i) { return get_light(i)->p; }
 
 /**
- * @brief Sets the shininess factor of a light based on the given index and factor.
+ * @brief Sets the shininess factor of a light based on the given index and
+ * factor.
  * @param i Index of the light to modify.
  * @param p The new shininess factor to set.
  */
@@ -538,7 +556,8 @@ void render_light_set_scale(int i, float scale) {
 }
 
 /**
- * @brief Sets the field of view of a light based on the given index and field of view.
+ * @brief Sets the field of view of a light based on the given index and field
+ * of view.
  * @param i Index of the light to modify.
  * @param fov The new field of view to set.
  */
@@ -553,7 +572,6 @@ void render_light_set_fov(int i, float fov) {
  * @return The scale factor as a float.
  */
 float render_light_get_scale(int i) { return get_light(i)->scale; }
-
 
 /**
  * @brief Retrieves the field of view of a light based on its index.

@@ -1,6 +1,7 @@
 /**
  * @file scene_parser.c
- * @brief This file provides functionality for parsing scene and game object data from files.
+ * @brief This file provides functionality for parsing scene and game object
+ * data from files.
  */
 
 #include "scene_parser.h"
@@ -16,18 +17,23 @@
  * @struct fluxParsedGameObjectStruct
  * @brief Represents a parsed game object which can be instantiated in a scene.
  *
- * Contains a reference to a prefab, transformation data, and additional arguments for instantiation.
+ * Contains a reference to a prefab, transformation data, and additional
+ * arguments for instantiation.
  */
 typedef struct fluxParsedGameObjectStruct {
-    hstr prefab_name; /**< Name of the prefab used for creating this game object. */
-    fluxTransform transform; /**< Transform data including position, rotation, and scale. */
-    hstrArray args; /**< Additional arguments specific to this game object instance. */
+    hstr prefab_name;        /**< Name of the prefab used for creating this game
+                                object. */
+    fluxTransform transform; /**< Transform data including position, rotation,
+                                and scale. */
+    hstrArray args; /**< Additional arguments specific to this game object
+                       instance. */
 } fluxParsedGameObjectStruct;
 
 /**
  * @brief Creates a parsed game object.
  *
- * Allocates and initializes a game object structure with the specified prefab name, transformation, and arguments.
+ * Allocates and initializes a game object structure with the specified prefab
+ * name, transformation, and arguments.
  * @param prefab_name Name of the prefab to associate with the game object.
  * @param transform Transformation data for the game object.
  * @param args Additional instantiation arguments.
@@ -61,7 +67,8 @@ hstrArray parser_parsed_gameobject_get_args(fluxParsedGameObject gameobject) {
 /**
  * @brief Deletes a parsed game object.
  *
- * Frees the memory allocated for the parsed game object and decrements reference counts for any held strings.
+ * Frees the memory allocated for the parsed game object and decrements
+ * reference counts for any held strings.
  * @param gameobject Pointer to the parsed game object to delete.
  */
 static void delete_parsed_gameobject(fluxParsedGameObject gameobject) {
@@ -81,7 +88,6 @@ hstr parser_parsed_gameobject_get_prefab_name(fluxParsedGameObject gameobject) {
     return gameobject->prefab_name;
 }
 
-
 /**
  * @brief Retrieves the transform data of a parsed game object.
  * @param gameobject Pointer to the parsed game object.
@@ -95,17 +101,20 @@ parser_parsed_gameobject_get_transform(fluxParsedGameObject gameobject) {
 
 /**
  * @struct fluxParsedSceneStruct
- * @brief Represents a parsed scene containing multiple game objects and prefabs.
+ * @brief Represents a parsed scene containing multiple game objects and
+ * prefabs.
  *
- * Stores scene metadata including its name and path, and lists of prefabs and game objects that exist within the scene.
+ * Stores scene metadata including its name and path, and lists of prefabs and
+ * game objects that exist within the scene.
  */
 typedef struct fluxParsedSceneStruct {
-    hstr path; /**< Path to the scene file. */
-    hstr name; /**< Name of the scene. */
-    int n_prefabs; /**< Number of prefabs included in the scene. */
+    hstr path;                 /**< Path to the scene file. */
+    hstr name;                 /**< Name of the scene. */
+    int n_prefabs;             /**< Number of prefabs included in the scene. */
     fluxParsedPrefab* prefabs; /**< Array of pointers to parsed prefabs. */
     int n_gameobjects; /**< Number of game objects included in the scene. */
-    fluxParsedGameObject* gameobjects; /**< Array of pointers to parsed game objects. */
+    fluxParsedGameObject*
+        gameobjects; /**< Array of pointers to parsed game objects. */
 } fluxParsedSceneStruct;
 
 /**
@@ -183,7 +192,8 @@ static void parsed_scene_add_gameobject(fluxParsedScene scene,
 /**
  * @brief Deletes a parsed scene and all its content.
  *
- * Frees memory allocated for the scene, its prefabs, and its game objects, and decrements reference counts for any held strings.
+ * Frees memory allocated for the scene, its prefabs, and its game objects, and
+ * decrements reference counts for any held strings.
  * @param scene Pointer to the parsed scene to delete.
  */
 void parser_delete_parsed_scene(fluxParsedScene scene) {
@@ -263,7 +273,8 @@ fluxParsedGameObject parser_parsed_scene_get_gameobject(fluxParsedScene scene,
 /**
  * @brief Parses a scene from a specified file path.
  *
- * Reads a scene file and creates a parsed scene structure populated with data extracted from the file.
+ * Reads a scene file and creates a parsed scene structure populated with data
+ * extracted from the file.
  * @param raw_path Path to the scene file to parse.
  * @return Pointer to the newly parsed scene structure.
  */

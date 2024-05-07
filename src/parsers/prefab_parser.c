@@ -1,6 +1,7 @@
 /**
  * @file prefab_parser.c
- * @brief Functions for parsing prefab data structures from file inputs, managing and querying prefab properties.
+ * @brief Functions for parsing prefab data structures from file inputs,
+ * managing and querying prefab properties.
  */
 
 #include "prefab_parser.h"
@@ -15,18 +16,19 @@
  * @struct fluxParsedPrefabStruct
  * @brief Represents a parsed prefab data structure.
  *
- * This structure holds data related to a prefab including paths, names, model info, camera settings,
- * scripts, and child prefab names.
+ * This structure holds data related to a prefab including paths, names, model
+ * info, camera settings, scripts, and child prefab names.
  */
 typedef struct fluxParsedPrefabStruct {
-    hstr path; /**< Path from which this prefab was parsed. */
-    hstr name; /**< Name of the prefab used for instantiation. */
+    hstr path;      /**< Path from which this prefab was parsed. */
+    hstr name;      /**< Name of the prefab used for instantiation. */
     bool has_model; /**< Flag indicating whether the prefab includes a model. */
     hstr model_path; /**< Path to the prefab's model file. */
-    bool is_camera; /**< Flag indicating whether the prefab represents a camera. */
-    float fov; /**< Field of view if the prefab is a camera. */
+    bool is_camera; /**< Flag indicating whether the prefab represents a camera.
+                     */
+    float fov;      /**< Field of view if the prefab is a camera. */
     int projection; /**< Projection type if the prefab is a camera. */
-    hstrArray scripts; /**< Array of script names attached to the prefab. */
+    hstrArray scripts;  /**< Array of script names attached to the prefab. */
     hstrArray children; /**< Array of child prefab names. */
 } fluxParsedPrefabStruct;
 
@@ -131,10 +133,10 @@ hstrArray parser_parsed_prefab_get_scripts(fluxParsedPrefab prefab) {
     return prefab->scripts;
 }
 
-
 /**
  * @brief Allocates and initializes a new parsed prefab structure.
- * This function sets default values for a new prefab, including default camera settings and empty script and child arrays.
+ * This function sets default values for a new prefab, including default camera
+ * settings and empty script and child arrays.
  * @return A pointer to the newly allocated fluxParsedPrefabStruct.
  */
 static fluxParsedPrefab alloc_parsed_prefab_internal(void) {
@@ -150,8 +152,10 @@ static fluxParsedPrefab alloc_parsed_prefab_internal(void) {
 
 /**
  * @brief Sets the path from which a prefab was parsed.
- * This function updates the path property of a prefab and manages reference counting for the hstr type.
- * @param prefab A pointer to the fluxParsedPrefabStruct whose path is being set.
+ * This function updates the path property of a prefab and manages reference
+ * counting for the hstr type.
+ * @param prefab A pointer to the fluxParsedPrefabStruct whose path is being
+ * set.
  * @param path The new path as an hstr.
  */
 static void parsed_prefab_set_path(fluxParsedPrefab prefab, hstr path) {
@@ -166,8 +170,10 @@ static void parsed_prefab_set_path(fluxParsedPrefab prefab, hstr path) {
 
 /**
  * @brief Sets the name of a prefab.
- * This function updates the name property of a prefab and manages reference counting for the hstr type.
- * @param prefab A pointer to the fluxParsedPrefabStruct whose name is being set.
+ * This function updates the name property of a prefab and manages reference
+ * counting for the hstr type.
+ * @param prefab A pointer to the fluxParsedPrefabStruct whose name is being
+ * set.
  * @param name The new name as an hstr.
  */
 static void parsed_prefab_set_name(fluxParsedPrefab prefab, hstr name) {
@@ -182,8 +188,10 @@ static void parsed_prefab_set_name(fluxParsedPrefab prefab, hstr name) {
 
 /**
  * @brief Sets the model path for a prefab.
- * This function updates the model path property of a prefab, sets the has_model flag to true, and manages reference counting for the hstr type.
- * @param prefab A pointer to the fluxParsedPrefabStruct whose model path is being set.
+ * This function updates the model path property of a prefab, sets the has_model
+ * flag to true, and manages reference counting for the hstr type.
+ * @param prefab A pointer to the fluxParsedPrefabStruct whose model path is
+ * being set.
  * @param model_path The new model path as an hstr.
  */
 static void parsed_prefab_set_model_path(fluxParsedPrefab prefab,
@@ -203,8 +211,10 @@ static void parsed_prefab_set_model_path(fluxParsedPrefab prefab,
 
 /**
  * @brief Configures a prefab to represent a camera.
- * This function sets the is_camera flag to true for a prefab, ensuring it does not also have a model.
- * @param prefab A pointer to the fluxParsedPrefabStruct to be configured as a camera.
+ * This function sets the is_camera flag to true for a prefab, ensuring it does
+ * not also have a model.
+ * @param prefab A pointer to the fluxParsedPrefabStruct to be configured as a
+ * camera.
  */
 static void parsed_prefab_set_is_camera(fluxParsedPrefab prefab) {
     assert(prefab);
@@ -215,8 +225,10 @@ static void parsed_prefab_set_is_camera(fluxParsedPrefab prefab) {
 
 /**
  * @brief Adds a script to a prefab.
- * This function appends a new script name to the scripts array of a prefab and manages reference counting for the hstr type.
- * @param prefab A pointer to the fluxParsedPrefabStruct to which the script is being added.
+ * This function appends a new script name to the scripts array of a prefab and
+ * manages reference counting for the hstr type.
+ * @param prefab A pointer to the fluxParsedPrefabStruct to which the script is
+ * being added.
  * @param script The script name as an hstr to add.
  */
 static void parsed_prefab_add_script(fluxParsedPrefab prefab, hstr script) {
@@ -229,8 +241,10 @@ static void parsed_prefab_add_script(fluxParsedPrefab prefab, hstr script) {
 
 /**
  * @brief Adds a child to a prefab.
- * This function appends a new child name to the children array of a prefab and manages reference counting for the hstr type.
- * @param prefab A pointer to the fluxParsedPrefabStruct to which the child is being added.
+ * This function appends a new child name to the children array of a prefab and
+ * manages reference counting for the hstr type.
+ * @param prefab A pointer to the fluxParsedPrefabStruct to which the child is
+ * being added.
  * @param child The child name as an hstr to add.
  */
 static void parsed_prefab_add_child(fluxParsedPrefab prefab, hstr child) {
@@ -243,7 +257,8 @@ static void parsed_prefab_add_child(fluxParsedPrefab prefab, hstr child) {
 
 /**
  * @brief Frees all resources associated with a parsed prefab and deletes it.
- * This function cleans up all properties of a prefab, including paths, scripts, and children, managing reference counting and freeing all associated memory.
+ * This function cleans up all properties of a prefab, including paths, scripts,
+ * and children, managing reference counting and freeing all associated memory.
  * @param prefab A pointer to the fluxParsedPrefabStruct to delete.
  */
 void parser_delete_parsed_prefab(fluxParsedPrefab prefab) {
@@ -266,7 +281,8 @@ void parser_delete_parsed_prefab(fluxParsedPrefab prefab) {
 
 /**
  * @brief Parses a prefab from a specified file path.
- * This function reads and parses prefab data from a file, creating a new parsed prefab structure populated with the data extracted from the file.
+ * This function reads and parses prefab data from a file, creating a new parsed
+ * prefab structure populated with the data extracted from the file.
  * @param raw_path The file path from which to parse the prefab.
  * @return A pointer to the newly parsed fluxParsedPrefabStruct.
  */

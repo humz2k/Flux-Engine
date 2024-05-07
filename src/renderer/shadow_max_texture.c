@@ -1,6 +1,7 @@
 /**
  * @file shadow_map_texture.c
- * @brief This file contains functions to manage shadow map textures using Raylib and RLGL.
+ * @brief This file contains functions to manage shadow map textures using
+ * Raylib and RLGL.
  */
 
 #include "hqtools/hqtools.h"
@@ -14,13 +15,14 @@
 /**
  * @brief Loads a shadow map render texture.
  *
- * This function creates a framebuffer object and an associated depth texture for use as a shadow map.
- * The depth texture is attached to the framebuffer without a color buffer, as color data is not needed
- * for shadow mapping.
+ * This function creates a framebuffer object and an associated depth texture
+ * for use as a shadow map. The depth texture is attached to the framebuffer
+ * without a color buffer, as color data is not needed for shadow mapping.
  *
  * @param width The width of the shadow map texture.
  * @param height The height of the shadow map texture.
- * @return A RenderTexture2D structure containing the IDs and properties of the depth texture and the framebuffer.
+ * @return A RenderTexture2D structure containing the IDs and properties of the
+ * depth texture and the framebuffer.
  */
 RenderTexture2D LoadShadowmapRenderTexture(int width, int height) {
     RenderTexture2D target = {0};
@@ -60,11 +62,12 @@ RenderTexture2D LoadShadowmapRenderTexture(int width, int height) {
 /**
  * @brief Unloads a shadow map render texture from GPU memory (VRAM).
  *
- * This function unloads the framebuffer associated with the render texture. It ensures that any
- * depth texture or renderbuffer attached to the framebuffer is automatically queried and deleted
- * before deleting the framebuffer itself.
+ * This function unloads the framebuffer associated with the render texture. It
+ * ensures that any depth texture or renderbuffer attached to the framebuffer is
+ * automatically queried and deleted before deleting the framebuffer itself.
  *
- * @param target The render texture to unload, containing the framebuffer to be deleted.
+ * @param target The render texture to unload, containing the framebuffer to be
+ * deleted.
  */
 void UnloadShadowmapRenderTexture(RenderTexture2D target) {
     if (target.id > 0) {
