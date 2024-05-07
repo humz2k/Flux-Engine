@@ -34,56 +34,98 @@
 #include <stdlib.h>
 
 /**
- * Represents a game object within the scene.
- * Game objects can have models, cameras, scripts, and child objects.
+ * @struct fluxGameObjectStruct
+ * @brief Represents a game object within a scene.
+ *
+ * Game objects can have models, cameras, scripts, and child objects, enabling them to represent a wide variety of elements within the game.
  */
 struct fluxGameObjectStruct {
     int id; ///< Unique ID of the game object.
-    fluxTransform transform;
-    renderModel model;
-    int n_scripts;
-    fluxScript* scripts;
-    bool is_camera;
-    float fov;
-    int projection;
+    fluxTransform transform; ///< Transformation data for position, rotation, and scaling.
+    renderModel model; ///< Renderable model associated with the game object.
+    int n_scripts; ///< Number of scripts attached to the game object.
+    fluxScript* scripts; ///< Array of scripts attached to the game object.
+    bool is_camera; ///< Flag indicating whether the game object functions as a camera.
+    float fov; ///< Field of view, relevant if the object is a camera.
+    int projection; ///< Camera projection type (e.g., orthographic or perspective).
 };
 
+/**
+ * @brief Retrieves the unique ID of a game object.
+ * @param obj Pointer to the game object.
+ * @return Unique identifier of the game object.
+ */
 int flux_gameobject_get_id(fluxGameObject obj) {
     assert(obj);
     return obj->id;
 }
 
+/**
+ * @brief Retrieves the transformation data of a game object.
+ * @param obj Pointer to the game object.
+ * @return The transformation data as a fluxTransform structure.
+ */
 fluxTransform flux_gameobject_get_transform(fluxGameObject obj) {
     assert(obj);
     return obj->transform;
 }
 
+/**
+ * @brief Sets the transformation data for a game object.
+ * @param obj Pointer to the game object.
+ * @param transform New transformation data.
+ */
 void flux_gameobject_set_transform(fluxGameObject obj,
                                    fluxTransform transform) {
     assert(obj);
     obj->transform = transform;
 }
 
+/**
+ * @brief Retrieves the number of scripts attached to a game object.
+ * @param obj Pointer to the game object.
+ * @return Number of scripts.
+ */
 int flux_gameobject_get_n_scripts(fluxGameObject obj) {
     assert(obj);
     return obj->n_scripts;
 }
 
+/**
+ * @brief Checks if the game object functions as a camera.
+ * @param obj Pointer to the game object.
+ * @return True if the object is a camera, otherwise false.
+ */
 bool flux_gameobject_is_camera(fluxGameObject obj) {
     assert(obj);
     return obj->is_camera;
 }
 
+/**
+ * @brief Retrieves the model associated with a game object.
+ * @param obj Pointer to the game object.
+ * @return The renderModel of the game object.
+ */
 renderModel flux_gameobject_get_model(fluxGameObject obj) {
     assert(obj);
     return obj->model;
 }
 
+/**
+ * @brief Checks if the game object has an associated model.
+ * @param obj Pointer to the game object.
+ * @return True if a model is associated, otherwise false.
+ */
 bool flux_gameobject_has_model(fluxGameObject obj) {
     assert(obj);
     return obj->model != NULL;
 }
 
+/**
+ * @brief Retrieves a Camera3D structure initialized based on the game object's properties.
+ * @param obj Pointer to the game object configured as a camera.
+ * @return A Camera3D structure initialized to the game object's camera settings.
+ */
 Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj) {
     assert(obj);
     assert(obj->is_camera);
@@ -99,6 +141,14 @@ Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj) {
     return out;
 }
 
+/**
+ * @brief Allocates and initializes a new game object from a prefab and arguments.
+ * @param id Unique identifier for the new game object.
+ * @param transform Initial transformation settings.
+ * @param prefab Prefab to initialize the game object from.
+ * @param args Additional arguments for initializing scripts.
+ * @return Pointer to the newly created game object.
+ */
 fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform,
                                         fluxPrefab prefab, hstrArray args) {
     fluxGameObject out;
@@ -122,6 +172,12 @@ fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform,
     return out;
 }
 
+/**
+ * @brief Retrieves a specific script attached to a game object.
+ * @param obj Pointer to the game object.
+ * @param i Index of the script to retrieve.
+ * @return Pointer to the script.
+ */
 fluxScript flux_gameobject_get_script(fluxGameObject obj, int i) {
     assert(obj);
     assert(i >= 0);
@@ -129,6 +185,10 @@ fluxScript flux_gameobject_get_script(fluxGameObject obj, int i) {
     return obj->scripts[i];
 }
 
+/**
+ * @brief Frees all resources associated with a game object.
+ * @param obj Pointer to the game object to destroy.
+ */
 void flux_destroy_gameobject(fluxGameObject obj) {
     assert(obj);
     if (obj->scripts) {

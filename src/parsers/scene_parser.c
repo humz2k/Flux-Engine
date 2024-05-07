@@ -1,3 +1,8 @@
+/**
+ * @file scene_parser.c
+ * @brief This file provides functionality for parsing scene and game object data from files.
+ */
+
 #include "scene_parser.h"
 #include "file_tools.h"
 #include "hqtools/hqtools.h"
@@ -7,12 +12,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * @struct fluxParsedGameObjectStruct
+ * @brief Represents a parsed game object which can be instantiated in a scene.
+ *
+ * Contains a reference to a prefab, transformation data, and additional arguments for instantiation.
+ */
 typedef struct fluxParsedGameObjectStruct {
-    hstr prefab_name;
-    fluxTransform transform;
-    hstrArray args;
+    hstr prefab_name; /**< Name of the prefab used for creating this game object. */
+    fluxTransform transform; /**< Transform data including position, rotation, and scale. */
+    hstrArray args; /**< Additional arguments specific to this game object instance. */
 } fluxParsedGameObjectStruct;
 
+/**
+ * @brief Creates a parsed game object.
+ *
+ * Allocates and initializes a game object structure with the specified prefab name, transformation, and arguments.
+ * @param prefab_name Name of the prefab to associate with the game object.
+ * @param transform Transformation data for the game object.
+ * @param args Additional instantiation arguments.
+ * @return Pointer to the newly created parsed game object structure.
+ */
 static fluxParsedGameObject make_parsed_gameobject(hstr prefab_name,
                                                    fluxTransform transform,
                                                    hstrArray args) {
@@ -28,11 +48,22 @@ static fluxParsedGameObject make_parsed_gameobject(hstr prefab_name,
     return out;
 }
 
+/**
+ * @brief Retrieves the additional arguments of a parsed game object.
+ * @param gameobject Pointer to the parsed game object.
+ * @return Array of additional arguments.
+ */
 hstrArray parser_parsed_gameobject_get_args(fluxParsedGameObject gameobject) {
     assert(gameobject);
     return gameobject->args;
 }
 
+/**
+ * @brief Deletes a parsed game object.
+ *
+ * Frees the memory allocated for the parsed game object and decrements reference counts for any held strings.
+ * @param gameobject Pointer to the parsed game object to delete.
+ */
 static void delete_parsed_gameobject(fluxParsedGameObject gameobject) {
     assert(gameobject);
     hstr_decref(gameobject->prefab_name);
@@ -40,36 +71,47 @@ static void delete_parsed_gameobject(fluxParsedGameObject gameobject) {
     free(gameobject);
 }
 
+/**
+ * @brief Retrieves the prefab name of a parsed game object.
+ * @param gameobject Pointer to the parsed game object.
+ * @return Name of the associated prefab.
+ */
 hstr parser_parsed_gameobject_get_prefab_name(fluxParsedGameObject gameobject) {
     assert(gameobject);
     return gameobject->prefab_name;
 }
 
+
+/**
+ * @brief Retrieves the transform data of a parsed game object.
+ * @param gameobject Pointer to the parsed game object.
+ * @return Transformation data.
+ */
 fluxTransform
 parser_parsed_gameobject_get_transform(fluxParsedGameObject gameobject) {
     assert(gameobject);
     return gameobject->transform;
 }
 
-/*! \struct fluxParsedSceneStruct
- * A parsed scene
+/**
+ * @struct fluxParsedSceneStruct
+ * @brief Represents a parsed scene containing multiple game objects and prefabs.
+ *
+ * Stores scene metadata including its name and path, and lists of prefabs and game objects that exist within the scene.
  */
 typedef struct fluxParsedSceneStruct {
-    /*! \brief path to the scene */
-    hstr path;
-
-    /*! \brief name of the scene */
-    hstr name;
-
-    // prefabs in scene
-    int n_prefabs;
-    fluxParsedPrefab* prefabs;
-
-    int n_gameobjects;
-    fluxParsedGameObject* gameobjects;
-
+    hstr path; /**< Path to the scene file. */
+    hstr name; /**< Name of the scene. */
+    int n_prefabs; /**< Number of prefabs included in the scene. */
+    fluxParsedPrefab* prefabs; /**< Array of pointers to parsed prefabs. */
+    int n_gameobjects; /**< Number of game objects included in the scene. */
+    fluxParsedGameObject* gameobjects; /**< Array of pointers to parsed game objects. */
 } fluxParsedSceneStruct;
 
+/**
+ * @brief Allocates and initializes a parsed scene structure.
+ * @return Pointer to the newly allocated parsed scene structure.
+ */
 static fluxParsedScene alloc_parsed_scene_internal(void) {
     fluxParsedScene out =
         (fluxParsedScene)malloc(sizeof(fluxParsedSceneStruct));
@@ -79,6 +121,11 @@ static fluxParsedScene alloc_parsed_scene_internal(void) {
     return out;
 }
 
+/**
+ * @brief Sets the path of a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @param path Path to set for the scene.
+ */
 static void parsed_scene_set_path(fluxParsedScene scene, hstr path) {
     assert(scene);
     assert(path);
@@ -87,6 +134,11 @@ static void parsed_scene_set_path(fluxParsedScene scene, hstr path) {
     scene->path = hstr_incref(path);
 }
 
+/**
+ * @brief Sets the name of a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @param name Name to set for the scene.
+ */
 static void parsed_scene_set_name(fluxParsedScene scene, hstr name) {
     assert(scene);
     assert(name);
@@ -95,6 +147,11 @@ static void parsed_scene_set_name(fluxParsedScene scene, hstr name) {
     scene->name = hstr_incref(name);
 }
 
+/**
+ * @brief Adds a prefab to a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @param prefab Pointer to the prefab to add.
+ */
 static void parsed_scene_add_prefab(fluxParsedScene scene,
                                     fluxParsedPrefab prefab) {
     assert(scene);
@@ -106,6 +163,11 @@ static void parsed_scene_add_prefab(fluxParsedScene scene,
     scene->prefabs[scene->n_prefabs - 1] = prefab;
 }
 
+/**
+ * @brief Adds a game object to a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @param gameobject Pointer to the game object to add.
+ */
 static void parsed_scene_add_gameobject(fluxParsedScene scene,
                                         fluxParsedGameObject gameobject) {
     assert(scene);
@@ -118,6 +180,12 @@ static void parsed_scene_add_gameobject(fluxParsedScene scene,
     scene->gameobjects[scene->n_gameobjects - 1] = gameobject;
 }
 
+/**
+ * @brief Deletes a parsed scene and all its content.
+ *
+ * Frees memory allocated for the scene, its prefabs, and its game objects, and decrements reference counts for any held strings.
+ * @param scene Pointer to the parsed scene to delete.
+ */
 void parser_delete_parsed_scene(fluxParsedScene scene) {
     assert(scene);
     if (scene->path)
@@ -135,16 +203,32 @@ void parser_delete_parsed_scene(fluxParsedScene scene) {
     free(scene);
 }
 
+/**
+ * @brief Retrieves the name of a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @return Name of the scene.
+ */
 hstr parser_parsed_scene_get_name(fluxParsedScene scene) {
     assert(scene);
     return scene->name;
 }
 
+/**
+ * @brief Retrieves the number of prefabs in a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @return Number of prefabs.
+ */
 int parser_parsed_scene_get_n_prefabs(fluxParsedScene scene) {
     assert(scene);
     return scene->n_prefabs;
 }
 
+/**
+ * @brief Retrieves a specific prefab from a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @param i Index of the prefab to retrieve.
+ * @return Pointer to the requested prefab.
+ */
 fluxParsedPrefab parser_parsed_scene_get_prefab(fluxParsedScene scene, int i) {
     assert(scene);
     assert(i >= 0);
@@ -152,11 +236,22 @@ fluxParsedPrefab parser_parsed_scene_get_prefab(fluxParsedScene scene, int i) {
     return scene->prefabs[i];
 }
 
+/**
+ * @brief Retrieves the number of game objects in a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @return Number of game objects.
+ */
 int parser_parsed_scene_get_n_gameobjects(fluxParsedScene scene) {
     assert(scene);
     return scene->n_gameobjects;
 }
 
+/**
+ * @brief Retrieves a specific game object from a parsed scene.
+ * @param scene Pointer to the parsed scene.
+ * @param i Index of the game object to retrieve.
+ * @return Pointer to the requested game object.
+ */
 fluxParsedGameObject parser_parsed_scene_get_gameobject(fluxParsedScene scene,
                                                         int i) {
     assert(scene);
@@ -165,6 +260,13 @@ fluxParsedGameObject parser_parsed_scene_get_gameobject(fluxParsedScene scene,
     return scene->gameobjects[i];
 }
 
+/**
+ * @brief Parses a scene from a specified file path.
+ *
+ * Reads a scene file and creates a parsed scene structure populated with data extracted from the file.
+ * @param raw_path Path to the scene file to parse.
+ * @return Pointer to the newly parsed scene structure.
+ */
 fluxParsedScene parser_read_scene(const char* raw_path) {
     hstr path = hstr_incref(hstr_new(raw_path));
     fluxParsedScene out = alloc_parsed_scene_internal();
@@ -199,16 +301,12 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
 
             hstrArray argument_list = hstr_split(argument, ",");
 
-            // TraceLog(LOG_INFO,"ARGUMENT: %s :
-            // %s",hstr_unpack(command),hstr_unpack(argument));
-
             if (strcmp(hstr_unpack(command), "sceneName") == 0) {
                 parsed_scene_set_name(out, argument);
             } else if (strcmp(hstr_unpack(command), "scenePrefabs") == 0) {
                 for (int k = 0; k < hstr_array_len(argument_list); k++) {
                     hstr prefab_path = hstr_incref(
                         hstr_strip(hstr_array_get(argument_list, k)));
-                    // parsed_prefab_add_script(out, script_name);
                     fluxParsedPrefab prefab =
                         parser_read_prefab(hstr_unpack(prefab_path));
                     parsed_scene_add_prefab(out, prefab);
@@ -246,19 +344,6 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
                 hstr_decref(prefab_name);
             }
 
-            /* else if (strcmp(hstr_unpack(command), "prefabChildren") == 0) {
-                 for (int k = 0; k < hstr_array_len(argument_list); k++) {
-                     hstr child_name = hstr_incref(
-                         hstr_strip(hstr_array_get(argument_list, k)));
-                     parsed_prefab_add_child(out, child_name);
-                     hstr_decref(child_name);
-                 }
-             } else if (strcmp(hstr_unpack(command), "prefabIsCamera") == 0) {
-                 if (strcmp(hstr_unpack(argument), "true") == 0) {
-                     parsed_prefab_set_is_camera(out);
-                 }
-             }*/
-
             hstr_array_delete(argument_list);
             hstr_decref(command);
             hstr_decref(argument);
@@ -266,7 +351,6 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
         } else {
             TraceLog(LOG_ERROR, "malformed line %s", hstr_unpack(line));
         }
-        // TraceLog(LOG_INFO,"line %d: %s",i,hstr_unpack(line));
 
         hstr_array_delete(arguments);
         hstr_decref(line);
