@@ -64,10 +64,11 @@ static void append_stack(char* ptr, int type) {
 
 static const char* read_stack(int i, int* type) {
     int idx = (stack_ptr - 1) - i;
+    //printf("idx %d\n",idx);
     while (idx < 0) {
         idx += EDITOR_CONSOLE_STACK_SIZE;
     }
-    if (idx >= EDITOR_CONSOLE_STACK_SIZE)
+    if (idx >= stack_ptr)
         return NULL;
     *type = message_type_stack[idx];
     return stack[idx];
