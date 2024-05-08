@@ -98,6 +98,8 @@ void flux_close(void){
  * Handles scene updates, script callbacks, and drawing operations.
  */
 static void flux_loop(void){
+    flux_flush_signals();
+
     flux_scene_script_callback(ONUPDATE);
     flux_scene_script_callback(AFTERUPDATE);
 

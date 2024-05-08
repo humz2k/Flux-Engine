@@ -38,6 +38,12 @@ struct GameCallback {
     int n_callbacks; /**< Number of callback functions registered. */
 };
 
+static void(*signal_callbacks[FLUX_MAX_GAME_CALLBACKS])(int); /**< Array of signal callback functions. */
+static int n_signal_callbacks = 0; /**< Number of signal callback functions registered. */
+
+static int pending_signals[FLUX_MAX_PENDING_SIGNALS]; /**< Queue of pending signals. */
+static int n_pending_signals = 0; /**< Number of pending signals. */
+
 /**
  * @brief Initializes a GameCallback structure by setting the number of
  * callbacks to zero.
@@ -45,6 +51,13 @@ struct GameCallback {
  */
 static void init_game_callback(struct GameCallback* callbacks) {
     callbacks->n_callbacks = 0;
+}
+
+/**
+ * @brief Initializes signal callbacks
+ */
+static void init_signal_callbacks(void){
+    n_signal_callbacks = 0;
 }
 
 /**
@@ -77,6 +90,7 @@ void flux_init_game_callbacks(void) {
              "FLUX<game_callbacks.c>: flux_init_game_callbacks called");
     init_game_callback(&onGameCloseCallbacks);
     init_game_callback(&onGameLoadCallbacks);
+    init_signal_callbacks();
 }
 
 /**
@@ -99,6 +113,41 @@ void flux_register_callback(enum FluxGameCallback event,
                  "FLUX<game_callbacks.c>: unknown callback registered");
         break;
     }
+}
+
+/**
+ * @brief Registers a signal callback function.
+ * @param signal_callback Function pointer to the callback to register.
+ */
+void flux_register_signal_callback(void(*signal_callback)(int)){
+    assert(n_signal_callbacks < FLUX_MAX_GAME_CALLBACKS);
+    signal_callbacks[n_signal_callbacks] = signal_callback;
+    n_signal_callbacks++;
+}
+
+/**
+ * @brief Adds a signal to the pending signals queue.
+ * @param signal signal to add to queue.
+ */
+void flux_send_signal(int signal){
+    assert(n_pending_signals < FLUX_MAX_PENDING_SIGNALS);
+    TraceLog(INFO,"sending signal %d",signal);
+    pending_signals[n_pending_signals] = signal;
+    n_pending_signals++;
+}
+
+/**
+ * @brief Executes all pending signals
+ */
+void flux_flush_signals(void){
+    for (int i = 0; i < n_pending_signals; i++){
+        int signal = pending_signals[i];
+        TraceLog(INFO,"executing signal %d",signal);
+        for (int j = 0; j < n_signal_callbacks; j++){
+            signal_callbacks[j](signal);
+        }
+    }
+    n_pending_signals = 0;
 }
 
 /**

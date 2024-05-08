@@ -1,1 +1,5 @@
-#include "main.c"
+int run();
+
+int main(){
+    run();
+}
