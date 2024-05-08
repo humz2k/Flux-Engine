@@ -21,6 +21,7 @@ extern float deltaTime;
 #define onDestroy fluxConcat(SCRIPT, fluxCallback_onDestroy)
 #define onDraw fluxConcat(SCRIPT, fluxCallback_onDraw)
 #define onDraw2D fluxConcat(SCRIPT, fluxCallback_onDraw2D)
+#define onSignal fluxConcat(SCRIPT, fluxCallback_onSignal)
 #define script_data struct fluxConcat(SCRIPT, fluxData)
 
 #else
@@ -33,6 +34,7 @@ extern float deltaTime;
 #define onDestroy DID_YOU_FORGET_TO_DEFINE_SCRIPT
 #define onDraw DID_YOU_FORGET_TO_DEFINE_SCRIPT
 #define onDraw2D DID_YOU_FORGET_TO_DEFINE_SCRIPT
+#define onSignal DID_YOU_FORGET_TO_DEFINE_SCRIPT
 #define script_data DID_YOU_FORGET_TO_DEFINE_SCRIPT
 
 #endif

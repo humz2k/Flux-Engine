@@ -34,6 +34,8 @@ void flux_close_scene(void);
 
 /** @} */
 
+void flux_scene_signal_handler(int signal);
+
 void flux_draw_scene(void);
 
 void flux_scene_script_callback(script_callback_t callback);

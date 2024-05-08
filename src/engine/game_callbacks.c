@@ -79,6 +79,8 @@ static struct GameCallback
 static struct GameCallback
     onGameCloseCallbacks; /**< Callbacks to execute when the game closes. */
 
+void flux_scene_signal_handler(int signal); /**< forward declaration of scene signal handler (i know this is terrible) */
+
 /**
  * @brief Initializes game event callback structures.
  *
@@ -91,6 +93,7 @@ void flux_init_game_callbacks(void) {
     init_game_callback(&onGameCloseCallbacks);
     init_game_callback(&onGameLoadCallbacks);
     init_signal_callbacks();
+    flux_register_signal_callback(flux_scene_signal_handler);
 }
 
 /**

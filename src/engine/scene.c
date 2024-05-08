@@ -163,7 +163,23 @@ void flux_scene_script_callback(script_callback_t callback) {
             func(obj, script);
         }
     }
-};
+}
+
+/**
+ * @brief Executes a the signal script callback for all scripts attached to all game objects in the scene.
+ *
+ * Iterates over all game objects and their attached scripts to execute the signal callback.
+ * @param signal the signal
+ */
+void flux_scene_signal_handler(int signal){
+    for (int i = 0; i < n_objects; i++) {
+        fluxGameObject obj = game_objects[i];
+        for (int j = 0; j < flux_gameobject_get_n_scripts(obj); j++) {
+            fluxScript script = flux_gameobject_get_script(obj, j);
+            fluxCallback_onSignal(obj, script, signal);
+        }
+    }
+}
 
 /**
  * @brief Draws the entire scene.

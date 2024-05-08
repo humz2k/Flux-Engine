@@ -1,5 +1,6 @@
 #define SCRIPT test
 #include "fluxScript.h"
+#include "game_callbacks.h"
 
 script_data{
     fluxTransform transform;
@@ -16,4 +17,7 @@ fluxCallback onUpdate(fluxGameObject obj, script_data* data){
     if (IsKeyDown(KEY_D))
         data->transform.pos.x -= GetFrameTime();
     flux_gameobject_set_transform(obj,data->transform);
+
+    //TraceLog(INFO,"test sending signal 10");
+    //flux_send_signal(10);
 }

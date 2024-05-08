@@ -18,4 +18,5 @@ int run(){
     flux_run();
 
     flux_close();
+    return 0;
 }

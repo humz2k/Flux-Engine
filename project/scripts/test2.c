@@ -13,3 +13,7 @@ fluxCallback onUpdate(fluxGameObject obj, script_data* data){
     //TraceLog(LOG_INFO,"update2");
     data->y = 0;
 }
+
+fluxCallback onSignal(fluxGameObject obj, script_data* data, int signal){
+    //TraceLog(INFO,"test2 recieved signal %d", signal);
+}

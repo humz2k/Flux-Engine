@@ -4,7 +4,7 @@ import re
 from pputils import *
 
 SCRIPT_CALLBACKS = [
-    "onUpdate", "afterUpdate", "onInit", "onDestroy", "onDraw", "onDraw2D"
+    "onUpdate", "afterUpdate", "onInit", "onDestroy", "onDraw", "onDraw2D", "onSignal"
 ]
 
 # processes all Flux scripts and creates `struct script`
@@ -56,6 +56,8 @@ class ScriptProcessor:
     def get_empty_implementation(self,callback : str) -> str:
         if (callback) == 'onInit':
             return "fluxCallback {0}(fluxGameObject obj, script_data* data, hstrArray args){{}}".format(callback)
+        if (callback) == 'onSignal':
+            return "fluxCallback {0}(fluxGameObject obj, script_data* data, int signal){{}}".format(callback)
         return "fluxCallback {0}(fluxGameObject obj, script_data* data){{}}".format(callback)
 
     # gets implementations for all not implemented callbacks
@@ -123,6 +125,12 @@ struct fluxScriptStruct{
             {1}(obj,script->{2},args);
             break;
 """.format(get_script_enum_name(script_name),self.get_mangled_callback(callback,script_name),self.get_script_data_name(script_name))
+        if (callback == "onSignal"):
+            return """
+        case {0}:
+            {1}(obj,script->{2},signal);
+            break;
+""".format(get_script_enum_name(script_name),self.get_mangled_callback(callback,script_name),self.get_script_data_name(script_name))
         return """
         case {0}:
             {1}(obj,script->{2});
@@ -135,6 +143,24 @@ struct fluxScriptStruct{
             return """
 
 void fluxCallback_{0}(fluxGameObject obj, fluxScript script, hstrArray args)
+#ifdef FLUX_SCRIPTS_IMPLEMENTATION
+{{
+    switch(script->id){{
+        {1}
+        default:
+            //assert((1 == 0) && "something terrible happened at compile time!");
+            break;
+    }}
+}}
+#else
+;
+#endif
+
+""".format(callback,"\n".join([self.generate_switch_script_callback(callback,i) for i in self.script_names]))
+        if (callback == "onSignal"):
+            return """
+
+void fluxCallback_{0}(fluxGameObject obj, fluxScript script, int signal)
 #ifdef FLUX_SCRIPTS_IMPLEMENTATION
 {{
     switch(script->id){{
