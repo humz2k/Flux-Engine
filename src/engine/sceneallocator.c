@@ -21,33 +21,21 @@ static int n_allocations = 0;
 // allocations_size)
 static int allocations_size = 0;
 
-// similarly for models
-static Model* models = NULL;
-static int n_models = 0;
-static int models_size = 0;
-
-static int next_gameobject_id = 0;
-
 // initializes the scene allocator for the current scene (so should be called
 // every scene load)
 void flux_init_scene_allocator(void) {
     TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: initializing sceneallocator");
     // allocations and models must be NULL
     // if not, then something bad happened
-    FLUX_ASSERT((NULL == allocations) && (NULL == models),
+    FLUX_ASSERT((NULL == allocations),
                 "FLUX<sceneallocator.c>: was fluxCloseSceneAllocator called on "
                 "scene close?");
     // set number of allocations and models to 0
     n_allocations = 0;
-    n_models = 0;
     // and the initial size of the allocations and models arrays to be 10
     allocations_size = 10;
-    models_size = 10;
     // malloc accordingly
     assert(allocations = (void**)malloc(sizeof(void*) * allocations_size));
-    assert(models = (Model*)malloc(sizeof(Model) * models_size));
-    // set next_gameobject_id to 0 (used to get unique gameobject identifiers)
-    next_gameobject_id = 0;
     TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: initialized sceneallocator");
 }
 
@@ -60,10 +48,7 @@ void flux_close_scene_allocator(void) {
     FLUX_ASSERT(
         (n_allocations < allocations_size),
         "FLUX<sceneallocator.c>: n_allocations is less than allocations_size!");
-    FLUX_ASSERT((n_models >= 0),
-                "FLUX<sceneallocator.c>: n_models was less than 0???");
-    FLUX_ASSERT((n_models < models_size),
-                "FLUX<sceneallocator.c>: n_models is less than models_size!");
+
     // loop through active allocations and free the memory
     for (int i = 0; i < n_allocations; i++) {
         free(allocations[i]);
@@ -71,16 +56,10 @@ void flux_close_scene_allocator(void) {
     // finally free the allocations array and set to NULL
     free(allocations);
     allocations = NULL;
-    // loop through active models and free the Model
-    for (int i = 0; i < n_models; i++) {
-        UnloadModel(models[i]);
-    }
-    free(models);
-    models = NULL;
+
     TraceLog(LOG_INFO,
-             "FLUX<sceneallocator.c>: closed sceneallocator (%d allocations, "
-             "%d models)",
-             n_allocations, n_models);
+             "FLUX<sceneallocator.c>: closed sceneallocator (%d allocations)",
+             n_allocations);
 }
 
 // allocates some heap space that will be cleared on scene close
@@ -115,54 +94,5 @@ void* flux_scene_alloc(size_t sz) {
     // and then increment n_allocations
     n_allocations++;
     // finally return the malloced data
-    return out;
-}
-
-Model flux_scene_load_model(const char* path) {
-    FLUX_ASSERT((n_models >= 0),
-                "FLUX<sceneallocator.c>: n_models was less than 0???");
-    FLUX_ASSERT((path != NULL),
-                "FLUX<sceneallocator.c>: tried to load model with NULL path!");
-    TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: loading model '%s'", path);
-    // if we are out of space, we must grow the array
-    if (n_models >= models_size) {
-        FLUX_ASSERT(
-            (models_size > 0),
-            "FLUX<sceneallocator.c>: models_size should never be less than 1!");
-        TraceLog(LOG_INFO,
-                 "FLUX<sceneallocator.c>: growing models cache (previous size "
-                 "%d new size %d)",
-                 models_size, models_size * 2);
-        // double the size of the models array
-        models_size *= 2;
-        // realloc accordingly
-        assert(models = (Model*)realloc(models, sizeof(Model) * models_size));
-        FLUX_ASSERT((n_models < models_size),
-                    "FLUX<sceneallocator.c>: n_models was still bigger than "
-                    "models_size after resize!");
-    }
-    // get the model to be returned
-    Model out;
-    if (strcmp(path, "SPHERE") == 0) {
-        TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: loading sphere primitive");
-        out = LoadModelFromMesh(GenMeshSphere(1, 100, 100));
-    } else {
-        TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: loading model from path %s",
-                 path);
-        out = LoadModel(path);
-    }
-    // store this model in the correct place in models
-    models[n_models] = out;
-    // and then increment n_models
-    n_models++;
-    // finally return the loaded model
-    TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: loaded model %s", path);
-    return out;
-}
-
-int flux_scene_get_unique_id(void) {
-    int out = next_gameobject_id;
-    TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: getting unique id %d", out);
-    next_gameobject_id++;
     return out;
 }
