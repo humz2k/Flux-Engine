@@ -9,8 +9,17 @@
 #include "prefab_parser.h"
 #include "scripts.h"
 
-struct fluxPrefabStruct;
-typedef struct fluxPrefabStruct* fluxPrefab;
+/** @addtogroup prefabapi Prefab API
+ *  @brief The public API for interacting with game prefabs.
+ *
+ *  @{
+ */
+
+/** @struct fluxPrefabStruct */
+typedef struct fluxPrefabStruct fluxPrefabStruct;
+
+/** @typedef fluxPrefabStruct* fluxPrefab */
+typedef fluxPrefabStruct* fluxPrefab;
 
 fluxPrefab flux_load_prefab(fluxParsedPrefab parsed);
 
@@ -37,5 +46,7 @@ float flux_prefab_get_fov(fluxPrefab prefab);
 void flux_prefab_set_fov(fluxPrefab prefab, float fov);
 
 enum fluxScriptID* flux_prefab_get_scripts(fluxPrefab prefab);
+
+/** @} */
 
 #endif

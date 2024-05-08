@@ -1,5 +1,6 @@
 /** @mainpage Flux Engine Documentation
 * * @ref engineapi.
 * * @ref sceneapi.
+* * @ref prefabapi
 * * @ref group1.
 */

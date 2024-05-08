@@ -1,6 +1,10 @@
 /**
  * @file sceneallocator.c
- **/
+ * @brief Manages dynamic memory allocation for game scene resources, ensuring all allocations are tracked and freed appropriately.
+ *
+ * Provides functions to initialize and close the memory allocator for scenes, and to handle memory allocations that are automatically tracked
+ * and freed when the scene is closed. This helps prevent memory leaks by tying memory lifetimes to scene lifetimes.
+ */
 
 #include "sceneallocator.h"
 #include "config.h"
@@ -13,16 +17,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-// stores all the allocations of the current scene in resizable array
-static void** allocations = NULL;
-// number of active allocations
-static int n_allocations = 0;
-// size of the allocations array (n_allocations may be less than
-// allocations_size)
-static int allocations_size = 0;
+static void** allocations = NULL; ///< Pointer to dynamically allocated memory blocks for the scene.
+static int n_allocations = 0; ///< Number of active allocations.
+static int allocations_size = 0; ///< Current size of the allocations array, may be larger than n_allocations.
 
-// initializes the scene allocator for the current scene (so should be called
-// every scene load)
+/**
+ * @brief Initializes the scene allocator for managing memory allocations within a scene.
+ *
+ * This function prepares the allocator for use, ensuring it starts in a clean state with no existing allocations.
+ * It should be called every time a scene is loaded to reset the allocator's state.
+ */
 void flux_init_scene_allocator(void) {
     TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: initializing sceneallocator");
     // allocations and models must be NULL
@@ -39,8 +43,12 @@ void flux_init_scene_allocator(void) {
     TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: initialized sceneallocator");
 }
 
-// closes the scene allocator for the current scene (so should be called every
-// scene close)
+/**
+ * @brief Closes the scene allocator, freeing all tracked memory allocations.
+ *
+ * This function should be called every time a scene is closed to ensure that all memory allocated for the scene
+ * is properly freed and that the allocator is reset for future use.
+ */
 void flux_close_scene_allocator(void) {
     TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: closing sceneallocator");
     FLUX_ASSERT((n_allocations >= 0),
@@ -62,7 +70,14 @@ void flux_close_scene_allocator(void) {
              n_allocations);
 }
 
-// allocates some heap space that will be cleared on scene close
+/**
+ * @brief Allocates memory that will be automatically managed and freed when the scene closes.
+ *
+ * This function allocates memory and automatically tracks it to ensure it is freed when the scene is closed,
+ * helping to manage memory efficiently and prevent leaks within scene lifecycles.
+ * @param sz Size of the memory block to allocate.
+ * @return Pointer to the allocated memory block.
+ */
 void* flux_scene_alloc(size_t sz) {
     TraceLog(LOG_INFO,
              "FLUX<sceneallocator.c>: sceneallocator allocating %lu bytes", sz);
