@@ -1,8 +1,8 @@
 sceneName = testScene
-scenePrefabs = /Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/defaultCamera.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/lightmanager.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/plane.prefab
+scenePrefabs = project/prefabs/defaultCamera.prefab,project/prefabs/testPrefab.prefab,project/prefabs/lightmanager.prefab,project/prefabs/plane.prefab
 sceneGameObject = defaultCamera,0,3,-10,-0.2,0,0,1,1,1
 sceneGameObject = testPrefab,0,0,0,0,0,0,1,1,1
 sceneGameObject = plane,0,-1,0,0,0,0,10,10,10
 sceneGameObject = testPrefab,2,0,0,0,0,0,1,1,1
 sceneGameObject = testPrefab,-2,0,0,0,0,0,1,1,1
-sceneGameObject = lightmanager,0,0,0,0,0,0,1,1,1,ka:0.2,skybox:drivers/assets/Daylight Box UV.png
+sceneGameObject = lightmanager,0,0,0,0,0,0,1,1,1,ka:0.2,skybox:project/assets/defaultskybox.png
