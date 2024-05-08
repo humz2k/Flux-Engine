@@ -158,6 +158,9 @@ Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj) {
 /**
  * @brief Allocates and initializes a new game object from a prefab and
  * arguments.
+ *
+ * NOTE: This calls onInit on allocation(!!!)
+ *
  * @param id Unique identifier for the new game object.
  * @param transform Initial transformation settings.
  * @param prefab Prefab to initialize the game object from.

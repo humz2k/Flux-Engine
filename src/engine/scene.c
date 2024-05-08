@@ -69,6 +69,49 @@ void flux_close_scene(void) {
 }
 
 /**
+ * @brief Instantiates a prefab in the current scene
+ *
+ * @param prefab the prefab to instantiate
+ * @param transform transform
+ * @param args extra args passed to onInit
+ */
+void flux_instantiate_prefab(fluxPrefab prefab, fluxTransform transform, hstrArray args){
+    int id = n_objects;
+    fluxGameObject allocated = flux_allocate_gameobject(
+            id, transform, prefab,
+            args);
+    if (flux_gameobject_is_camera(allocated) && (active_camera == NULL)) {
+        active_camera = allocated;
+    }
+    game_objects =
+            realloc(game_objects, sizeof(fluxGameObject) * (n_objects + 1));
+    game_objects[n_objects] = allocated;
+    n_objects++;
+}
+
+/**
+ * @brief Instantiates a prefab in the current scene by name
+ *
+ * @param name the name of the prefab
+ * @param transform transform
+ * @param args extra args passed to onInit
+ */
+void flux_instantiate_prefab_by_name(const char* name, fluxTransform transform, hstrArray args){
+    fluxPrefab to_instantiate = NULL;
+    for (int j = 0; j < n_prefabs; j++) {
+        fluxPrefab prefab = prefabs[j];
+        if (strcmp(hstr_unpack(flux_prefab_get_name(prefab)),
+                    name) != 0)
+            continue;
+        to_instantiate = prefab;
+    }
+
+    assert(to_instantiate != NULL);
+
+    flux_instantiate_prefab(to_instantiate,transform,args);
+}
+
+/**
  * @brief Loads a scene from a specified path.
  *
  * Parses a scene file to construct the scene's structure in memory, including creating game objects and prefabs based on parsed data.
@@ -100,34 +143,16 @@ void flux_load_scene(const char* path) {
          i++) {
         fluxParsedGameObject parsed_gameobject =
             parser_parsed_scene_get_gameobject(parsed_scene, i);
+
         fluxTransform transform =
             parser_parsed_gameobject_get_transform(parsed_gameobject);
-        hstr prefab_name = hstr_incref(
-            parser_parsed_gameobject_get_prefab_name(parsed_gameobject));
-        fluxPrefab to_instantiate = NULL;
-        for (int j = 0; j < n_prefabs; j++) {
-            fluxPrefab prefab = prefabs[j];
-            if (strcmp(hstr_unpack(flux_prefab_get_name(prefab)),
-                       hstr_unpack(prefab_name)) != 0)
-                continue;
-            to_instantiate = prefab;
-        }
 
-        assert(to_instantiate != NULL);
-        hstr_decref(prefab_name);
+        flux_instantiate_prefab_by_name(
+                hstr_unpack(parser_parsed_gameobject_get_prefab_name(parsed_gameobject)),
+                transform,
+                parser_parsed_gameobject_get_args(parsed_gameobject));
 
-        fluxGameObject allocated = flux_allocate_gameobject(
-            i, transform, to_instantiate,
-            parser_parsed_gameobject_get_args(parsed_gameobject));
 
-        if (flux_gameobject_is_camera(allocated) && (active_camera == NULL)) {
-            active_camera = allocated;
-        }
-
-        game_objects =
-            realloc(game_objects, sizeof(fluxGameObject) * (n_objects + 1));
-        game_objects[n_objects] = allocated;
-        n_objects++;
     }
 
     parser_delete_parsed_scene(parsed_scene);
