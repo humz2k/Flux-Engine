@@ -5,6 +5,8 @@
 * See below for an overview:
 * * @subpage intro
 * * @subpage scriptingapi
+* * @subpage prefabs
+* * @subpage scenes
 * * @ref engineapi.
 * * @ref sceneapi.
 * * @ref prefabapi
@@ -144,7 +146,7 @@ prefabProjection - NOT IMPLEMENTED, but the projection of the camera if prefabIs
 
 */
 
-/** @page prefabs Scene Syntax
+/** @page scenes Scene Syntax
 
 @note Whitespace is unfortunately significant - pay attention to this.
 
