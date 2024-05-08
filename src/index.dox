@@ -113,6 +113,57 @@ A full list of callbacks is as follows:
 * `afterUpdate(fluxGameObject, script_data*)` - called AFTER every `onUpdate` callback has run.
 * `onDestroy(fluxGameObject, script_data*)` - called when the gameobject is destroyed (generally on scene close).
 
-NOTE: you do not have to implement every callback.
+@note You do not have to implement every callback.
+
+*/
+
+/** @page prefabs Prefab Syntax
+
+@note Whitespace is unfortunately significant - pay attention to this.
+
+```
+attributename = value
+attributename = value,value,value
+```
+For example:
+```
+prefabName = defaultCamera
+prefabModel = /path/to/model
+prefabScripts = script1,script2
+```
+All attributes:
+```
+prefabName - name of the prefab (used to reference it in code)
+prefabModel - path to prefab model, or PRIMITIVE (e.g., SPHERE)
+prefabScripts - list of scripts for this prefab
+prefabChildren - NOT IMPLEMENTED, but list of names of prefabs that will be children
+prefabIsCamera - is this prefab a camera?
+prefabFOV - NOT IMPLEMENTED, but the fov of the camera if prefabIsCamera
+prefabProjection - NOT IMPLEMENTED, but the projection of the camera if prefabIsCamera
+```
+
+*/
+
+/** @page prefabs Scene Syntax
+
+@note Whitespace is unfortunately significant - pay attention to this.
+
+```
+sceneName = name_of_scene
+scenePrefabs = /paths/to/prefabs.prefab,/paths/to/other/prefabs.prefab
+sceneGameObject = prefab_name,posx,posy,posz,rotx,roty,rotz,scalex,scaley,scalez,extra,arguments,here
+sceneGameObject = ...
+...
+```
+For example:
+```
+sceneName = testScene
+scenePrefabs = /Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/defaultCamera.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/testPrefab.prefab,/Users/humzaqureshi/GitHub/Flux-Engine/project/prefabs/lightmanager.prefab
+sceneGameObject = defaultCamera,0,0,-10,0,0,0,1,1,1
+sceneGameObject = testPrefab,0,0,0,0,0,0,1,1,1
+sceneGameObject = testPrefab,2,0,0,0,0,0,1,1,1
+sceneGameObject = testPrefab,-2,0,0,0,0,0,1,1,1
+sceneGameObject = lightmanager,0,0,0,0,0,0,1,1,1,ka:0.2,skybox:drivers/assets/Daylight Box UV.png
+```
 
 */
