@@ -32,11 +32,10 @@ static void console_command_quit(int nargs, const char** args) {
     flux_quit_game();
 }
 
-int run_game() {
-
+void flux_init(int width, int height, const char* name){
     init_editor_tools();
 
-    InitWindow(1000, 800, "test");
+    InitWindow(width, height, name);
 
     load_editor_tools();
 
@@ -48,24 +47,9 @@ int run_game() {
 
     flux_reset_scene();
     flux_game_load();
+}
 
-    flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
-                    "testScene.scene");
-
-    while (!WindowShouldClose() && !do_quit) {
-
-        flux_scene_script_callback(ONUPDATE);
-        flux_scene_script_callback(AFTERUPDATE);
-
-        BeginDrawing();
-
-        flux_draw_scene();
-
-        draw_editor_tools();
-
-        EndDrawing();
-    }
-
+void flux_close(void){
     flux_close_scene();
     flux_game_close();
     render_close();
@@ -73,5 +57,23 @@ int run_game() {
     CloseWindow();
 
     close_editor_tools();
-    return 0;
+}
+
+static void flux_loop(void){
+    flux_scene_script_callback(ONUPDATE);
+    flux_scene_script_callback(AFTERUPDATE);
+
+    BeginDrawing();
+
+    flux_draw_scene();
+
+    draw_editor_tools();
+
+    EndDrawing();
+}
+
+void flux_run(void){
+    while (!WindowShouldClose() && !do_quit) {
+        flux_loop();
+    }
 }
