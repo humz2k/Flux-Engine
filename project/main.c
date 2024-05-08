@@ -6,6 +6,7 @@ void signal_handler(int signal){
 }
 
 int run(){
+
     flux_init(1000,800,"test");
 
     flux_register_signal_callback(signal_handler);

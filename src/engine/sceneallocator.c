@@ -28,6 +28,7 @@ static int allocations_size = 0; ///< Current size of the allocations array, may
  * It should be called every time a scene is loaded to reset the allocator's state.
  */
 void flux_init_scene_allocator(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: initializing sceneallocator");
     // allocations and models must be NULL
     // if not, then something bad happened
@@ -50,6 +51,7 @@ void flux_init_scene_allocator(void) {
  * is properly freed and that the allocator is reset for future use.
  */
 void flux_close_scene_allocator(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "FLUX<sceneallocator.c>: closing sceneallocator");
     FLUX_ASSERT((n_allocations >= 0),
                 "FLUX<sceneallocator.c>: n_allocations was less than 0???");
@@ -79,6 +81,7 @@ void flux_close_scene_allocator(void) {
  * @return Pointer to the allocated memory block.
  */
 void* flux_scene_alloc(size_t sz) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO,
              "FLUX<sceneallocator.c>: sceneallocator allocating %lu bytes", sz);
     FLUX_ASSERT((n_allocations >= 0),

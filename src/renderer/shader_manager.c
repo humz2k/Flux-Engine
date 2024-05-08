@@ -94,6 +94,7 @@ static int shadowMapRes = 4096; /**< Resolution of the shadow map. */
  * attribute.
  */
 renderShaderAttr render_get_shader_attr(Shader shader, const char* attr) {
+    LOG_FUNC_CALL();
     renderShaderAttr out;
     out.shader = shader;
     out.attr = attr;
@@ -107,6 +108,7 @@ renderShaderAttr render_get_shader_attr(Shader shader, const char* attr) {
  * @param val New float value to set.
  */
 void render_set_shader_attr_float(renderShaderAttr attr, float val) {
+    LOG_FUNC_CALL();
     SetShaderValue(attr.shader, attr.loc, &val, SHADER_UNIFORM_FLOAT);
 }
 
@@ -116,6 +118,7 @@ void render_set_shader_attr_float(renderShaderAttr attr, float val) {
  * @param val New integer value to set.
  */
 void render_set_shader_attr_int(renderShaderAttr attr, int val) {
+    LOG_FUNC_CALL();
     SetShaderValue(attr.shader, attr.loc, &val, SHADER_UNIFORM_INT);
 }
 
@@ -125,6 +128,7 @@ void render_set_shader_attr_int(renderShaderAttr attr, int val) {
  * @param val New Vector3 value to set.
  */
 void render_set_shader_attr_vec3(renderShaderAttr attr, Vector3 val) {
+    LOG_FUNC_CALL();
     float array[3] = Vec32Array(val);
     SetShaderValue(attr.shader, attr.loc, array, SHADER_UNIFORM_VEC3);
 }
@@ -135,6 +139,7 @@ void render_set_shader_attr_vec3(renderShaderAttr attr, Vector3 val) {
  * properties.
  */
 static void init_lights(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "init_lights");
     TraceLog(LOG_INFO, "shadowMapRes %dx%d", shadowMapRes, shadowMapRes);
     for (int i = 0; i < FLUX_MAX_LIGHTS; i++) {
@@ -180,6 +185,7 @@ static void init_lights(void) {
  * This function is typically called when cleaning up the renderer.
  */
 static void delete_lights(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "delete_lights");
     for (int i = 0; i < FLUX_MAX_LIGHTS; i++) {
         UnloadShadowmapRenderTexture(lights[i].shadow_map);
@@ -192,6 +198,7 @@ static void delete_lights(void) {
  * rendering tasks.
  */
 void render_load_default_shader(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "render_load_default_shader");
     skybox_loaded = 0;
     flux_default_shader = LoadShader("src/renderer/shaders/lights.vs",
@@ -212,6 +219,7 @@ void render_load_default_shader(void) {
  * @param path Path to the skybox texture image.
  */
 void render_load_skybox(const char* path) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "render_load_skybox");
     skybox_loaded = 1;
     skybox_shader = LoadShader("src/renderer/shaders/skybox.vs",
@@ -234,6 +242,7 @@ void render_load_skybox(const char* path) {
  * @brief Unloads the skybox and frees associated resources.
  */
 void render_unload_skybox(void) {
+    LOG_FUNC_CALL();
     if (!skybox_loaded)
         return;
     TraceLog(LOG_INFO, "render_unload_skybox");
@@ -246,6 +255,7 @@ void render_unload_skybox(void) {
  * skybox rendering.
  */
 void render_draw_skybox(void) {
+    LOG_FUNC_CALL();
     if (!skybox_loaded)
         return;
     rlDisableBackfaceCulling();
@@ -260,6 +270,7 @@ void render_draw_skybox(void) {
  * This function also unloads the skybox and all lights.
  */
 void render_unload_default_shader(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "render_unload_default_shader");
     delete_lights();
     UnloadShader(flux_default_shader);
@@ -271,13 +282,13 @@ void render_unload_default_shader(void) {
  * @brief Returns the default shader used in the renderer.
  * @return The default shader.
  */
-Shader render_get_default_shader(void) { return flux_default_shader; }
+Shader render_get_default_shader(void) { LOG_FUNC_CALL(); return flux_default_shader; }
 
 /**
  * @brief Returns the shader used when no lights are active.
  * @return The empty shader.
  */
-Shader render_get_empty_shader(void) { return flux_empty_shader; }
+Shader render_get_empty_shader(void) { LOG_FUNC_CALL(); return flux_empty_shader; }
 
 /**
  * @brief Calculates and returns a camera configuration for a light based on its
@@ -286,6 +297,7 @@ Shader render_get_empty_shader(void) { return flux_empty_shader; }
  * @return Configured Camera3D structure.
  */
 Camera3D render_get_light_cam(int i) {
+    LOG_FUNC_CALL();
     Camera3D lightCam = (Camera3D){0};
     lightCam.position = Vector3Scale(lights[i].L, lights[i].scale);
     lightCam.projection = CAMERA_ORTHOGRAPHIC;
@@ -300,6 +312,7 @@ Camera3D render_get_light_cam(int i) {
  * This function updates the shadow maps for each light if it is enabled.
  */
 void render_calculate_shadows(void) {
+    LOG_FUNC_CALL();
     int slot_start = 15 - FLUX_MAX_LIGHTS;
     for (int i = 0; i < FLUX_MAX_LIGHTS; i++) {
         if (!lights[i].enabled)
@@ -335,13 +348,14 @@ void render_calculate_shadows(void) {
  * @brief Sets the ambient light coefficient in the shader.
  * @param ka Ambient coefficient to set.
  */
-void render_set_ka(float ka) { render_set_shader_attr_float(shader_ka, ka); }
+void render_set_ka(float ka) { LOG_FUNC_CALL(); render_set_shader_attr_float(shader_ka, ka); }
 
 /**
  * @brief Sets the camera position in the shader.
  * @param pos New camera position.
  */
 void render_set_cam_pos(Vector3 pos) {
+    LOG_FUNC_CALL();
     render_set_shader_attr_vec3(shader_cam_pos, pos);
 }
 
@@ -352,6 +366,7 @@ void render_set_cam_pos(Vector3 pos) {
  * @return Pointer to the Light structure.
  */
 static Light* get_light(int i) {
+    LOG_FUNC_CALL();
     assert((i < FLUX_MAX_LIGHTS) && (i >= 0));
     return &lights[i];
 }
@@ -361,14 +376,14 @@ static Light* get_light(int i) {
  * @param i Index of the light to check.
  * @return True if the light is enabled, false otherwise.
  */
-bool render_light_is_enabled(int i) { return get_light(i)->enabled; }
+bool render_light_is_enabled(int i) { LOG_FUNC_CALL(); return get_light(i)->enabled; }
 
 /**
  * @brief Checks if a light at a given index is disabled.
  * @param i Index of the light to check.
  * @return True if the light is disabled, false otherwise.
  */
-bool render_light_is_disabled(int i) { return !render_light_is_enabled(i); }
+bool render_light_is_disabled(int i) { LOG_FUNC_CALL(); return !render_light_is_enabled(i); }
 
 /**
  * @brief Enables or disables a light based on the given value.
@@ -376,6 +391,7 @@ bool render_light_is_disabled(int i) { return !render_light_is_enabled(i); }
  * @param val Non-zero to enable the light, zero to disable.
  */
 void render_light_set_enabled(int i, int val) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->enabled = val;
     render_set_shader_attr_int(light->shader_enabled, light->enabled);
@@ -385,20 +401,20 @@ void render_light_set_enabled(int i, int val) {
  * @brief Enables a light at the specified index.
  * @param i Index of the light to enable.
  */
-void render_light_enable(int i) { render_light_set_enabled(i, 1); }
+void render_light_enable(int i) { LOG_FUNC_CALL(); render_light_set_enabled(i, 1); }
 
 /**
  * @brief Disables a light at the specified index.
  * @param i Index of the light to disable.
  */
-void render_light_disable(int i) { render_light_set_enabled(i, 0); }
+void render_light_disable(int i) { LOG_FUNC_CALL(); render_light_set_enabled(i, 0); }
 
 /**
  * @brief Retrieves the type of a light based on its index.
  * @param i Index of the light whose type is to be retrieved.
  * @return The light type as an integer.
  */
-int render_light_get_type(int i) { return get_light(i)->type; }
+int render_light_get_type(int i) { LOG_FUNC_CALL(); return get_light(i)->type; }
 
 /**
  * @brief Sets the type of a light based on the given index and type.
@@ -406,6 +422,7 @@ int render_light_get_type(int i) { return get_light(i)->type; }
  * @param type The new type of the light to set.
  */
 void render_light_set_type(int i, int type) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->type = type;
     render_set_shader_attr_int(light->shader_type, light->type);
@@ -416,7 +433,7 @@ void render_light_set_type(int i, int type) {
  * @param i Index of the light whose color is to be retrieved.
  * @return The color of the light.
  */
-Color render_light_get_cL(int i) { return get_light(i)->cL; }
+Color render_light_get_cL(int i) { LOG_FUNC_CALL(); return get_light(i)->cL; }
 
 /**
  * @brief Sets the color of a light based on the given index and color.
@@ -424,6 +441,7 @@ Color render_light_get_cL(int i) { return get_light(i)->cL; }
  * @param col The new color of the light to set.
  */
 void render_light_set_cL(int i, Color col) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->cL = col;
     Vector3 vec_cL = (Vector3){((float)col.r) / 255.0f, ((float)col.g) / 255.0f,
@@ -437,7 +455,7 @@ void render_light_set_cL(int i, Color col) {
  * @param i Index of the light whose diffuse reflectivity is to be retrieved.
  * @return The diffuse reflectivity coefficient as a float.
  */
-float render_light_get_kd(int i) { return get_light(i)->kd; }
+float render_light_get_kd(int i) { LOG_FUNC_CALL(); return get_light(i)->kd; }
 
 /**
  * @brief Sets the diffuse reflectivity coefficient of a light based on the
@@ -446,6 +464,7 @@ float render_light_get_kd(int i) { return get_light(i)->kd; }
  * @param kd The new diffuse reflectivity coefficient to set.
  */
 void render_light_set_kd(int i, float kd) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->kd = kd;
     render_set_shader_attr_float(light->shader_kd, light->kd);
@@ -457,7 +476,7 @@ void render_light_set_kd(int i, float kd) {
  * @param i Index of the light whose specular reflectivity is to be retrieved.
  * @return The specular reflectivity coefficient as a float.
  */
-float render_light_get_ks(int i) { return get_light(i)->ks; }
+float render_light_get_ks(int i) { LOG_FUNC_CALL(); return get_light(i)->ks; }
 
 /**
  * @brief Sets the specular reflectivity coefficient of a light based on the
@@ -466,6 +485,7 @@ float render_light_get_ks(int i) { return get_light(i)->ks; }
  * @param ks The new specular reflectivity coefficient to set.
  */
 void render_light_set_ks(int i, float ks) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->ks = ks;
     render_set_shader_attr_float(light->shader_ks, light->ks);
@@ -476,7 +496,7 @@ void render_light_set_ks(int i, float ks) {
  * @param i Index of the light whose position is to be retrieved.
  * @return The position of the light as a Vector3.
  */
-Vector3 render_light_get_pos(int i) { return get_light(i)->pos; }
+Vector3 render_light_get_pos(int i) { LOG_FUNC_CALL(); return get_light(i)->pos; }
 
 /**
  * @brief Sets the position of a light based on the given index and position.
@@ -484,6 +504,7 @@ Vector3 render_light_get_pos(int i) { return get_light(i)->pos; }
  * @param pos The new position of the light to set.
  */
 void render_light_set_pos(int i, Vector3 pos) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->pos = pos;
     render_set_shader_attr_vec3(light->shader_pos, light->pos);
@@ -494,7 +515,7 @@ void render_light_set_pos(int i, Vector3 pos) {
  * @param i Index of the light whose direction is to be retrieved.
  * @return The direction of the light as a Vector3.
  */
-Vector3 render_light_get_L(int i) { return get_light(i)->L; }
+Vector3 render_light_get_L(int i) { LOG_FUNC_CALL(); return get_light(i)->L; }
 
 /**
  * @brief Sets the direction of a light based on the given index and direction.
@@ -503,6 +524,7 @@ Vector3 render_light_get_L(int i) { return get_light(i)->L; }
  * @param L The new direction of the light to set.
  */
 void render_light_set_L(int i, Vector3 L) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->L = L;
     render_set_shader_attr_vec3(light->shader_L, Vector3Normalize(light->L));
@@ -513,7 +535,7 @@ void render_light_set_L(int i, Vector3 L) {
  * @param i Index of the light whose shininess factor is to be retrieved.
  * @return The shininess factor as a float.
  */
-float render_light_get_p(int i) { return get_light(i)->p; }
+float render_light_get_p(int i) { LOG_FUNC_CALL(); return get_light(i)->p; }
 
 /**
  * @brief Sets the shininess factor of a light based on the given index and
@@ -522,6 +544,7 @@ float render_light_get_p(int i) { return get_light(i)->p; }
  * @param p The new shininess factor to set.
  */
 void render_light_set_p(int i, float p) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->p = p;
     render_set_shader_attr_float(light->shader_p, light->p);
@@ -532,7 +555,7 @@ void render_light_set_p(int i, float p) {
  * @param i Index of the light whose intensity is to be retrieved.
  * @return The intensity of the light as a float.
  */
-float render_light_get_intensity(int i) { return get_light(i)->intensity; }
+float render_light_get_intensity(int i) { LOG_FUNC_CALL(); return get_light(i)->intensity; }
 
 /**
  * @brief Sets the intensity of a light based on the given index and intensity.
@@ -540,6 +563,7 @@ float render_light_get_intensity(int i) { return get_light(i)->intensity; }
  * @param intensity The new intensity to set.
  */
 void render_light_set_intensity(int i, float intensity) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->intensity = intensity;
     render_set_shader_attr_float(light->shader_intensity, light->intensity);
@@ -551,6 +575,7 @@ void render_light_set_intensity(int i, float intensity) {
  * @param scale The new scale factor to set.
  */
 void render_light_set_scale(int i, float scale) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->scale = scale;
 }
@@ -562,6 +587,7 @@ void render_light_set_scale(int i, float scale) {
  * @param fov The new field of view to set.
  */
 void render_light_set_fov(int i, float fov) {
+    LOG_FUNC_CALL();
     Light* light = get_light(i);
     light->fov = fov;
 }
@@ -571,11 +597,11 @@ void render_light_set_fov(int i, float fov) {
  * @param i Index of the light whose scale factor is to be retrieved.
  * @return The scale factor as a float.
  */
-float render_light_get_scale(int i) { return get_light(i)->scale; }
+float render_light_get_scale(int i) { LOG_FUNC_CALL(); return get_light(i)->scale; }
 
 /**
  * @brief Retrieves the field of view of a light based on its index.
  * @param i Index of the light whose field of view is to be retrieved.
  * @return The field of view as a float.
  */
-float render_light_get_fov(int i) { return get_light(i)->fov; }
+float render_light_get_fov(int i) { LOG_FUNC_CALL(); return get_light(i)->fov; }

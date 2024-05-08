@@ -88,6 +88,7 @@ typedef struct renderModelInternal {
  * @return Vector4 with added w component.
  */
 static Vector4 Vector32Vector4(Vector3 vec) {
+    LOG_FUNC_CALL();
     Vector4 out;
     out.x = vec.x;
     out.y = vec.y;
@@ -102,6 +103,7 @@ static Vector4 Vector32Vector4(Vector3 vec) {
  * @return Vector3 resulting from dropping w.
  */
 static Vector3 Vector4toVector3(Vector4 vec) {
+    LOG_FUNC_CALL();
     Vector3 out;
     out.x = vec.x;
     out.y = vec.y;
@@ -116,6 +118,7 @@ static Vector3 Vector4toVector3(Vector4 vec) {
  * @return Converted betterBBox structure.
  */
 static betterBBox bbox2better(BoundingBox bbox) {
+    LOG_FUNC_CALL();
     betterBBox out;
     out.c1 = Vector32Vector4(bbox.min);
     out.c2 = Vector32Vector4(bbox.min);
@@ -144,6 +147,7 @@ static betterBBox bbox2better(BoundingBox bbox) {
  * @return Transformed Vector4.
  */
 static Vector4 Vector4Transform(Vector4 v, Matrix mat) {
+    LOG_FUNC_CALL();
     Vector4 result = {0};
 
     float x = v.x;
@@ -166,6 +170,7 @@ static Vector4 Vector4Transform(Vector4 v, Matrix mat) {
  * @return Transformed betterBBox.
  */
 static betterBBox bboxTransform(betterBBox bbox, Matrix transform) {
+    LOG_FUNC_CALL();
     betterBBox out;
     out.c1 = Vector4Transform(bbox.c1, transform);
     out.c2 = Vector4Transform(bbox.c2, transform);
@@ -183,6 +188,7 @@ static betterBBox bboxTransform(betterBBox bbox, Matrix transform) {
  * @param bbox betterBBox to draw.
  */
 static void drawBBox(betterBBox bbox) {
+    LOG_FUNC_CALL();
     DrawLine3D(Vector4toVector3(bbox.c1), Vector4toVector3(bbox.c2), GREEN);
     DrawLine3D(Vector4toVector3(bbox.c1), Vector4toVector3(bbox.c3), GREEN);
     DrawLine3D(Vector4toVector3(bbox.c1), Vector4toVector3(bbox.c4), GREEN);
@@ -203,6 +209,7 @@ static void drawBBox(betterBBox bbox) {
  * @return True if visible, false otherwise.
  */
 static bool bboxVisible(betterBBox bbox) {
+    LOG_FUNC_CALL();
     Vector4* points = (Vector4*)&bbox;
     bool out = false;
     for (int i = 0; i < 8; i++) {
@@ -282,6 +289,7 @@ static int visible_meshes = 0;
  * creation process.
  */
 renderModel render_make_model(Model model) {
+    LOG_FUNC_CALL();
     renderModel out;
     assert(out = (renderModel)malloc(sizeof(renderModelInternal)));
     out->n_instances = 0;
@@ -310,6 +318,7 @@ renderModel render_make_model(Model model) {
  * rotation, then translation) to form the final transformation matrix.
  */
 static Matrix get_mesh_transform(Model model, fluxTransform transform) {
+    LOG_FUNC_CALL();
     // Calculate transformation matrix from function parameters
     // Get transform matrix (rotation -> scale -> translation)
     Vector3 rotationAxis;
@@ -337,6 +346,7 @@ static Matrix get_mesh_transform(Model model, fluxTransform transform) {
  * @param model Render model to reset.
  */
 void render_reset_instances(renderModel model) {
+    LOG_FUNC_CALL();
     assert(model);
     model->n_instances = 0;
 }
@@ -348,6 +358,7 @@ void render_reset_instances(renderModel model) {
  * @param transform Transformation to apply to the model instance.
  */
 void render_add_model_instance(renderModel model, fluxTransform transform) {
+    LOG_FUNC_CALL();
     assert(model);
     assert(model->n_instances < RENDER_MAX_INSTANCES);
     model->transforms[model->n_instances] =
@@ -366,6 +377,7 @@ void render_add_model_instance(renderModel model, fluxTransform transform) {
  * render models does not exceed the maximum allowed.
  */
 void render_rmodel(renderModel rmodel, Color tint) {
+    LOG_FUNC_CALL();
     assert(rmodel);
     assert(n_rmodels < RENDERER_MAX_OBJECTS);
     rmodel->tint = tint;
@@ -378,6 +390,7 @@ void render_rmodel(renderModel rmodel, Color tint) {
  * @param model Render model to free.
  */
 void render_free_model(renderModel model) {
+    LOG_FUNC_CALL();
     assert(model);
     assert(model->mesh_bounding_boxes);
     free(model->mesh_bounding_boxes);
@@ -389,6 +402,7 @@ void render_free_model(renderModel model) {
  * rendering configurations.
  */
 void render_init(void) {
+    LOG_FUNC_CALL();
     render_load_default_shader();
     default_shader = render_get_default_shader();
 }
@@ -403,6 +417,7 @@ void render_init(void) {
  */
 static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera,
                         Matrix vp) {
+    LOG_FUNC_CALL();
     Model model = rmodel->model;
 
     Shader old_shader = model.materials[0].shader;
@@ -464,6 +479,7 @@ static void draw_rmodel(renderModel rmodel, Shader shader, Camera3D camera,
  * @param camera Custom camera configuration.
  */
 void render_draw_all_no_shader(Camera3D camera) {
+    LOG_FUNC_CALL();
     Matrix view = GetCameraMatrix(camera);
     for (int i = 0; i < n_rmodels; i++) {
         draw_rmodel(rmodels[i], render_get_empty_shader(), camera, view);
@@ -476,6 +492,7 @@ void render_draw_all_no_shader(Camera3D camera) {
  * @param camera Camera configuration for the current frame.
  */
 void render_begin(Camera3D camera) {
+    LOG_FUNC_CALL();
     current_camera = camera;
     render_set_cam_pos(current_camera.position);
     n_objects = 0;
@@ -489,6 +506,7 @@ void render_begin(Camera3D camera) {
  * @param camera Current camera configuration.
  */
 static void draw_all(Camera3D camera) {
+    LOG_FUNC_CALL();
     Matrix view = GetCameraMatrix(camera);
     visible_meshes = 0;
     for (int i = 0; i < n_rmodels; i++) {
@@ -500,14 +518,15 @@ static void draw_all(Camera3D camera) {
  * @brief Returns the number of meshes currently visible in the scene.
  * @return Integer representing the number of visible meshes.
  */
-int render_get_visible_meshes(void) { return visible_meshes; }
+int render_get_visible_meshes(void) { LOG_FUNC_CALL(); return visible_meshes; }
 
 /**
  * @brief Ends the rendering frame, handles post-processing tasks, and updates
  * the viewport.
  */
 void render_end(void) {
-    // render_calculate_shadows();
+    LOG_FUNC_CALL();
+
     ClearBackground(BLACK);
     BeginMode3D(current_camera);
 
@@ -527,6 +546,7 @@ void render_end(void) {
  * @param s Spacing between grid lines.
  */
 void render_draw_grid(int n, float s) {
+    LOG_FUNC_CALL();
     draw_grid = 1;
     n_grid = n;
     spacing_grid = s;
@@ -536,11 +556,11 @@ void render_draw_grid(int n, float s) {
  * @brief Cleans up rendering resources and unloads shaders at application
  * closure.
  */
-void render_close(void) { render_unload_default_shader(); }
+void render_close(void) { LOG_FUNC_CALL(); render_unload_default_shader(); }
 
 /**
  * @brief Retrieves the current camera configuration used in the rendering
  * pipeline.
  * @return Current camera setup.
  */
-Camera3D render_get_current_cam(void) { return current_camera; }
+Camera3D render_get_current_cam(void) { LOG_FUNC_CALL(); return current_camera; }

@@ -20,6 +20,7 @@
  * @return The length of the file in bytes.
  */
 static size_t get_file_length(FILE* fptr) {
+    LOG_FUNC_CALL();
     assert(fptr);
     fseek(fptr, 0L, SEEK_END);
     size_t sz = ftell(fptr);
@@ -37,6 +38,7 @@ static size_t get_file_length(FILE* fptr) {
  * @return A hstr containing the entire contents of the file.
  */
 static hstr read_whole_file(FILE* fptr) {
+    LOG_FUNC_CALL();
     hstr file_str = hstr_new("");
 
     char buffer[100];

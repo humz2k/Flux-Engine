@@ -60,6 +60,7 @@ struct fluxGameObjectStruct {
  * @return Unique identifier of the game object.
  */
 int flux_gameobject_get_id(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     return obj->id;
 }
@@ -70,6 +71,7 @@ int flux_gameobject_get_id(fluxGameObject obj) {
  * @return The transformation data as a fluxTransform structure.
  */
 fluxTransform flux_gameobject_get_transform(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     return obj->transform;
 }
@@ -81,6 +83,7 @@ fluxTransform flux_gameobject_get_transform(fluxGameObject obj) {
  */
 void flux_gameobject_set_transform(fluxGameObject obj,
                                    fluxTransform transform) {
+    LOG_FUNC_CALL();
     assert(obj);
     obj->transform = transform;
 }
@@ -91,6 +94,7 @@ void flux_gameobject_set_transform(fluxGameObject obj,
  * @return Number of scripts.
  */
 int flux_gameobject_get_n_scripts(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     return obj->n_scripts;
 }
@@ -101,6 +105,7 @@ int flux_gameobject_get_n_scripts(fluxGameObject obj) {
  * @return True if the object is a camera, otherwise false.
  */
 bool flux_gameobject_is_camera(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     return obj->is_camera;
 }
@@ -111,6 +116,7 @@ bool flux_gameobject_is_camera(fluxGameObject obj) {
  * @return The renderModel of the game object.
  */
 renderModel flux_gameobject_get_model(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     return obj->model;
 }
@@ -121,6 +127,7 @@ renderModel flux_gameobject_get_model(fluxGameObject obj) {
  * @return True if a model is associated, otherwise false.
  */
 bool flux_gameobject_has_model(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     return obj->model != NULL;
 }
@@ -133,6 +140,7 @@ bool flux_gameobject_has_model(fluxGameObject obj) {
  * settings.
  */
 Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     assert(obj->is_camera);
     Camera3D out;
@@ -158,6 +166,7 @@ Camera3D flux_gameobject_get_raylib_camera(fluxGameObject obj) {
  */
 fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform,
                                         fluxPrefab prefab, hstrArray args) {
+    LOG_FUNC_CALL();
     fluxGameObject out;
     assert(out = malloc(sizeof(struct fluxGameObjectStruct)));
     out->id = id;
@@ -186,6 +195,7 @@ fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform,
  * @return Pointer to the script.
  */
 fluxScript flux_gameobject_get_script(fluxGameObject obj, int i) {
+    LOG_FUNC_CALL();
     assert(obj);
     assert(i >= 0);
     assert(i < obj->n_scripts);
@@ -197,6 +207,7 @@ fluxScript flux_gameobject_get_script(fluxGameObject obj, int i) {
  * @param obj Pointer to the game object to destroy.
  */
 void flux_destroy_gameobject(fluxGameObject obj) {
+    LOG_FUNC_CALL();
     assert(obj);
     if (obj->scripts) {
         assert(obj->n_scripts > 0);

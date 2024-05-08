@@ -50,6 +50,7 @@ static int n_pending_signals = 0; /**< Number of pending signals. */
  * @param callbacks Pointer to the GameCallback structure to initialize.
  */
 static void init_game_callback(struct GameCallback* callbacks) {
+    LOG_FUNC_CALL();
     callbacks->n_callbacks = 0;
 }
 
@@ -57,6 +58,7 @@ static void init_game_callback(struct GameCallback* callbacks) {
  * @brief Initializes signal callbacks
  */
 static void init_signal_callbacks(void){
+    LOG_FUNC_CALL();
     n_signal_callbacks = 0;
 }
 
@@ -68,6 +70,7 @@ static void init_signal_callbacks(void){
  */
 static void add_callback(struct GameCallback* callbacks,
                          void (*new_callback)(void)) {
+    LOG_FUNC_CALL();
     FLUX_ASSERT((callbacks->n_callbacks < FLUX_MAX_GAME_CALLBACKS),
                 "FLUX<game_callbacks.c>: reached max callbacks!");
     callbacks->callback[callbacks->n_callbacks] = new_callback;
@@ -88,6 +91,7 @@ void flux_scene_signal_handler(int signal); /**< forward declaration of scene si
  * preparing them to receive callback functions.
  */
 void flux_init_game_callbacks(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO,
              "FLUX<game_callbacks.c>: flux_init_game_callbacks called");
     init_game_callback(&onGameCloseCallbacks);
@@ -104,6 +108,7 @@ void flux_init_game_callbacks(void) {
  */
 void flux_register_callback(enum FluxGameCallback event,
                             void (*new_callback)(void)) {
+    LOG_FUNC_CALL();
     switch (event) {
     case fluxGameCallback_onGameLoad:
         add_callback(&onGameLoadCallbacks, new_callback);
@@ -123,6 +128,7 @@ void flux_register_callback(enum FluxGameCallback event,
  * @param signal_callback Function pointer to the callback to register.
  */
 void flux_register_signal_callback(void(*signal_callback)(int)){
+    LOG_FUNC_CALL();
     assert(n_signal_callbacks < FLUX_MAX_GAME_CALLBACKS);
     signal_callbacks[n_signal_callbacks] = signal_callback;
     n_signal_callbacks++;
@@ -133,6 +139,7 @@ void flux_register_signal_callback(void(*signal_callback)(int)){
  * @param signal signal to add to queue.
  */
 void flux_send_signal(int signal){
+    LOG_FUNC_CALL();
     assert(n_pending_signals < FLUX_MAX_PENDING_SIGNALS);
     TraceLog(INFO,"sending signal %d",signal);
     pending_signals[n_pending_signals] = signal;
@@ -143,6 +150,7 @@ void flux_send_signal(int signal){
  * @brief Executes all pending signals
  */
 void flux_flush_signals(void){
+    LOG_FUNC_CALL();
     for (int i = 0; i < n_pending_signals; i++){
         int signal = pending_signals[i];
         TraceLog(INFO,"executing signal %d",signal);
@@ -157,6 +165,7 @@ void flux_flush_signals(void){
  * @brief Executes all registered callbacks for the game load event.
  */
 void flux_game_load(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "FLUX<game_callbacks.c>: flux_game_load called");
     for (int i = 0; i < onGameLoadCallbacks.n_callbacks; i++) {
         onGameLoadCallbacks.callback[i]();
@@ -167,6 +176,7 @@ void flux_game_load(void) {
  * @brief Executes all registered callbacks for the game close event.
  */
 void flux_game_close(void) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "FLUX<game_callbacks.c>: flux_game_close called");
     for (int i = 0; i < onGameCloseCallbacks.n_callbacks; i++) {
         onGameCloseCallbacks.callback[i]();

@@ -48,6 +48,8 @@ void hq_log_detailed(hq_loglevel_t level, const char* func, const char* file,
         exit(1);                                                               \
     }
 
-#define LOG_FUNC_CALL() LOG(TRACE, "%s called", __func__)
+//#define LOG_FUNC_CALL() LOG(DEBUG, "%s called", __func__)
+
+#define LOG_FUNC_CALL()
 
 #endif /* CHIRC_LOG_H_ */

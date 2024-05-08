@@ -25,6 +25,7 @@
  * depth texture and the framebuffer.
  */
 RenderTexture2D LoadShadowmapRenderTexture(int width, int height) {
+    LOG_FUNC_CALL();
     RenderTexture2D target = {0};
 
     target.id = rlLoadFramebuffer(width, height); // Load an empty framebuffer
@@ -70,6 +71,7 @@ RenderTexture2D LoadShadowmapRenderTexture(int width, int height) {
  * deleted.
  */
 void UnloadShadowmapRenderTexture(RenderTexture2D target) {
+    LOG_FUNC_CALL();
     if (target.id > 0) {
         // NOTE: Depth texture/renderbuffer is automatically
         // queried and deleted before deleting framebuffer

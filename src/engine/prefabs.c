@@ -50,6 +50,7 @@ typedef struct fluxPrefabStruct {
  * @return Name of the prefab.
  */
 hstr flux_prefab_get_name(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->name;
 }
@@ -60,6 +61,7 @@ hstr flux_prefab_get_name(fluxPrefab prefab) {
  * @return Projection type as an integer.
  */
 int flux_prefab_get_projection(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->projection;
 }
@@ -70,6 +72,7 @@ int flux_prefab_get_projection(fluxPrefab prefab) {
  * @param projection The projection type to set.
  */
 void flux_prefab_set_projection(fluxPrefab prefab, int projection) {
+    LOG_FUNC_CALL();
     assert(prefab);
     prefab->projection = projection;
 }
@@ -80,6 +83,7 @@ void flux_prefab_set_projection(fluxPrefab prefab, int projection) {
  * @return Field of view as a float.
  */
 float flux_prefab_get_fov(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->fov;
 }
@@ -90,6 +94,7 @@ float flux_prefab_get_fov(fluxPrefab prefab) {
  * @param fov The field of view value to set.
  */
 void flux_prefab_set_fov(fluxPrefab prefab, float fov) {
+    LOG_FUNC_CALL();
     assert(prefab);
     prefab->fov = fov;
 }
@@ -100,6 +105,7 @@ void flux_prefab_set_fov(fluxPrefab prefab, float fov) {
  * @return True if a model is associated, otherwise false.
  */
 bool flux_prefab_has_model(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->has_model;
 }
@@ -110,6 +116,7 @@ bool flux_prefab_has_model(fluxPrefab prefab) {
  * @return Model data.
  */
 Model flux_prefab_get_raw_model(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->raw_model;
 }
@@ -120,6 +127,7 @@ Model flux_prefab_get_raw_model(fluxPrefab prefab) {
  * @return renderModel
  */
 renderModel flux_prefab_get_model(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->model;
 }
@@ -130,6 +138,7 @@ renderModel flux_prefab_get_model(fluxPrefab prefab) {
  * @return True if the prefab is a camera, otherwise false.
  */
 bool flux_prefab_is_camera(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->is_camera;
 }
@@ -140,6 +149,7 @@ bool flux_prefab_is_camera(fluxPrefab prefab) {
  * @return Number of scripts.
  */
 int flux_prefab_get_n_scripts(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->n_scripts;
 }
@@ -150,6 +160,7 @@ int flux_prefab_get_n_scripts(fluxPrefab prefab) {
  * @return Array of script identifiers.
  */
 enum fluxScriptID* flux_prefab_get_scripts(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->scripts;
 }
@@ -162,6 +173,7 @@ enum fluxScriptID* flux_prefab_get_scripts(fluxPrefab prefab) {
  * @return Pointer to the newly created prefab.
  */
 fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
+    LOG_FUNC_CALL();
     assert(parsed);
     fluxPrefab out;
     assert(out = (fluxPrefab)malloc(sizeof(fluxPrefabStruct)));
@@ -201,6 +213,7 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
  * @param prefab Pointer to the prefab to delete.
  */
 void flux_delete_prefab(fluxPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     hstr_decref(prefab->name);
     if (prefab->has_model) {

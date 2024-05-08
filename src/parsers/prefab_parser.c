@@ -38,6 +38,7 @@ typedef struct fluxParsedPrefabStruct {
  * @return The field of view as a float.
  */
 float parser_parsed_prefab_get_fov(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->fov;
 }
@@ -48,6 +49,7 @@ float parser_parsed_prefab_get_fov(fluxParsedPrefab prefab) {
  * @return The projection type as an integer.
  */
 int parser_parsed_prefab_get_projection(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->projection;
 }
@@ -58,6 +60,7 @@ int parser_parsed_prefab_get_projection(fluxParsedPrefab prefab) {
  * @param fov The field of view value to set.
  */
 void parser_parsed_prefab_set_fov(fluxParsedPrefab prefab, float fov) {
+    LOG_FUNC_CALL();
     assert(prefab);
     prefab->fov = fov;
 }
@@ -69,6 +72,7 @@ void parser_parsed_prefab_set_fov(fluxParsedPrefab prefab, float fov) {
  */
 void parser_parsed_prefab_set_projection(fluxParsedPrefab prefab,
                                          int projection) {
+    LOG_FUNC_CALL();
     assert(prefab);
     prefab->projection = projection;
 }
@@ -79,6 +83,7 @@ void parser_parsed_prefab_set_projection(fluxParsedPrefab prefab,
  * @return The path as an hstr.
  */
 hstr parser_parsed_prefab_get_path(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->path;
 }
@@ -89,6 +94,7 @@ hstr parser_parsed_prefab_get_path(fluxParsedPrefab prefab) {
  * @return The name as an hstr.
  */
 hstr parser_parsed_prefab_get_name(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->name;
 }
@@ -99,6 +105,7 @@ hstr parser_parsed_prefab_get_name(fluxParsedPrefab prefab) {
  * @return True if the prefab has a model, otherwise false.
  */
 bool parser_parsed_prefab_has_model(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->has_model;
 }
@@ -109,6 +116,7 @@ bool parser_parsed_prefab_has_model(fluxParsedPrefab prefab) {
  * @return The model path as an hstr.
  */
 hstr parser_parsed_prefab_get_model_path(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->model_path;
 }
@@ -119,6 +127,7 @@ hstr parser_parsed_prefab_get_model_path(fluxParsedPrefab prefab) {
  * @return True if the prefab is a camera, otherwise false.
  */
 bool parser_parsed_prefab_is_camera(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->is_camera;
 }
@@ -129,6 +138,7 @@ bool parser_parsed_prefab_is_camera(fluxParsedPrefab prefab) {
  * @return An array of script names as hstrArray.
  */
 hstrArray parser_parsed_prefab_get_scripts(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     return prefab->scripts;
 }
@@ -140,6 +150,7 @@ hstrArray parser_parsed_prefab_get_scripts(fluxParsedPrefab prefab) {
  * @return A pointer to the newly allocated fluxParsedPrefabStruct.
  */
 static fluxParsedPrefab alloc_parsed_prefab_internal(void) {
+    LOG_FUNC_CALL();
     fluxParsedPrefab out =
         (fluxParsedPrefab)malloc(sizeof(fluxParsedPrefabStruct));
     memset(out, 0, sizeof(fluxParsedPrefabStruct));
@@ -159,6 +170,7 @@ static fluxParsedPrefab alloc_parsed_prefab_internal(void) {
  * @param path The new path as an hstr.
  */
 static void parsed_prefab_set_path(fluxParsedPrefab prefab, hstr path) {
+    LOG_FUNC_CALL();
     assert(prefab);
     assert(path);
     if (prefab->path) {
@@ -177,6 +189,7 @@ static void parsed_prefab_set_path(fluxParsedPrefab prefab, hstr path) {
  * @param name The new name as an hstr.
  */
 static void parsed_prefab_set_name(fluxParsedPrefab prefab, hstr name) {
+    LOG_FUNC_CALL();
     assert(prefab);
     assert(name);
     if (prefab->name) {
@@ -196,6 +209,7 @@ static void parsed_prefab_set_name(fluxParsedPrefab prefab, hstr name) {
  */
 static void parsed_prefab_set_model_path(fluxParsedPrefab prefab,
                                          hstr model_path) {
+    LOG_FUNC_CALL();
     assert(prefab);
     assert(model_path);
     if (prefab->has_model) {
@@ -217,6 +231,7 @@ static void parsed_prefab_set_model_path(fluxParsedPrefab prefab,
  * camera.
  */
 static void parsed_prefab_set_is_camera(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     assert(prefab);
     assert(!prefab->has_model);
     prefab->is_camera = true;
@@ -232,6 +247,7 @@ static void parsed_prefab_set_is_camera(fluxParsedPrefab prefab) {
  * @param script The script name as an hstr to add.
  */
 static void parsed_prefab_add_script(fluxParsedPrefab prefab, hstr script) {
+    LOG_FUNC_CALL();
     assert(prefab);
     assert(script);
     assert(prefab->scripts);
@@ -248,6 +264,7 @@ static void parsed_prefab_add_script(fluxParsedPrefab prefab, hstr script) {
  * @param child The child name as an hstr to add.
  */
 static void parsed_prefab_add_child(fluxParsedPrefab prefab, hstr child) {
+    LOG_FUNC_CALL();
     assert(prefab);
     assert(child);
     assert(prefab->children);
@@ -262,6 +279,7 @@ static void parsed_prefab_add_child(fluxParsedPrefab prefab, hstr child) {
  * @param prefab A pointer to the fluxParsedPrefabStruct to delete.
  */
 void parser_delete_parsed_prefab(fluxParsedPrefab prefab) {
+    LOG_FUNC_CALL();
     TraceLog(LOG_INFO, "deleting parsed prefab");
     assert(prefab);
     if (prefab->path)
@@ -287,6 +305,7 @@ void parser_delete_parsed_prefab(fluxParsedPrefab prefab) {
  * @return A pointer to the newly parsed fluxParsedPrefabStruct.
  */
 fluxParsedPrefab parser_read_prefab(const char* raw_path) {
+    LOG_FUNC_CALL();
     hstr path = hstr_incref(hstr_new(raw_path));
     fluxParsedPrefab out = alloc_parsed_prefab_internal();
 

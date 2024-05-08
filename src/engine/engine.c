@@ -41,10 +41,12 @@ static bool do_quit = false; ///< Flag to control game loop termination.
 void flux_quit_game() { do_quit = true; }
 
 static void console_command_quit(int nargs, const char** args) {
+    LOG_FUNC_CALL();
     flux_quit_game();
 }
 
 static void set_fps_max_callback(int n_args, const char** args){
+    LOG_FUNC_CALL();
     if (n_args < 2)return;
     TraceLog(LOG_INFO,"setting fps_max to %d",atoi(args[1]));
     SetTargetFPS(atoi(args[1]));
@@ -74,6 +76,8 @@ void flux_init(int width, int height, const char* name){
 
     flux_reset_scene();
     flux_game_load();
+
+    //LOG_FUNC_CALL();
 }
 
 /**
@@ -82,6 +86,7 @@ void flux_init(int width, int height, const char* name){
  * Performs cleanup operations for the scene, game callbacks, rendering pipeline, and window, ensuring a clean shutdown.
  */
 void flux_close(void){
+    LOG_FUNC_CALL();
     flux_close_scene();
     flux_game_close();
     render_close();
@@ -98,6 +103,7 @@ void flux_close(void){
  * Handles scene updates, script callbacks, and drawing operations.
  */
 static void flux_loop(void){
+    LOG_FUNC_CALL();
     flux_flush_signals();
 
     flux_scene_script_callback(ONUPDATE);
@@ -120,6 +126,7 @@ static void flux_loop(void){
  * Continuously processes game loop iterations until a stop condition is met (window close or quit command).
  */
 void flux_run(void){
+    LOG_FUNC_CALL();
     while (!WindowShouldClose() && !do_quit) {
         flux_loop();
     }

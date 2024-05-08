@@ -35,6 +35,7 @@ static fluxGameObject active_camera = NULL; ///< Active camera game object.
  * Initializes the scene allocator and resets scene-specific data such as active camera and object counts.
  */
 void flux_reset_scene(void) {
+    LOG_FUNC_CALL();
     flux_init_scene_allocator();
     n_objects = 0;
     active_camera = NULL;
@@ -46,6 +47,7 @@ void flux_reset_scene(void) {
  * This function handles the cleanup and memory management for all game objects and prefabs within the scene, and closes the scene allocator.
  */
 void flux_close_scene(void) {
+    LOG_FUNC_CALL();
     flux_scene_script_callback(ONDESTROY);
     if (prefabs) {
         for (int i = 0; i < n_prefabs; i++) {
@@ -73,6 +75,7 @@ void flux_close_scene(void) {
  * @param path The file path of the scene to load.
  */
 void flux_load_scene(const char* path) {
+    LOG_FUNC_CALL();
     assert(path);
     assert(prefabs == NULL);
     assert(n_prefabs == 0);
@@ -137,6 +140,7 @@ void flux_load_scene(const char* path) {
  * @param callback Type of script callback to execute (update, draw, etc.).
  */
 void flux_scene_script_callback(script_callback_t callback) {
+    LOG_FUNC_CALL();
     void (*func)(fluxGameObject, fluxScript);
     switch (callback) {
     case ONUPDATE:
@@ -172,6 +176,7 @@ void flux_scene_script_callback(script_callback_t callback) {
  * @param signal the signal
  */
 void flux_scene_signal_handler(int signal){
+    LOG_FUNC_CALL();
     for (int i = 0; i < n_objects; i++) {
         fluxGameObject obj = game_objects[i];
         for (int j = 0; j < flux_gameobject_get_n_scripts(obj); j++) {
@@ -187,6 +192,7 @@ void flux_scene_signal_handler(int signal){
  * This function manages the drawing of all renderable objects within the scene, handles shadow calculation, and triggers rendering-related callbacks.
  */
 void flux_draw_scene(void) {
+    LOG_FUNC_CALL();
     if (!active_camera)
         return;
 
