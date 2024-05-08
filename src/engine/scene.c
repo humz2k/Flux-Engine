@@ -1,6 +1,11 @@
 /**
  * @file scene.c
- **/
+ * @brief Manages the lifecycle of scenes in the game, including loading, updating, drawing, and closing scenes.
+ *
+ * This file provides functionality to handle game scenes, which includes managing game objects, prefabs, and scripts,
+ * as well as handling scene-specific callbacks and rendering processes. It supports operations such as scene loading,
+ * resetting, and rendering, and incorporates scene-specific data handling.
+ */
 
 #include "scene.h"
 #include "config.h"
@@ -18,18 +23,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static fluxGameObject* game_objects;
-static fluxPrefab* prefabs = NULL;
-static int n_prefabs = 0;
-static int n_objects = 0;
-static fluxGameObject active_camera = NULL;
+static fluxGameObject* game_objects; ///< Array of game objects currently in the scene.
+static fluxPrefab* prefabs = NULL; ///< Array of prefabs used in the scene.
+static int n_prefabs = 0; ///< Count of prefabs loaded into the scene.
+static int n_objects = 0; ///< Count of game objects currently in the scene.
+static fluxGameObject active_camera = NULL; ///< Active camera game object.
 
+/**
+ * @brief Resets the scene to its initial state.
+ *
+ * Initializes the scene allocator and resets scene-specific data such as active camera and object counts.
+ */
 void flux_reset_scene(void) {
     flux_init_scene_allocator();
     n_objects = 0;
     active_camera = NULL;
 }
 
+/**
+ * @brief Closes the scene, freeing resources and cleaning up.
+ *
+ * This function handles the cleanup and memory management for all game objects and prefabs within the scene, and closes the scene allocator.
+ */
 void flux_close_scene(void) {
     flux_scene_script_callback(ONDESTROY);
     if (prefabs) {
@@ -51,6 +66,12 @@ void flux_close_scene(void) {
     flux_close_scene_allocator();
 }
 
+/**
+ * @brief Loads a scene from a specified path.
+ *
+ * Parses a scene file to construct the scene's structure in memory, including creating game objects and prefabs based on parsed data.
+ * @param path The file path of the scene to load.
+ */
 void flux_load_scene(const char* path) {
     assert(path);
     assert(prefabs == NULL);
@@ -109,6 +130,12 @@ void flux_load_scene(const char* path) {
     parser_delete_parsed_scene(parsed_scene);
 }
 
+/**
+ * @brief Executes a specific script callback for all scripts attached to all game objects in the scene.
+ *
+ * Iterates over all game objects and their attached scripts to execute a given callback type.
+ * @param callback Type of script callback to execute (update, draw, etc.).
+ */
 void flux_scene_script_callback(script_callback_t callback) {
     void (*func)(fluxGameObject, fluxScript);
     switch (callback) {
@@ -118,9 +145,6 @@ void flux_scene_script_callback(script_callback_t callback) {
     case AFTERUPDATE:
         func = fluxCallback_afterUpdate;
         break;
-    // case ONINIT:
-    //     func = fluxCallback_onInit;
-    //     break;
     case ONDESTROY:
         func = fluxCallback_onDestroy;
         break;
@@ -131,17 +155,21 @@ void flux_scene_script_callback(script_callback_t callback) {
         func = fluxCallback_onDraw2D;
         break;
     }
-    // TraceLog(LOG_INFO,"doing callback???");
+
     for (int i = 0; i < n_objects; i++) {
         fluxGameObject obj = game_objects[i];
         for (int j = 0; j < flux_gameobject_get_n_scripts(obj); j++) {
             fluxScript script = flux_gameobject_get_script(obj, j);
-            // TraceLog(LOG_INFO,"calling...");
             func(obj, script);
         }
     }
 };
 
+/**
+ * @brief Draws the entire scene.
+ *
+ * This function manages the drawing of all renderable objects within the scene, handles shadow calculation, and triggers rendering-related callbacks.
+ */
 void flux_draw_scene(void) {
     if (!active_camera)
         return;
@@ -182,20 +210,4 @@ void flux_draw_scene(void) {
 
     flux_scene_script_callback(ONDRAW2D);
 
-    // TraceLog(LOG_INFO,"camera found");
-    /*Camera3D cam = flux_gameobject_get_raylib_camera(active_camera);
-    TraceLog(LOG_DEBUG,
-             "FLUX<scene.c>: drawing scene with camera: position = {%g %g %g}, "
-             "target = {%g %g %g}, up = {%g %g %g}, fovy = %g, projection = %d",
-             cam.position.x, cam.position.y, cam.position.z, cam.target.x,
-             cam.target.y, cam.target.z, cam.up.x, cam.up.y, cam.up.z, cam.fovy,
-             cam.projection);
-    BeginMode3D(cam);
-    DrawGrid(100, 0.1);
-
-    for (int i = 0; i < n_objects; i++) {
-        // flux_gameobject_draw(game_objects[i]);
-    }
-
-    EndMode3D();*/
 }
