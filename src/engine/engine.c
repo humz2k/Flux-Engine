@@ -40,15 +40,14 @@ static bool do_quit = false; ///< Flag to control game loop termination.
  */
 void flux_quit_game() { do_quit = true; }
 
-/**
- * @brief Console command to quit the game.
- *
- * This is a command callback that can be invoked through the game's console to trigger a game shutdown.
- * @param nargs Number of arguments passed to the command.
- * @param args Array of argument strings.
- */
 static void console_command_quit(int nargs, const char** args) {
     flux_quit_game();
+}
+
+static void set_fps_max_callback(int n_args, const char** args){
+    if (n_args < 2)return;
+    TraceLog(LOG_INFO,"setting fps_max to %d",atoi(args[1]));
+    SetTargetFPS(atoi(args[1]));
 }
 
 /**
@@ -67,6 +66,7 @@ void flux_init(int width, int height, const char* name){
     load_editor_tools();
 
     editor_add_console_command("quit", console_command_quit);
+    editor_add_console_command("fps_max",set_fps_max_callback);
 
     flux_init_game_callbacks();
 
@@ -106,6 +106,8 @@ static void flux_loop(void){
     flux_draw_scene();
 
     draw_editor_tools();
+
+    DrawFPS(10,10);
 
     EndDrawing();
 }

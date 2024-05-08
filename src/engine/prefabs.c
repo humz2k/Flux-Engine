@@ -175,6 +175,9 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
         TraceLog(LOG_INFO, "loading model %s", model_path);
         if (strcmp(model_path, "SPHERE") == 0) {
             out->raw_model = LoadModelFromMesh(GenMeshSphere(1, 50, 50));
+        }
+        else if (strcmp(model_path, "PLANE") == 0) {
+            out->raw_model = LoadModelFromMesh(GenMeshPlane(1, 1, 10, 10));
         } else {
             out->raw_model = LoadModel(model_path);
         }
