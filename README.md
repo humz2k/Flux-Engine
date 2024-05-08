@@ -18,6 +18,8 @@ First run `python3 configure.py`, then `make`.
 
 If building in debug mode, `make DEBUG=true`.
 
+Run the game with `build/driver`.
+
 To generate documentation, `cd docs; doxygen Doxyfile`.
 
 ## Architecture
