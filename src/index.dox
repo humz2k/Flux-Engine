@@ -1,6 +1,118 @@
-/** @mainpage Flux Engine Documentation
+/** @mainpage Flux Engine Manual
+*
+* Manual for working with Flux Engine.
+*
+* See below for an overview:
+* * @subpage intro
+* * @subpage scriptingapi
 * * @ref engineapi.
 * * @ref sceneapi.
 * * @ref prefabapi
 * * @ref group1.
+*/
+
+/** @page intro Introduction
+
+Flux Engine is intended to be a super simple
+pure C minimal "game engine", where the user
+has low level control over everything.
+
+The intended workflow is to work mainly in the `/project` directory.
+
+Games are divided into "scenes", with associated "prefabs" and
+"gameobjects", which are instances of "prefabs".
+Prefabs, and thus gameobjects, have "scripts" attached to them,
+which are run on specific game events.
+
+Scripts must all be placed in the `/project/scripts` directory
+(see @ref scriptingapi for documentation on scripting),
+prefab config files must be placed in `/project/prefabs` and
+scene config files must be placed in `/project/scenes`.
+
+*/
+
+/** @page scriptingapi Scripting
+
+The scripting API is simple. First of all, create a new `.c` file
+in `/project/scripts`, for example `/project/scripts/my_script.c`.
+
+Then, specify the name of the script (before any includes!) using:
+```c
+#define SCRIPT the_name_of_my_script
+```
+This *unique* name is used to identify the script in config files
+and in the engine itself. It probably makes sense to name the script
+the same name as the file, so in this case
+```c
+#define SCRIPT my_script
+```
+
+We can now include the scripting api header:
+```c
+#define SCRIPT my_script
+#include "fluxScript.h"
+```
+
+We probably want to store/access data associated with our script.
+We do this as follows:
+```c
+#define SCRIPT my_script
+#include "fluxScript.h"
+
+script_data{
+    int example_data;
+};
+```
+This creates a struct which is then passed to the script callbacks
+everytime they are called. This data is unique to the instance of
+the script - two different gameobjects with the same script will have
+different `script_data` instances.
+
+The first callback we might implement is `onInit()`, which is called
+when a gameobject is first instantiated. For example,
+```c
+#define SCRIPT my_script
+#include "fluxScript.h"
+
+script_data{
+    int example_data;
+};
+
+fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
+    data->example_data = 0;
+}
+```
+`onInit()` is passed 1) a pointer to the gameobject this script is attached to,
+2) a pointer to the `script_data`, and 3) an array of string arguments.
+The string arguments are specified in the scene config file.
+
+`onInit()` is the only special callback that is passed extra arguments.
+All other callbacks are only passed a `fluxGameObject` and `script_data*`.
+
+For example, an `onUpdate()` callback, which is called every frame, might look like:
+```c
+#define SCRIPT my_script
+#include "fluxScript.h"
+
+script_data{
+    int example_data;
+};
+
+fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
+    data->example_data = 0;
+}
+
+fluxCallback onUpdate(fluxGameObject obj, script_data* data){
+    data->example_data++;
+}
+```
+
+A full list of callbacks is as follows:
+* `onInit(fluxGameObject, script_data*, hstrArray)` - called on gameobject instantiation.
+* `onUpdate(fluxGameObject, script_data*)` - called every frame.
+* `afterUpdate(fluxGameObject, script_data*)` - called AFTER every `onUpdate` callback has run.
+* `onDestroy(fluxGameObject, script_data*)` - called when the gameobject is destroyed (generally on scene close).
+
+NOTE: you do not have to implement every callback.
+
 */
