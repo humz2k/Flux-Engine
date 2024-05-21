@@ -145,6 +145,16 @@ hstrArray parser_parsed_prefab_get_scripts(fluxParsedPrefab prefab) {
 }
 
 /**
+ * @brief Retrieves the tint attached to a prefab.
+ * @param prefab A pointer to the fluxParsedPrefabStruct.
+ * @return the tint
+ */
+Color parser_parsed_prefab_get_tint(fluxParsedPrefab parsed) {
+    assert(parsed);
+    return parsed->tint;
+}
+
+/**
  * @brief Allocates and initializes a new parsed prefab structure.
  * This function sets default values for a new prefab, including default camera
  * settings and empty script and child arrays.
@@ -274,6 +284,13 @@ static void parsed_prefab_add_child(fluxParsedPrefab prefab, hstr child) {
     TraceLog(LOG_INFO, "adding prefab child = %s", hstr_unpack(child));
 }
 
+/**
+ * @brief Sets the tint for a prefab.
+ * This function updates the tint property of a prefab.
+ * @param prefab A pointer to the fluxParsedPrefabStruct whose model path is
+ * being set.
+ * @param tint The new tint.
+ */
 static void parsed_prefab_set_tint(fluxParsedPrefab prefab, Color tint) {
     LOG_FUNC_CALL();
     assert(prefab);
@@ -407,9 +424,4 @@ fluxParsedPrefab parser_read_prefab(const char* raw_path) {
 cleanup:
     hstr_decref(path);
     return out;
-}
-
-Color parser_parsed_prefab_get_tint(fluxParsedPrefab parsed) {
-    assert(parsed);
-    return parsed->tint;
 }

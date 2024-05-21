@@ -23,6 +23,7 @@
 #include "scripts.h"
 #include "text_stuff.h"
 #include "transform.h"
+#include "loading_screens.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,14 +134,15 @@ void flux_load_scene(const char* path) {
     assert(prefabs == NULL);
     assert(n_prefabs == 0);
 
-    BeginDrawing();
-    ClearBackground(BLACK);
-    DrawTextEx(editor_font, "Loading scene...", (Vector2){10.0, 10.0}, 50, 1,
-               WHITE);
-    EndDrawing();
+    flux_draw_loading_screen("scene",0.0f);
 
     TraceLog(LOG_INFO, "loading scene %s", path);
     fluxParsedScene parsed_scene = parser_read_scene(path);
+
+    flux_draw_loading_screen("scene",0.05f);
+
+    int n_prefabs_to_load = parser_parsed_scene_get_n_prefabs(parsed_scene);
+    int total_to_load = n_prefabs_to_load + parser_parsed_scene_get_n_gameobjects(parsed_scene);
 
     active_camera = NULL;
 
@@ -154,6 +156,8 @@ void flux_load_scene(const char* path) {
         prefabs = realloc(prefabs, sizeof(fluxPrefab) * (n_prefabs + 1));
         prefabs[n_prefabs] = prefab;
         n_prefabs++;
+
+        flux_draw_loading_screen("scene",(float)i / (float)total_to_load);
     }
 
     for (int i = 0; i < parser_parsed_scene_get_n_gameobjects(parsed_scene);
@@ -168,6 +172,8 @@ void flux_load_scene(const char* path) {
             hstr_unpack(
                 parser_parsed_gameobject_get_prefab_name(parsed_gameobject)),
             transform, parser_parsed_gameobject_get_args(parsed_gameobject));
+
+        flux_draw_loading_screen("scene",(float)(i + n_prefabs_to_load) / (float)total_to_load);
     }
 
     parser_delete_parsed_scene(parsed_scene);
@@ -255,8 +261,6 @@ void flux_draw_scene(void) {
                 continue;
             if (!flux_gameobject_is_visible(obj))
                 continue;
-            // TraceLog(INFO,"gameobject visible
-            // %d",flux_gameobject_is_visible(obj));
             render_add_model_instance(flux_gameobject_get_model(obj),
                                       flux_gameobject_get_transform(obj));
         }

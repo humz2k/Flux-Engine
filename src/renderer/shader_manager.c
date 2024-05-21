@@ -269,8 +269,14 @@ void render_draw_skybox(void) {
     rlEnableDepthMask();
 }
 
+/**
+ * @brief Enables the skybox.
+ */
 void render_enable_skybox(void) { skybox_enabled = true; }
 
+/**
+ * @brief Disables the skybox.
+ */
 void render_disable_skybox(void) { skybox_enabled = false; }
 
 /**

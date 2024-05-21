@@ -26,6 +26,7 @@
 #include "pipeline.h"
 #include "scene.h"
 #include "text_stuff.h"
+#include "loading_screens.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -73,22 +74,26 @@ void flux_init(int width, int height, const char* name) {
 
     load_editor_tools();
 
-    BeginDrawing();
-    ClearBackground(BLACK);
-    DrawTextEx(editor_font, "Loading...", (Vector2){10.0, 10.0}, 50, 1, WHITE);
-    EndDrawing();
+    flux_draw_loading_screen("game",0);
 
     editor_add_console_command("quit", console_command_quit);
     editor_add_console_command("fps_max", set_fps_max_callback);
 
+    flux_draw_loading_screen("game",0.3);
+
     flux_init_game_callbacks();
+
+    flux_draw_loading_screen("game",0.5);
 
     render_init();
 
-    flux_reset_scene();
-    flux_game_load();
+    flux_draw_loading_screen("game",0.8);
 
-    // LOG_FUNC_CALL();
+    flux_reset_scene();
+
+    flux_draw_loading_screen("game",1);
+
+    flux_game_load();
 }
 
 /**
