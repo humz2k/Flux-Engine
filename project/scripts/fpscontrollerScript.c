@@ -22,7 +22,6 @@ fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
 }
 
 fluxCallback onUpdate(fluxGameObject obj, script_data* data){
-    //TraceLog(LOG_INFO,"UPDATE...");
 
     Vector3 forward = Vector3Normalize(Vector3RotateByAxisAngle((Vector3){0.0f,0.0f,1.0f},(Vector3){0.0f,1.0f,0.0f},data->transform.rot.y));
     Vector3 left = Vector3Normalize(Vector3RotateByAxisAngle((Vector3){1.0f,0.0f,0.0f},(Vector3){0.0f,1.0f,0.0f},data->transform.rot.y));
@@ -62,12 +61,10 @@ fluxCallback onUpdate(fluxGameObject obj, script_data* data){
 
     player_transform = data->transform;
 
-    //TraceLog(INFO,"test sending signal 10");
-    //flux_send_signal(10);
 }
 
 fluxCallback onDraw(fluxGameObject obj, script_data* data){
-    //DrawCircle(GetScreenWidth()*0.5,GetScreenHeight()*0.5,10,RED);
+
 }
 
 fluxCallback onDraw2D(fluxGameObject obj, script_data* data){
