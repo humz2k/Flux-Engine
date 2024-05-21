@@ -1,12 +1,12 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include "pipeline.h"
-#include "editor.h"
 #include "console.h"
-#include "transform.h"
 #include "display_size.h"
-#include "rlobj.h"
+#include "editor.h"
 #include "hqtools/hqtools.h"
+#include "pipeline.h"
+#include "rlobj.h"
+#include "transform.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 static bool do_quit = false;
 static bool draw_grid = false;
@@ -16,150 +16,165 @@ static Camera3D active_cam;
 static Camera3D cam;
 static int cam_id = -1;
 
-static void quit_callback(int n_args, const char** args){
-    do_quit = true;
-}
+static void quit_callback(int n_args, const char** args) { do_quit = true; }
 
-static void draw_grid_callback(int n_args, const char** args){
-    if (n_args < 2)return;
+static void draw_grid_callback(int n_args, const char** args) {
+    if (n_args < 2)
+        return;
     draw_grid = atoi(args[1]);
 }
 
-static void camera_mode_callback(int n_args, const char** args){
-    if (n_args < 2)return;
+static void camera_mode_callback(int n_args, const char** args) {
+    if (n_args < 2)
+        return;
     camera_mode = atoi(args[1]);
 }
 
-static void toggle_fullscreen_callback(int n_args, const char** args){
+static void toggle_fullscreen_callback(int n_args, const char** args) {
     ToggleFullscreen();
 }
 
-static void set_window_size_callback(int n_args, const char** args){
-    if (n_args < 3)return;
+static void set_window_size_callback(int n_args, const char** args) {
+    if (n_args < 3)
+        return;
     int width = atoi(args[1]);
-    if (width < 100)return;
-    if (width > 3000)return;
+    if (width < 100)
+        return;
+    if (width > 3000)
+        return;
     int height = atoi(args[2]);
-    if (height < 100)return;
-    if (height > 3000)return;
-    SetWindowSize(width,height);
+    if (height < 100)
+        return;
+    if (height > 3000)
+        return;
+    SetWindowSize(width, height);
 }
 
-static void query_res_callback(int n_args, const char** args){
-    TraceLog(LOG_INFO,"screenSize = %dx%d, renderSize = %dx%d",GetScreenWidth(),GetScreenHeight(),GetRenderWidth(),GetRenderHeight());
+static void query_res_callback(int n_args, const char** args) {
+    TraceLog(LOG_INFO, "screenSize = %dx%d, renderSize = %dx%d",
+             GetScreenWidth(), GetScreenHeight(), GetRenderWidth(),
+             GetRenderHeight());
 }
 
-static void debug_light_callback(int n_args, const char** args){
-    if (n_args < 2)return;
+static void debug_light_callback(int n_args, const char** args) {
+    if (n_args < 2)
+        return;
     cam_id = atoi(args[1]);
-    //active_cam = render_get_light_cam(atoi(args[1]));
+    // active_cam = render_get_light_cam(atoi(args[1]));
 }
 
-static void default_cam_callback(int n_args, const char** args){
+static void default_cam_callback(int n_args, const char** args) {
     cam_id = -1;
-    //active_cam = cam;
+    // active_cam = cam;
 }
 
-static void light_set_scale_callback(int n_args, const char** args){
-    if (n_args < 3)return;
-    render_light_set_scale(atoi(args[1]),atof(args[2]));
+static void light_set_scale_callback(int n_args, const char** args) {
+    if (n_args < 3)
+        return;
+    render_light_set_scale(atoi(args[1]), atof(args[2]));
 }
 
-static void light_set_fov_callback(int n_args, const char** args){
-    if (n_args < 3)return;
-    render_light_set_fov(atoi(args[1]),atof(args[2]));
+static void light_set_fov_callback(int n_args, const char** args) {
+    if (n_args < 3)
+        return;
+    render_light_set_fov(atoi(args[1]), atof(args[2]));
 }
 
-static void disable_mouse_callback(int n_args, const char** args){
+static void disable_mouse_callback(int n_args, const char** args) {
     DisableCursor();
 }
 
-static void enable_mouse_callback(int n_args, const char** args){
+static void enable_mouse_callback(int n_args, const char** args) {
     EnableCursor();
 }
 
-static void get_visible_meshes_callback(int n_args, const char** args){
-    TraceLog(LOG_INFO,"%d",render_get_visible_meshes());
+static void get_visible_meshes_callback(int n_args, const char** args) {
+    TraceLog(LOG_INFO, "%d", render_get_visible_meshes());
 }
 
-static void set_fps_max_callback(int n_args, const char** args){
-    if (n_args < 2)return;
-    TraceLog(LOG_INFO,"setting fps_max to %d",atoi(args[1]));
+static void set_fps_max_callback(int n_args, const char** args) {
+    if (n_args < 2)
+        return;
+    TraceLog(LOG_INFO, "setting fps_max to %d", atoi(args[1]));
     SetTargetFPS(atoi(args[1]));
 }
 
-int main(){
+int main() {
 
-    //scanf("%d");
+    // scanf("%d");
 
     init_editor_tools();
 
-    //SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(1200,800,"flux_render_test");
-    //ToggleFullscreen();
+    // SetConfigFlags(FLAG_MSAA_4X_HINT);
+    InitWindow(1200, 800, "flux_render_test");
+    // ToggleFullscreen();
 
     SetExitKey(0);
 
     load_editor_tools();
 
-    editor_add_console_command("quit",quit_callback);
-    editor_add_console_command("draw_grid",draw_grid_callback);
-    editor_add_console_command("camera_mode",camera_mode_callback);
-    //editor_add_console_command("fullscreen",fullscreen_callback);
-    editor_add_console_command("query_res",query_res_callback);
-    editor_add_console_command("debug_light",debug_light_callback);
-    editor_add_console_command("default_cam",default_cam_callback);
-    editor_add_console_command("light_set_scale",light_set_scale_callback);
-    editor_add_console_command("light_set_fov",light_set_fov_callback);
-    editor_add_console_command("enable_mouse",enable_mouse_callback);
-    editor_add_console_command("disable_mouse",disable_mouse_callback);
-    editor_add_console_command("get_visible_meshes",get_visible_meshes_callback);
-    editor_add_console_command("fps_max",set_fps_max_callback);
-    editor_add_console_command("toggle_fullscreen",toggle_fullscreen_callback);
-    editor_add_console_command("set_window_size",set_window_size_callback);
+    editor_add_console_command("quit", quit_callback);
+    editor_add_console_command("draw_grid", draw_grid_callback);
+    editor_add_console_command("camera_mode", camera_mode_callback);
+    // editor_add_console_command("fullscreen",fullscreen_callback);
+    editor_add_console_command("query_res", query_res_callback);
+    editor_add_console_command("debug_light", debug_light_callback);
+    editor_add_console_command("default_cam", default_cam_callback);
+    editor_add_console_command("light_set_scale", light_set_scale_callback);
+    editor_add_console_command("light_set_fov", light_set_fov_callback);
+    editor_add_console_command("enable_mouse", enable_mouse_callback);
+    editor_add_console_command("disable_mouse", disable_mouse_callback);
+    editor_add_console_command("get_visible_meshes",
+                               get_visible_meshes_callback);
+    editor_add_console_command("fps_max", set_fps_max_callback);
+    editor_add_console_command("toggle_fullscreen", toggle_fullscreen_callback);
+    editor_add_console_command("set_window_size", set_window_size_callback);
 
     SetTargetFPS(200);
 
     int true_render_width = GetDisplayWidth() * 2;
     int true_render_height = GetDisplayHeight() * 2;
 
-    RenderTexture2D tex = LoadRenderTexture(true_render_width,true_render_height);
+    RenderTexture2D tex =
+        LoadRenderTexture(true_render_width, true_render_height);
 
     render_init();
 
     cam.fovy = 45;
-    cam.position = (Vector3){0,10,-10};
+    cam.position = (Vector3){0, 10, -10};
     cam.projection = CAMERA_PERSPECTIVE;
-    cam.up = (Vector3){0,1,0};
+    cam.up = (Vector3){0, 1, 0};
     cam.target = Vector3Zero();
 
-    Model sphere = LoadModelFromMesh(GenMeshSphere(1,50,50));//LoadModel("drivers/assets/earth.obj");//
+    Model sphere = LoadModelFromMesh(
+        GenMeshSphere(1, 50, 50)); // LoadModel("drivers/assets/earth.obj");//
     fluxTransform sphere_tranform = flux_empty_transform();
     sphere_tranform.pos.y = 1;
 
-    Model plane = LoadModelFromMesh(GenMeshPlane(50,50,10,10));
+    Model plane = LoadModelFromMesh(GenMeshPlane(50, 50, 10, 10));
     fluxTransform plane_transform = flux_empty_transform();
 
     Model gun = LoadObj("drivers/assets/city_low_poly.obj");
 
-    //Model thing = LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
+    // Model thing =
+    // LoadModel("/Users/humzaqureshi/GitHub/Flux-Engine/drivers/assets/map2.obj");
 
     render_set_ka(0.2);
     render_light_enable(0);
-    render_light_set_type(0,0);
-    render_light_set_cL(0,WHITE);
-    render_light_set_kd(0,0.7);
-    render_light_set_ks(0,0.3);
-    render_light_set_L(0,Vector3One());
-    render_light_set_p(0,200);
+    render_light_set_type(0, 0);
+    render_light_set_cL(0, WHITE);
+    render_light_set_kd(0, 0.7);
+    render_light_set_ks(0, 0.3);
+    render_light_set_L(0, Vector3One());
+    render_light_set_p(0, 200);
 
     render_light_enable(1);
-    render_light_set_type(1,0);
-    render_light_set_cL(1,WHITE);
-    render_light_set_kd(1,0.7);
-    render_light_set_ks(1,0.3);
-    render_light_set_L(1,(Vector3){0,2,-1});
-    render_light_set_p(1,200);
+    render_light_set_type(1, 0);
+    render_light_set_cL(1, WHITE);
+    render_light_set_kd(1, 0.7);
+    render_light_set_ks(1, 0.3);
+    render_light_set_L(1, (Vector3){0, 2, -1});
+    render_light_set_p(1, 200);
 
     render_load_skybox("drivers/assets/Daylight Box UV.png");
 
@@ -169,51 +184,51 @@ int main(){
     renderModel plane_model = render_make_model(plane);
     renderModel gun_model = render_make_model(gun);
 
-    while (!WindowShouldClose() && !do_quit){
+    while (!WindowShouldClose() && !do_quit) {
 
         BeginDrawing();
 
         render_reset_instances(sphere_rmodel);
         sphere_tranform.pos.x = -10;
-        for (int i = 0; i < 11; i++){
+        for (int i = 0; i < 11; i++) {
             sphere_tranform.pos.z = -10;
-            for (int j = 0; j < 11; j++){
-                render_add_model_instance(sphere_rmodel,sphere_tranform);
+            for (int j = 0; j < 11; j++) {
+                render_add_model_instance(sphere_rmodel, sphere_tranform);
                 sphere_tranform.pos.z += 2;
             }
             sphere_tranform.pos.x += 2;
         }
 
         render_reset_instances(plane_model);
-        render_add_model_instance(plane_model,plane_transform);
+        render_add_model_instance(plane_model, plane_transform);
         render_reset_instances(gun_model);
-        render_add_model_instance(gun_model,flux_empty_transform());
+        render_add_model_instance(gun_model, flux_empty_transform());
 
         ClearBackground(BLACK);
 
-        if (!editor_console_active()){
-            if (camera_mode == 1){
-                UpdateCamera(&cam,CAMERA_ORBITAL);
-            } else if (camera_mode == 2){
-                UpdateCamera(&cam,CAMERA_THIRD_PERSON);
-            } else if (camera_mode == 3){
-                UpdateCamera(&cam,CAMERA_FREE);
+        if (!editor_console_active()) {
+            if (camera_mode == 1) {
+                UpdateCamera(&cam, CAMERA_ORBITAL);
+            } else if (camera_mode == 2) {
+                UpdateCamera(&cam, CAMERA_THIRD_PERSON);
+            } else if (camera_mode == 3) {
+                UpdateCamera(&cam, CAMERA_FREE);
             }
         }
 
-        if (cam_id < 0){
+        if (cam_id < 0) {
             active_cam = cam;
         } else {
             active_cam = render_get_light_cam(cam_id);
         }
 
         render_begin(active_cam);
-        //render_rmodel(gun_model,WHITE);
-        render_rmodel(sphere_rmodel,WHITE);
-        render_rmodel(plane_model,WHITE);
+        // render_rmodel(gun_model,WHITE);
+        render_rmodel(sphere_rmodel, WHITE);
+        render_rmodel(plane_model, WHITE);
 
-        if (draw_grid){
-            render_draw_grid(100,1.0f);
+        if (draw_grid) {
+            render_draw_grid(100, 1.0f);
         }
 
         render_calculate_shadows();
@@ -221,11 +236,15 @@ int main(){
         render_end();
         EndTextureMode();
 
-        DrawTexturePro(tex.texture,(Rectangle){0,0,true_render_width,-true_render_height},(Rectangle){0,0,GetDisplayWidth(),GetDisplayHeight()},Vector2Zero(),0,WHITE);
+        DrawTexturePro(
+            tex.texture,
+            (Rectangle){0, 0, true_render_width, -true_render_height},
+            (Rectangle){0, 0, GetDisplayWidth(), GetDisplayHeight()},
+            Vector2Zero(), 0, WHITE);
 
         draw_editor_tools();
-        DrawFPS(10,10);
-        //GetFrameTime();
+        DrawFPS(10, 10);
+        // GetFrameTime();
 
         EndDrawing();
     }
