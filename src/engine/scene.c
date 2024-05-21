@@ -73,6 +73,7 @@ void flux_close_scene(void) {
         game_objects = NULL;
         n_objects = 0;
     }
+    render_unload_skybox();
     flux_close_scene_allocator();
 }
 

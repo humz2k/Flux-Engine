@@ -1,6 +1,7 @@
 #include "console.h"
 #include "engine.h"
 #include "game_callbacks.h"
+#include "pipeline.h"
 
 float move_speed = 5.0f;
 float sensitivity = 0.001f;
@@ -15,6 +16,8 @@ hstr killed_by;
 
 fluxTransform player_transform;
 
+static Sound music;
+
 void signal_handler(int signal) {
     TraceLog(LOG_INFO, "received signal %d", signal);
     if (signal == 10) {
@@ -22,7 +25,9 @@ void signal_handler(int signal) {
 
         flux_close_scene();
         flux_reset_scene();
+        //render_disable_skybox();
         flux_load_scene("project/scenes/emptyScene.scene");
+        PlaySound(music);
 
         hstr_decref(killed_by);
     }
@@ -34,6 +39,8 @@ void signal_handler(int signal) {
         for (int i = 0; i < 1000; i++) {
             bubble[i] = true;
         }
+        StopSound(music);
+        //render_enable_skybox();
         flux_load_scene("project/scenes/testScene.scene");
     }
 }
@@ -55,6 +62,10 @@ int run() {
     SetWindowSize(GetMonitorWidth(0), GetMonitorHeight(0));
     ToggleFullscreen();
 
+    InitAudioDevice();
+
+    music = LoadSound("project/assets/dnb_game_theme.mp3");
+
     for (int i = 0; i < 1000; i++) {
         bubble[i] = true;
     }
@@ -67,11 +78,14 @@ int run() {
     SetTargetFPS(200);
 
     flux_load_scene("project/scenes/welcomeScene.scene");
+    PlaySound(music);
 
     flux_send_signal(0);
 
     flux_run();
 
     flux_close();
+
+    UnloadSound(music);
     return 0;
 }

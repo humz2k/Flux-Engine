@@ -249,6 +249,7 @@ void render_unload_skybox(void) {
         return;
     TraceLog(LOG_INFO, "render_unload_skybox");
     UnloadModel(skybox);
+    skybox_loaded = 0;
 }
 
 /**

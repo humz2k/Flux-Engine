@@ -2,6 +2,7 @@
 #include "fluxScript.h"
 #include "game_callbacks.h"
 #include "raymath.h"
+#include "display_size.h"
 
 extern bool mailboxes[1000];
 extern fluxTransform player_transform;
@@ -62,7 +63,7 @@ fluxCallback onDraw2D(fluxGameObject obj, script_data* data) {
     Vector3 transformed = Vector3Transform(pos, cam_mat);
     if (transformed.z <= 0) {
         pos.y += 1;
-        Vector2 screen_pos = GetWorldToScreen(pos, current_cam);
+        Vector2 screen_pos = GetWorldToScreenEx(pos, current_cam, GetDisplayWidth(), GetDisplayHeight());
         Color color = RED;
         float dist2 = Vector3DistanceSqr(pos, current_cam.position);
         if (dist2 > 100.0f) {

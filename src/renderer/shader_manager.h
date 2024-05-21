@@ -50,6 +50,8 @@ void render_calculate_shadows(void);
 
 void render_load_skybox(const char* path);
 
+void render_unload_skybox();
+
 bool render_light_is_enabled(int i);
 
 bool render_light_is_disabled(int i);
