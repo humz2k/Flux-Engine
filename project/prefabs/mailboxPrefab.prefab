@@ -1,4 +1,4 @@
 prefabName = mailboxPrefab
-prefabModel = /Users/humzaqureshi/GitHub/Flux-Engine/project/assets/11571_Gingerbread_cookie_male_V2_l2.obj
+prefabModel = project/assets/11571_Gingerbread_cookie_male_V2_l2.obj
 prefabScripts = mailboxScript
 prefabTint = 100,100,255,255

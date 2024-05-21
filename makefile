@@ -87,7 +87,7 @@ main: build/driver build/flux_editor build/test_render build/parser_test
 .secondary: $(OUTPUTS)
 
 $(ENGINE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES)
-	python3 ./build_scripts.py $(PROJECT_DIR)
+	python3 build_scripts.py $(PROJECT_DIR)
 
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9 CUSTOM_CFLAGS=-fno-inline
