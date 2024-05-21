@@ -33,6 +33,6 @@ fluxCallback onDestroy(fluxGameObject obj, script_data* data){
 fluxCallback onDraw2D(fluxGameObject obj, script_data* data){
     //TraceLog(INFO,"test2 recieved signal %d", signal)
     DrawText("Press Enter to begin...",25,100,25,RED);
-    DrawText("WASD/Space to move.",25,125,25,RED);
+    DrawText("WASD to move.",25,125,25,RED);
     DrawText("Visit as many websites as possible before being caught by a tracking cookie.",25,150,25,RED);
 }
