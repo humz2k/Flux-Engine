@@ -1,6 +1,7 @@
 #define SCRIPT houseScript
 #include "fluxScript.h"
 #include "game_callbacks.h"
+#include "display_size.h"
 
 extern bool mailboxes[1000];
 extern bool bubble[1000];
@@ -87,7 +88,7 @@ fluxCallback onDraw2D(fluxGameObject obj, script_data* data) {
     Vector3 transformed = Vector3Transform(pos, cam_mat);
     if (transformed.z <= 0) {
         pos.y += 0.3;
-        Vector2 screen_pos = GetWorldToScreen(pos, current_cam);
+        Vector2 screen_pos = GetWorldToScreenEx(pos, current_cam, GetDisplayWidth(), GetDisplayHeight());
         Color color = GREEN;
         float dist2 = Vector3DistanceSqr(pos, current_cam.position);
         if (dist2 > 10.0f) {
