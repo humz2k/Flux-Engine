@@ -1,14 +1,13 @@
-#define SCRIPT deathNoticeScript
+#define SCRIPT welcomeNoticeScript
 #include "fluxScript.h"
 #include "game_callbacks.h"
-extern hstr killed_by;
 
 script_data{
 
 };
 
 fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
-    hstr_incref(killed_by);
+
 }
 
 fluxCallback onUpdate(fluxGameObject obj, script_data* data){
@@ -28,12 +27,12 @@ fluxCallback onDraw(fluxGameObject obj, script_data* data){
 }
 
 fluxCallback onDestroy(fluxGameObject obj, script_data* data){
-    hstr_decref(killed_by);
+
 }
 
 fluxCallback onDraw2D(fluxGameObject obj, script_data* data){
     //TraceLog(INFO,"test2 recieved signal %d", signal)
-    char text[1000];
-    sprintf(text,"You were caught by %s. Press Enter to try again.",hstr_unpack(killed_by));
-    DrawText(text,100,100,25,RED);
+    DrawText("Press Enter to begin...",25,100,25,RED);
+    DrawText("WASD/Space to move.",25,125,25,RED);
+    DrawText("Visit as many websites as possible before being caught by a tracking cookie.",25,150,25,RED);
 }

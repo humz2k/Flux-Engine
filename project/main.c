@@ -6,6 +6,7 @@ float move_speed = 5.0f;
 float sensitivity = 0.001f;
 int n_remaining = 0;
 int n_remaining2 = 0;
+int n_total = 0;
 
 bool mailboxes[1000] = {0};
 bool bubble[1000];
@@ -66,7 +67,7 @@ int run(){
     SetTargetFPS(200);
 
     flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
-                    "testScene.scene");
+                    "welcomeScene.scene");
 
     flux_send_signal(0);
 

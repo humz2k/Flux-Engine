@@ -1,0 +1,3 @@
+sceneName = emptyScene
+scenePrefabs = project/prefabs/welcomeNotice.prefab
+sceneGameObject = welcomeNotice,0,0,0,0,0,0,0,0,0

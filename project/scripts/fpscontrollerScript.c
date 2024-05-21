@@ -6,6 +6,7 @@ extern float move_speed;
 extern float sensitivity;
 extern fluxTransform player_transform;
 extern int n_remaining;
+extern int n_total;
 
 #define MOVE_SPEED (move_speed)
 #define SENSITIVITY (sensitivity)
@@ -70,8 +71,8 @@ fluxCallback onDraw(fluxGameObject obj, script_data* data){
 }
 
 fluxCallback onDraw2D(fluxGameObject obj, script_data* data){
-    DrawCircle(GetScreenWidth()*0.5,GetScreenHeight()*0.5,10,RED);
-    char text[100];
-    sprintf(text,"%d",n_remaining);
+    DrawCircle(GetScreenWidth()*0.5,GetScreenHeight()*0.5,2,RED);
+    char text[1000];
+    sprintf(text,"Score: %d",n_total - n_remaining);
     DrawText(text,100,100,30,BLUE);
 }

@@ -1,0 +1,58 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 16.11.2011 11:09:44
+
+newmtl Cookie_Male
+	Ns 30.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0810 0.0810 0.0810
+	Ke 0.0000 0.0000 0.0000
+	map_Ka GingerBreadCookieMaleDiffuseMap.png
+	map_Kd GingerBreadCookieMaleDiffuseMap.png
+
+newmtl Cookie_Male_Metal
+	Ns 78.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.2345 0.2345 0.1958
+	Ke 0.0000 0.0000 0.0000
+	map_Ka GingerBreadCookieMaleDiffuseMap.png
+	map_Kd GingerBreadCookieMaleDiffuseMap.png
+
+newmtl Icing
+	Ns 53.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.5400 0.5400 0.5400
+	Ke 0.0000 0.0000 0.0000
+	map_Ka GingerBreadCookieMaleDiffuseMap.png
+	map_Kd GingerBreadCookieMaleDiffuseMap.png
+
+newmtl matHook
+	Ns 55.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.4500 0.4500 0.4500
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Plane001DiffuseMap.png
+	map_Kd Plane001DiffuseMap.png

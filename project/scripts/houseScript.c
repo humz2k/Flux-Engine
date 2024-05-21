@@ -6,6 +6,7 @@ extern bool mailboxes[1000];
 extern bool bubble[1000];
 extern fluxTransform player_transform;
 extern int n_remaining;
+extern int n_total;
 
 script_data{
     int* my_mailboxes;
@@ -29,6 +30,7 @@ fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
     data->transform = flux_gameobject_get_transform(obj);
     data->id = n_remaining;
     n_remaining++;
+    n_total = n_remaining;
 }
 
 fluxCallback onUpdate(fluxGameObject obj, script_data* data){
