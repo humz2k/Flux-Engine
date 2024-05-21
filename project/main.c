@@ -51,12 +51,8 @@ static void set_sensitivity_callback(int n_args, const char** args) {
 }
 
 int run() {
-
     flux_init(1024, 1024, "test");
-
-    //TraceLog(LOG_INFO,"monitor dims: %dx%d",GetMonitorWidth(0),GetMonitorHeight(0));
     SetWindowSize(GetMonitorWidth(0),GetMonitorHeight(0));
-
     ToggleFullscreen();
 
     for (int i = 0; i < 1000; i++) {
