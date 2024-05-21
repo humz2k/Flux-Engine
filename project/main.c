@@ -18,12 +18,25 @@ void signal_handler(int signal){
     TraceLog(LOG_INFO,"received signal %d",signal);
     if (signal == 10){
         TraceLog(LOG_INFO,"killed by %s",hstr_unpack(killed_by));
-        hstr_decref(killed_by);
 
         flux_close_scene();
         flux_reset_scene();
         flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
                     "emptyScene.scene");
+
+        hstr_decref(killed_by);
+    }
+    if (signal == 5){
+        flux_close_scene();
+        flux_reset_scene();
+        n_remaining2 = 0;
+        n_remaining = 0;
+        for (int i = 0; i < 1000; i++){
+            bubble[i] = true;
+        }
+        flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
+                    "testScene.scene");
+
     }
 }
 
@@ -49,6 +62,8 @@ int run(){
     editor_add_console_command("set_sensitivity",set_sensitivity_callback);
 
     flux_register_signal_callback(signal_handler);
+
+    SetTargetFPS(200);
 
     flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
                     "testScene.scene");

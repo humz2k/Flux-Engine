@@ -20,6 +20,7 @@
 
 #include "console.h"
 #include "editor.h"
+#include "text_stuff.h"
 #include "hqtools/hqtools.h"
 #include "pipeline.h"
 #include "scene.h"
@@ -66,6 +67,11 @@ void flux_init(int width, int height, const char* name){
     InitWindow(width, height, name);
 
     load_editor_tools();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    DrawTextEx(editor_font,"Loading...",(Vector2){10.0,10.0},50,1,WHITE);
+    EndDrawing();
 
     editor_add_console_command("quit", console_command_quit);
     editor_add_console_command("fps_max",set_fps_max_callback);

@@ -22,7 +22,7 @@ fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
     data->my_mailboxes = malloc(sizeof(int) * hstr_array_len(args));
     data->n_mailboxes = hstr_array_len(args) - 1;
     for (int i = 0; i < data->n_mailboxes; i++){
-        data->my_mailboxes[i+1] = atoi(hstr_unpack(hstr_array_get(args,i+1)));
+        data->my_mailboxes[i] = atoi(hstr_unpack(hstr_array_get(args,i+1)));
     }
     data->name = hstr_incref(hstr_array_get(args,0));
     TraceLog(INFO,"n mailboxes = %d",data->n_mailboxes);

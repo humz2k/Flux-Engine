@@ -57,7 +57,7 @@ void flux_close_scene_allocator(void) {
                 "FLUX<sceneallocator.c>: n_allocations was less than 0???");
     FLUX_ASSERT(
         (n_allocations < allocations_size),
-        "FLUX<sceneallocator.c>: n_allocations is less than allocations_size!");
+        "FLUX<sceneallocator.c>: n_allocations is bigger than allocations_size!");
 
     // loop through active allocations and free the memory
     for (int i = 0; i < n_allocations; i++) {

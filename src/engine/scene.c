@@ -19,6 +19,7 @@
 #include "sceneallocator.h"
 #include "scripts.h"
 #include "transform.h"
+#include "text_stuff.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,6 +124,12 @@ void flux_load_scene(const char* path) {
     assert(path);
     assert(prefabs == NULL);
     assert(n_prefabs == 0);
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    DrawTextEx(editor_font,"Loading scene...",(Vector2){10.0,10.0},50,1,WHITE);
+    EndDrawing();
+
     TraceLog(LOG_INFO, "loading scene %s", path);
     fluxParsedScene parsed_scene = parser_read_scene(path);
 
