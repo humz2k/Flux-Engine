@@ -1,0 +1,3 @@
+prefabName = mailboxPrefab
+prefabModel = /Users/humzaqureshi/GitHub/Flux-Engine/project/assets/mailbox.obj
+prefabScripts = mailboxScript

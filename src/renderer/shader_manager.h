@@ -42,6 +42,10 @@ void render_draw_skybox(void);
  *  @{
  */
 
+void render_enable_skybox(void);
+
+void render_disable_skybox(void);
+
 void render_calculate_shadows(void);
 
 void render_load_skybox(const char* path);

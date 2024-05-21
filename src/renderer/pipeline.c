@@ -329,7 +329,7 @@ static Matrix get_mesh_transform(Model model, fluxTransform transform) {
     QuaternionToAxisAngle(qrot, &rotationAxis, &rotationAngle);
     Matrix matScale =
         MatrixScale(transform.scale.x, transform.scale.y, transform.scale.z);
-    Matrix matRotation = MatrixRotate(rotationAxis, rotationAngle * DEG2RAD);
+    Matrix matRotation = MatrixRotate(rotationAxis, rotationAngle);
     Matrix matTranslation =
         MatrixTranslate(transform.pos.x, transform.pos.y, transform.pos.z);
 

@@ -15,6 +15,7 @@ fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
     render_light_set_ks(0,0.3);
     render_light_set_L(0,Vector3One());
     render_light_set_p(0,200);
+    render_light_set_fov(0,50);
 
     render_light_enable(1);
     render_light_set_type(1,0);
@@ -23,6 +24,7 @@ fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
     render_light_set_ks(1,0.3);
     render_light_set_L(1,(Vector3){0,2,-1});
     render_light_set_p(1,200);
+    render_light_set_fov(1,50);
 
     for (int i = 0; i < hstr_array_len(args); i++){
         hstr arg = hstr_incref(hstr_array_get(args,i));
@@ -46,5 +48,6 @@ fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
 }
 
 fluxCallback onUpdate(fluxGameObject obj, script_data* data){
-
+    render_set_ka(data->ka);
+    render_enable_skybox();
 }

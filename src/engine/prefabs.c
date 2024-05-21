@@ -188,6 +188,9 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
         if (strcmp(model_path, "SPHERE") == 0) {
             out->raw_model = LoadModelFromMesh(GenMeshSphere(1, 50, 50));
         }
+        else if (strcmp(model_path, "CUBE") == 0) {
+            out->raw_model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
+        }
         else if (strcmp(model_path, "PLANE") == 0) {
             out->raw_model = LoadModelFromMesh(GenMeshPlane(1, 1, 10, 10));
         } else {

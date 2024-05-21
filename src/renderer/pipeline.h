@@ -10,8 +10,8 @@
 #include "shader_manager.h"
 #include "transform.h"
 
-#define RENDERER_MAX_OBJECTS 1000
-#define RENDER_MAX_INSTANCES 1000
+#define RENDERER_MAX_OBJECTS 10000
+#define RENDER_MAX_INSTANCES 10000
 
 /** @addtogroup group1 Renderer API
  *  @brief The public API for interacting with the renderer module.

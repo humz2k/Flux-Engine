@@ -363,6 +363,7 @@ fluxParsedScene parser_read_scene(const char* raw_path) {
                     atof(hstr_unpack(hstr_array_get(argument_list, 8)));
                 transform.scale.z =
                     atof(hstr_unpack(hstr_array_get(argument_list, 9)));
+                //TraceLog(INFO,"transform: %g %g %g, %g %g %g, %g %g %g",transform.pos.x,transform.pos.y,transform.pos.z,transform.rot.x,transform.rot.y,transform.rot.z,transform.scale.x,transform.scale.y,transform.scale.z);
                 hstrArray args = hstr_array_make();
                 for (int m = 10; m < hstr_array_len(argument_list); m++) {
                     hstr_array_append(args, hstr_array_get(argument_list, m));

@@ -83,6 +83,7 @@ void flux_instantiate_prefab(fluxPrefab prefab, fluxTransform transform, hstrArr
     if (flux_gameobject_is_camera(allocated) && (active_camera == NULL)) {
         active_camera = allocated;
     }
+    //TraceLog(INFO,"instantiate prefab transform %g %g %g, %g %g %g, %g %g %g",transform.pos.x,transform.pos.y,transform.pos.z,transform.rot.x,transform.rot.y,transform.rot.z,transform.scale.x,transform.scale.y,transform.scale.z);
     game_objects =
             realloc(game_objects, sizeof(fluxGameObject) * (n_objects + 1));
     game_objects[n_objects] = allocated;
@@ -235,6 +236,9 @@ void flux_draw_scene(void) {
             continue;
         if (!flux_gameobject_has_model(obj))
             continue;
+        if (!flux_gameobject_is_visible(obj))
+            continue;
+        //TraceLog(INFO,"gameobject visible %d",flux_gameobject_is_visible(obj));
         render_add_model_instance(flux_gameobject_get_model(obj),
                                   flux_gameobject_get_transform(obj));
     }

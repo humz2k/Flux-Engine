@@ -1,0 +1,3 @@
+prefabName = housePrefab
+prefabModel = SPHERE
+prefabScripts = houseScript

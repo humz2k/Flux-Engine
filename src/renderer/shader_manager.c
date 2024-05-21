@@ -84,6 +84,8 @@ static int skybox_loaded = 0; /**< Flag to check if the skybox is loaded. */
 static Shader skybox_shader;  /**< Shader for rendering the skybox. */
 static Model skybox;          /**< 3D model for the skybox. */
 
+static bool skybox_enabled = true;
+
 static int shadowMapRes = 4096; /**< Resolution of the shadow map. */
 
 /**
@@ -258,11 +260,21 @@ void render_draw_skybox(void) {
     LOG_FUNC_CALL();
     if (!skybox_loaded)
         return;
+    if (!skybox_enabled)
+        return;
     rlDisableBackfaceCulling();
     rlDisableDepthMask();
     DrawModel(skybox, render_get_current_cam().position, 1.0f, WHITE);
     rlEnableBackfaceCulling();
     rlEnableDepthMask();
+}
+
+void render_enable_skybox(void){
+    skybox_enabled = true;
+}
+
+void render_disable_skybox(void){
+    skybox_enabled = false;
 }
 
 /**
