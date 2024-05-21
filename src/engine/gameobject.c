@@ -229,15 +229,13 @@ void flux_destroy_gameobject(fluxGameObject obj) {
  * @param obj Pointer to the game object.
  * @return `true` if the game object is set to be visible, `false` otherwise
  */
-bool flux_gameobject_is_visible(fluxGameObject obj){
-    return obj->visible;
-}
+bool flux_gameobject_is_visible(fluxGameObject obj) { return obj->visible; }
 
 /**
  * @brief Sets the visibility value of a game object
  * @param obj Pointer to the game object.
  * @param visible `true` if the game object should be visible, `false` if not
  */
-void flux_gameobject_set_visible(fluxGameObject obj, bool visible){
+void flux_gameobject_set_visible(fluxGameObject obj, bool visible) {
     obj->visible = visible;
 }

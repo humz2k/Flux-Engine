@@ -5,8 +5,8 @@
 #ifndef _FLUX_SCENE_H_
 #define _FLUX_SCENE_H_
 
-#include "transform.h"
 #include "hqtools/hqtools.h"
+#include "transform.h"
 
 typedef enum {
     ONUPDATE,
@@ -21,7 +21,8 @@ typedef enum {
  *
  * Before loading a scene, ensure that `flux_reset_scene()` has been called.
  * Then load a scene with `flux_load_scene()`.
- * Close the scene with `flux_close_scene()`, which should be called BEFORE `flux_reset_scene()`.
+ * Close the scene with `flux_close_scene()`, which should be called BEFORE
+ * `flux_reset_scene()`.
  *
  *  @{
  */
@@ -32,7 +33,8 @@ void flux_reset_scene(void);
 
 void flux_close_scene(void);
 
-void flux_instantiate_prefab_by_name(const char* name, fluxTransform transform, hstrArray args);
+void flux_instantiate_prefab_by_name(const char* name, fluxTransform transform,
+                                     hstrArray args);
 
 /** @} */
 

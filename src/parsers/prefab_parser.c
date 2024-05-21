@@ -274,7 +274,7 @@ static void parsed_prefab_add_child(fluxParsedPrefab prefab, hstr child) {
     TraceLog(LOG_INFO, "adding prefab child = %s", hstr_unpack(child));
 }
 
-static void parsed_prefab_set_tint(fluxParsedPrefab prefab, Color tint){
+static void parsed_prefab_set_tint(fluxParsedPrefab prefab, Color tint) {
     LOG_FUNC_CALL();
     assert(prefab);
     prefab->tint = tint;
@@ -369,13 +369,13 @@ fluxParsedPrefab parser_read_prefab(const char* raw_path) {
                 if (strcmp(hstr_unpack(argument), "true") == 0) {
                     parsed_prefab_set_is_camera(out);
                 }
-            } else if (strcmp(hstr_unpack(command),"prefabTint") == 0){
+            } else if (strcmp(hstr_unpack(command), "prefabTint") == 0) {
                 assert(hstr_array_len(argument_list) == 4);
                 Color tint;
-                tint.r = atoi(hstr_unpack(hstr_array_get(argument_list,0)));
-                tint.g = atoi(hstr_unpack(hstr_array_get(argument_list,1)));
-                tint.b = atoi(hstr_unpack(hstr_array_get(argument_list,2)));
-                tint.a = atoi(hstr_unpack(hstr_array_get(argument_list,3)));
+                tint.r = atoi(hstr_unpack(hstr_array_get(argument_list, 0)));
+                tint.g = atoi(hstr_unpack(hstr_array_get(argument_list, 1)));
+                tint.b = atoi(hstr_unpack(hstr_array_get(argument_list, 2)));
+                tint.a = atoi(hstr_unpack(hstr_array_get(argument_list, 3)));
                 parsed_prefab_set_tint(out, tint);
             }
 
@@ -409,7 +409,7 @@ cleanup:
     return out;
 }
 
-Color parser_parsed_prefab_get_tint(fluxParsedPrefab parsed){
+Color parser_parsed_prefab_get_tint(fluxParsedPrefab parsed) {
     assert(parsed);
     return parsed->tint;
 }

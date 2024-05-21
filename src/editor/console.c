@@ -64,7 +64,7 @@ static void append_stack(char* ptr, int type) {
 
 static const char* read_stack(int i, int* type) {
     int idx = (stack_ptr - 1) - i;
-    //printf("idx %d\n",idx);
+    // printf("idx %d\n",idx);
     while (idx < 0) {
         idx += EDITOR_CONSOLE_STACK_SIZE;
     }
