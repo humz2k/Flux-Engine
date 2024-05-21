@@ -110,6 +110,7 @@ static void flux_loop(void){
     flux_scene_script_callback(AFTERUPDATE);
 
     BeginDrawing();
+    ClearBackground(BLACK);
 
     flux_draw_scene();
 

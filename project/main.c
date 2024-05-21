@@ -10,12 +10,20 @@ int n_remaining2 = 0;
 bool mailboxes[1000] = {0};
 bool bubble[1000];
 
+hstr killed_by;
+
 fluxTransform player_transform;
 
 void signal_handler(int signal){
     TraceLog(LOG_INFO,"received signal %d",signal);
     if (signal == 10){
-        flux_quit_game();
+        TraceLog(LOG_INFO,"killed by %s",hstr_unpack(killed_by));
+        hstr_decref(killed_by);
+
+        flux_close_scene();
+        flux_reset_scene();
+        flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
+                    "emptyScene.scene");
     }
 }
 

@@ -92,7 +92,7 @@ fluxCallback onDraw2D(fluxGameObject obj, script_data* data){
     if (transformed.z <= 0){
         pos.y += 0.3;
         Vector2 screen_pos = GetWorldToScreen(pos,current_cam);
-        Color color = RED;
+        Color color = GREEN;
         float dist2 = Vector3DistanceSqr(pos, current_cam.position);
         if (dist2 > 10.0f){
             color.a = (255.0f * 10.0f)/dist2;

@@ -5,6 +5,7 @@
 
 extern bool mailboxes[1000];
 extern fluxTransform player_transform;
+extern hstr killed_by;
 
 script_data{
     int id;
@@ -29,6 +30,7 @@ fluxCallback onUpdate(fluxGameObject obj, script_data* data){
         p2.y = 0;
         Vector3 diff = Vector3Subtract(p1,p2);
         if (Vector3LengthSqr(diff) < 3.0f){
+            killed_by = hstr_incref(data->name);
             flux_send_signal(10);
         }
         diff = Vector3Scale(Vector3Normalize(diff),GetFrameTime() * 2.0);

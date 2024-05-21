@@ -219,8 +219,10 @@ void parser_delete_parsed_scene(fluxParsedScene scene) {
     for (int i = 0; i < scene->n_gameobjects; i++) {
         delete_parsed_gameobject(scene->gameobjects[i]);
     }
-    free(scene->gameobjects);
-    free(scene->prefabs);
+    if (scene->gameobjects)
+        free(scene->gameobjects);
+    if (scene->prefabs)
+        free(scene->prefabs);
     free(scene);
 }
 

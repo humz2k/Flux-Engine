@@ -1,4 +1,4 @@
-#define SCRIPT test
+#define SCRIPT fpscontrollerScript
 #include "fluxScript.h"
 #include "game_callbacks.h"
 

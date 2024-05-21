@@ -219,45 +219,44 @@ void flux_scene_signal_handler(int signal){
  */
 void flux_draw_scene(void) {
     LOG_FUNC_CALL();
-    if (!active_camera)
-        return;
+    if (active_camera){
+        for (int i = 0; i < n_prefabs; i++) {
+            if (flux_prefab_is_camera(prefabs[i]))
+                continue;
+            if (flux_prefab_get_model(prefabs[i]) == NULL)
+                continue;
+            render_reset_instances(flux_prefab_get_model(prefabs[i]));
+        }
 
-    for (int i = 0; i < n_prefabs; i++) {
-        if (flux_prefab_is_camera(prefabs[i]))
-            continue;
-        if (flux_prefab_get_model(prefabs[i]) == NULL)
-            continue;
-        render_reset_instances(flux_prefab_get_model(prefabs[i]));
+        for (int i = 0; i < n_objects; i++) {
+            fluxGameObject obj = game_objects[i];
+            if (flux_gameobject_is_camera(obj))
+                continue;
+            if (!flux_gameobject_has_model(obj))
+                continue;
+            if (!flux_gameobject_is_visible(obj))
+                continue;
+            //TraceLog(INFO,"gameobject visible %d",flux_gameobject_is_visible(obj));
+            render_add_model_instance(flux_gameobject_get_model(obj),
+                                    flux_gameobject_get_transform(obj));
+        }
+
+        Camera3D cam = flux_gameobject_get_raylib_camera(active_camera);
+
+        render_begin(cam);
+
+        for (int i = 0; i < n_prefabs; i++) {
+            if (flux_prefab_is_camera(prefabs[i]))
+                continue;
+            if (flux_prefab_get_model(prefabs[i]) == NULL)
+                continue;
+            render_rmodel(flux_prefab_get_model(prefabs[i]), flux_prefab_get_tint(prefabs[i]));
+        }
+
+        render_calculate_shadows();
+
+        render_end();
     }
-
-    for (int i = 0; i < n_objects; i++) {
-        fluxGameObject obj = game_objects[i];
-        if (flux_gameobject_is_camera(obj))
-            continue;
-        if (!flux_gameobject_has_model(obj))
-            continue;
-        if (!flux_gameobject_is_visible(obj))
-            continue;
-        //TraceLog(INFO,"gameobject visible %d",flux_gameobject_is_visible(obj));
-        render_add_model_instance(flux_gameobject_get_model(obj),
-                                  flux_gameobject_get_transform(obj));
-    }
-
-    Camera3D cam = flux_gameobject_get_raylib_camera(active_camera);
-
-    render_begin(cam);
-
-    for (int i = 0; i < n_prefabs; i++) {
-        if (flux_prefab_is_camera(prefabs[i]))
-            continue;
-        if (flux_prefab_get_model(prefabs[i]) == NULL)
-            continue;
-        render_rmodel(flux_prefab_get_model(prefabs[i]), flux_prefab_get_tint(prefabs[i]));
-    }
-
-    render_calculate_shadows();
-
-    render_end();
 
     flux_scene_script_callback(ONDRAW2D);
 
