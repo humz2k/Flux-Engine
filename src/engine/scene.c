@@ -252,7 +252,7 @@ void flux_draw_scene(void) {
             continue;
         if (flux_prefab_get_model(prefabs[i]) == NULL)
             continue;
-        render_rmodel(flux_prefab_get_model(prefabs[i]), WHITE);
+        render_rmodel(flux_prefab_get_model(prefabs[i]), flux_prefab_get_tint(prefabs[i]));
     }
 
     render_calculate_shadows();

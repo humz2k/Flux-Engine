@@ -42,6 +42,7 @@ typedef struct fluxPrefabStruct {
     enum fluxScriptID* scripts; ///< Array of script identifiers.
     int projection;            ///< Camera projection type (orthographic, perspective).
     float fov;                 ///< Field of view, relevant if the prefab is a camera.
+    Color tint;
 } fluxPrefabStruct;
 
 /**
@@ -208,6 +209,7 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
     }
     out->projection = parser_parsed_prefab_get_projection(parsed);
     out->fov = parser_parsed_prefab_get_fov(parsed);
+    out->tint = parser_parsed_prefab_get_tint(parsed);
     return out;
 }
 
@@ -226,4 +228,8 @@ void flux_delete_prefab(fluxPrefab prefab) {
     if (prefab->scripts)
         free(prefab->scripts);
     free(prefab);
+}
+
+Color flux_prefab_get_tint(fluxPrefab prefab){
+    return prefab->tint;
 }

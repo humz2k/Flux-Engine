@@ -30,6 +30,7 @@ typedef struct fluxParsedPrefabStruct {
     int projection; /**< Projection type if the prefab is a camera. */
     hstrArray scripts;  /**< Array of script names attached to the prefab. */
     hstrArray children; /**< Array of child prefab names. */
+    Color tint;
 } fluxParsedPrefabStruct;
 
 /**
@@ -158,6 +159,7 @@ static fluxParsedPrefab alloc_parsed_prefab_internal(void) {
     out->children = hstr_array_make();
     out->fov = 45;
     out->projection = CAMERA_PERSPECTIVE;
+    out->tint = WHITE;
     return out;
 }
 
@@ -272,6 +274,12 @@ static void parsed_prefab_add_child(fluxParsedPrefab prefab, hstr child) {
     TraceLog(LOG_INFO, "adding prefab child = %s", hstr_unpack(child));
 }
 
+static void parsed_prefab_set_tint(fluxParsedPrefab prefab, Color tint){
+    LOG_FUNC_CALL();
+    assert(prefab);
+    prefab->tint = tint;
+}
+
 /**
  * @brief Frees all resources associated with a parsed prefab and deletes it.
  * This function cleans up all properties of a prefab, including paths, scripts,
@@ -337,7 +345,7 @@ fluxParsedPrefab parser_read_prefab(const char* raw_path) {
             hstr argument =
                 hstr_incref(hstr_strip(hstr_array_get(arguments, 1)));
 
-            hstr argument_list = hstr_split(argument, ",");
+            hstrArray argument_list = hstr_split(argument, ",");
 
             if (strcmp(hstr_unpack(command), "prefabName") == 0) {
                 parsed_prefab_set_name(out, argument);
@@ -361,6 +369,14 @@ fluxParsedPrefab parser_read_prefab(const char* raw_path) {
                 if (strcmp(hstr_unpack(argument), "true") == 0) {
                     parsed_prefab_set_is_camera(out);
                 }
+            } else if (strcmp(hstr_unpack(command),"prefabTint") == 0){
+                assert(hstr_array_len(argument_list) == 4);
+                Color tint;
+                tint.r = atoi(hstr_unpack(hstr_array_get(argument_list,0)));
+                tint.g = atoi(hstr_unpack(hstr_array_get(argument_list,1)));
+                tint.b = atoi(hstr_unpack(hstr_array_get(argument_list,2)));
+                tint.a = atoi(hstr_unpack(hstr_array_get(argument_list,3)));
+                parsed_prefab_set_tint(out, tint);
             }
 
             hstr_array_delete(argument_list);
@@ -391,4 +407,9 @@ fluxParsedPrefab parser_read_prefab(const char* raw_path) {
 cleanup:
     hstr_decref(path);
     return out;
+}
+
+Color parser_parsed_prefab_get_tint(fluxParsedPrefab parsed){
+    assert(parsed);
+    return parsed->tint;
 }

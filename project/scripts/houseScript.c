@@ -13,16 +13,18 @@ script_data{
     fluxTransform transform;
     float size;
     int id;
+    hstr name;
 };
 
 fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
     //assert(hstr_array_len(args) == 1);
     data->size = 20;
     data->my_mailboxes = malloc(sizeof(int) * hstr_array_len(args));
-    data->n_mailboxes = hstr_array_len(args);
+    data->n_mailboxes = hstr_array_len(args) - 1;
     for (int i = 0; i < data->n_mailboxes; i++){
-        data->my_mailboxes[i] = atoi(hstr_unpack(hstr_array_get(args,i)));
+        data->my_mailboxes[i+1] = atoi(hstr_unpack(hstr_array_get(args,i+1)));
     }
+    data->name = hstr_incref(hstr_array_get(args,0));
     TraceLog(INFO,"n mailboxes = %d",data->n_mailboxes);
     data->transform = flux_gameobject_get_transform(obj);
     data->id = n_remaining;
@@ -74,4 +76,29 @@ fluxCallback afterUpdate(fluxGameObject obj, script_data* data){
 
 fluxCallback onDestroy(fluxGameObject obj, script_data* data){
     free(data->my_mailboxes);
+    hstr_decref(data->name);
+}
+
+fluxCallback onDraw(fluxGameObject obj, script_data* data){
+
+}
+
+fluxCallback onDraw2D(fluxGameObject obj, script_data* data){
+    if (!flux_gameobject_is_visible(obj))return;
+    Camera3D current_cam = render_get_current_cam();
+    Vector3 pos = flux_gameobject_get_transform(obj).pos;
+    Matrix cam_mat = GetCameraMatrix(current_cam);
+    Vector3 transformed = Vector3Transform(pos,cam_mat);
+    if (transformed.z <= 0){
+        pos.y += 0.3;
+        Vector2 screen_pos = GetWorldToScreen(pos,current_cam);
+        Color color = RED;
+        float dist2 = Vector3DistanceSqr(pos, current_cam.position);
+        if (dist2 > 10.0f){
+            color.a = (255.0f * 10.0f)/dist2;
+        }
+        const char* text = hstr_unpack(data->name);
+        int fontsize = 20;
+        DrawText(text,screen_pos.x - (MeasureText(text,fontsize)/2),screen_pos.y,fontsize,color);
+    }
 }

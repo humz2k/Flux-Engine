@@ -8,12 +8,14 @@ extern fluxTransform player_transform;
 
 script_data{
     int id;
+    hstr name;
 };
 
 fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
-    assert(hstr_array_len(args) == 1);
+    assert(hstr_array_len(args) == 2);
     data->id = atoi(hstr_unpack(hstr_array_get(args,0)));
-    TraceLog(INFO,"I am mailbox %d",data->id);
+    data->name = hstr_incref(hstr_array_get(args,1));
+    TraceLog(INFO,"I am mailbox %d, %s",data->id,hstr_unpack(data->name));
 }
 
 fluxCallback onUpdate(fluxGameObject obj, script_data* data){
@@ -37,4 +39,32 @@ fluxCallback onUpdate(fluxGameObject obj, script_data* data){
         flux_gameobject_set_transform(obj,transform);
     }
     mailboxes[data->id] = false;
+}
+
+fluxCallback onDestroy(fluxGameObject obj, script_data* data){
+    hstr_decref(data->name);
+}
+
+fluxCallback onDraw(fluxGameObject obj, script_data* data){
+
+}
+
+fluxCallback onDraw2D(fluxGameObject obj, script_data* data){
+    if (!flux_gameobject_is_visible(obj))return;
+    Camera3D current_cam = render_get_current_cam();
+    Vector3 pos = flux_gameobject_get_transform(obj).pos;
+    Matrix cam_mat = GetCameraMatrix(current_cam);
+    Vector3 transformed = Vector3Transform(pos,cam_mat);
+    if (transformed.z <= 0){
+        pos.y += 1;
+        Vector2 screen_pos = GetWorldToScreen(pos,current_cam);
+        Color color = RED;
+        float dist2 = Vector3DistanceSqr(pos, current_cam.position);
+        if (dist2 > 100.0f){
+            color.a = (255.0f * 100.0f)/dist2;
+        }
+        const char* text = hstr_unpack(data->name);
+        int fontsize = 10;
+        DrawText(text,screen_pos.x - (MeasureText(text,fontsize)/2),screen_pos.y,fontsize,color);
+    }
 }

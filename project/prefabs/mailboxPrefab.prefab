@@ -1,3 +1,4 @@
 prefabName = mailboxPrefab
-prefabModel = /Users/humzaqureshi/GitHub/Flux-Engine/project/assets/mailbox.obj
+prefabModel = SPHERE
 prefabScripts = mailboxScript
+prefabTint = 100,100,255,255
