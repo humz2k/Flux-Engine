@@ -2,7 +2,6 @@
 #include "fluxScript.h"
 #include "game_callbacks.h"
 #include "raymath.h"
-//#include "rcamera.h"
 
 extern bool mailboxes[1000];
 extern fluxTransform player_transform;
@@ -37,16 +36,10 @@ fluxCallback onUpdate(fluxGameObject obj, script_data* data){
         Vector3 diffn = Vector3Normalize(diff);
         diff = Vector3Scale(diffn,GetFrameTime() * 2.0);
         transform.pos = Vector3Add(transform.pos,diff);
-        //Vector3Scale((Vector3){1.0,0.0,0.0},MatrixLookAt(p2, p1, (Vector3){0.0,1.0,0.0}));
-        //QuaternionFromVector3ToVector3()
-        //Quaternion q = QuaternionFromMatrix(MatrixLookAt(transform.pos,player_transform.pos,(Vector3){0.0,1.0,0.0}));
-        //Vector3 elr = QuaternionToEuler(q);
-        diffn.y = 0;
-        transform.rot.y = Vector2LineAngle((Vector2){p2.x,p2.z},(Vector2){p1.x,p1.z}) + 1.57;//Vector3Angle((Vector3){1.0,0.0,0.0},diffn);
 
-        //transform.rot.z = 0;
-        //transform.rot.x = 1.57;
-        //transform.rot.z = QuaternionToEuler(q).y;
+        diffn.y = 0;
+        transform.rot.y = Vector2LineAngle((Vector2){p2.x,p2.z},(Vector2){p1.x,p1.z}) + 1.57;
+
         flux_gameobject_set_transform(obj,transform);
     }
     mailboxes[data->id] = false;

@@ -18,7 +18,7 @@ script_data{
 };
 
 fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
-    //assert(hstr_array_len(args) == 1);
+
     data->size = 20;
     data->my_mailboxes = malloc(sizeof(int) * hstr_array_len(args));
     data->n_mailboxes = hstr_array_len(args) - 1;
@@ -48,32 +48,22 @@ fluxCallback afterUpdate(fluxGameObject obj, script_data* data){
     p2.y = 0;
     Vector3 diff = Vector3Subtract(p1,p2);
     if (Vector3Length(diff) < 1.5f){
-        TraceLog(INFO,"in house!");
-        //for (int i = 0; i < 1000; i++){
-        //    mailboxes[i] = false;
-        //}
+
         for (int i = 0; i < data->n_mailboxes; i++){
             mailboxes[data->my_mailboxes[i]] = true;
         }
         RayCollision collision = GetRayCollisionSphere(GetMouseRay((Vector2){GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f},render_get_current_cam()),data->transform.pos,data->transform.scale.x);
         if (collision.hit){
-            TraceLog(LOG_INFO,"HIT");
             data->size -= GetFrameTime() * 10.0f;
         }
-        //data->transform.pos = Vector3Add(data->transform.pos,Vector3Scale(Vector3Subtract(player_transform.pos,data->transform.pos),(1.0f/data->size) * 0.5f * 0.02f));
-        //render_set_ka(0);
+
         if (data->size < 1.0f){
-            TraceLog(INFO,"yes!");
             flux_gameobject_set_visible(obj,false);
             bubble[data->id] = false;
             n_remaining--;
         }
         render_disable_skybox();
-    } //else {
-      //  for (int i = 0; i < data->n_mailboxes; i++){
-      //      mailboxes[data->my_mailboxes[i]] = false;
-      //  }
-    //}
+    }
 }
 
 fluxCallback onDestroy(fluxGameObject obj, script_data* data){

@@ -22,8 +22,7 @@ void signal_handler(int signal){
 
         flux_close_scene();
         flux_reset_scene();
-        flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
-                    "emptyScene.scene");
+        flux_load_scene("project/scenes/emptyScene.scene");
 
         hstr_decref(killed_by);
     }
@@ -35,8 +34,7 @@ void signal_handler(int signal){
         for (int i = 0; i < 1000; i++){
             bubble[i] = true;
         }
-        flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
-                    "testScene.scene");
+        flux_load_scene("project/scenes/testScene.scene");
 
     }
 }
@@ -66,8 +64,7 @@ int run(){
 
     SetTargetFPS(200);
 
-    flux_load_scene("/Users/humzaqureshi/GitHub/Flux-Engine/project/scenes/"
-                    "welcomeScene.scene");
+    flux_load_scene("project/scenes/welcomeScene.scene");
 
     flux_send_signal(0);
 

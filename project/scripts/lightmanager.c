@@ -7,7 +7,7 @@ script_data{
 
 fluxCallback onInit(fluxGameObject obj, script_data* data, hstrArray args){
     data->ka = 0.2;
-    //render_set_ka(0.2);
+
     render_light_enable(0);
     render_light_set_type(0,0);
     render_light_set_cL(0,WHITE);
