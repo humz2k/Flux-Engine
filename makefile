@@ -36,11 +36,18 @@ endif
 
 DEBUG ?= false
 
+PACKAGE ?= false
+FLUX_PACKAGE_FLAGS =
+
+ifeq ($(PACKAGE),true)
+FLUX_PACKAGE_FLAGS = -DFLUX_PACKAGE
+endif
+
 FLUX_DEBUG_FLAGS ?= -O0 -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline
 ifeq ($(DEBUG),true)
-FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof $(FLUX_DEBUG_FLAGS) -fno-inline -fPIC
+FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof $(FLUX_DEBUG_FLAGS) -fno-inline -fPIC $(FLUX_PACKAGE_FLAGS)
 else
-FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
+FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC $(FLUX_PACKAGE_FLAGS)
 endif
 
 INIH_DIR ?= inih

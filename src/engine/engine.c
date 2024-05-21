@@ -97,6 +97,11 @@ void flux_init(int width, int height, const char* name) {
 
     InitWindow(width, height, name);
 
+    TraceLog(INFO, "running in %s",GetApplicationDirectory());
+    #ifdef FLUX_PACKAGE
+    ChangeDirectory(GetApplicationDirectory());
+    #endif
+
     load_editor_tools();
 
     while (GetTime() < splash_screen_init_time) {
