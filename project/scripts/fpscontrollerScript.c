@@ -1,7 +1,7 @@
 #define SCRIPT fpscontrollerScript
+#include "display_size.h"
 #include "fluxScript.h"
 #include "game_callbacks.h"
-#include "display_size.h"
 
 extern float move_speed;
 extern float sensitivity;

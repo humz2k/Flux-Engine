@@ -7,10 +7,10 @@
 #include "scene_parser.h"
 #include "file_tools.h"
 #include "hqtools/hqtools.h"
+#include "loading_screens.h"
 #include "prefab_parser.h"
 #include "raylib.h"
 #include "transform.h"
-#include "loading_screens.h"
 #include <stdio.h>
 #include <stdlib.h>
 
