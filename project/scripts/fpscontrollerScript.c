@@ -1,6 +1,7 @@
 #define SCRIPT fpscontrollerScript
 #include "fluxScript.h"
 #include "game_callbacks.h"
+#include "display_size.h"
 
 extern float move_speed;
 extern float sensitivity;
@@ -68,7 +69,7 @@ fluxCallback onUpdate(fluxGameObject obj, script_data* data) {
 fluxCallback onDraw(fluxGameObject obj, script_data* data) {}
 
 fluxCallback onDraw2D(fluxGameObject obj, script_data* data) {
-    DrawCircle(GetScreenWidth() * 0.5, GetScreenHeight() * 0.5, 2, RED);
+    DrawCircle(GetDisplayWidth() * 0.5, GetDisplayHeight() * 0.5, 2, RED);
     char text[1000];
     sprintf(text, "Score: %d", n_total - n_remaining);
     DrawText(text, 100, 100, 30, BLUE);

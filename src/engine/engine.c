@@ -27,6 +27,7 @@
 #include "scene.h"
 #include "text_stuff.h"
 #include "loading_screens.h"
+#include "display_size.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -58,6 +59,22 @@ static void set_fps_max_callback(int n_args, const char** args) {
     SetTargetFPS(atoi(args[1]));
 }
 
+static void draw_splash_screen(float opacity){
+    float screen_width = GetDisplayWidth();
+    float screen_height = GetDisplayHeight();
+
+    Color col = WHITE;
+    col.a = Clamp(ceil((opacity) * 255.0f),0.0f,250.0f);
+
+    float font_size = 100;
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    Vector2 size = MeasureTextEx(editor_font,"Flux Engine",font_size,1);
+    DrawTextEx(editor_font,"Flux Engine",Vector2Subtract((Vector2){screen_width * 0.5f,screen_height * 0.5f}, Vector2Scale(size,0.5)),font_size,1,col);
+    EndDrawing();
+}
+
 /**
  * @brief Initializes the game engine.
  *
@@ -68,30 +85,43 @@ static void set_fps_max_callback(int n_args, const char** args) {
  * @param name The title of the game window.
  */
 void flux_init(int width, int height, const char* name) {
+
+    float splash_screen_init_time = 1.2f;
+    float splash_screen_max_time = 3.0f;
+
     init_editor_tools();
 
     InitWindow(width, height, name);
 
     load_editor_tools();
 
-    flux_draw_loading_screen("game",0);
+    while (GetTime() < splash_screen_init_time){
+        draw_splash_screen(GetTime());
+    }
+
+    if (GetTime() > splash_screen_max_time)flux_draw_loading_screen("game",0);
 
     editor_add_console_command("quit", console_command_quit);
     editor_add_console_command("fps_max", set_fps_max_callback);
 
-    flux_draw_loading_screen("game",0.3);
+    if (GetTime() > splash_screen_max_time)flux_draw_loading_screen("game",0.3);
 
     flux_init_game_callbacks();
 
-    flux_draw_loading_screen("game",0.5);
+    if (GetTime() > splash_screen_max_time)flux_draw_loading_screen("game",0.5);
 
     render_init();
 
-    flux_draw_loading_screen("game",0.8);
+    if (GetTime() > splash_screen_max_time)flux_draw_loading_screen("game",0.8);
 
     flux_reset_scene();
 
-    flux_draw_loading_screen("game",1);
+    float cur = GetTime();
+    float left = splash_screen_max_time - cur;
+    while (GetTime() < splash_screen_max_time){
+        float delta = 1.0f - ((GetTime() - cur) / left);
+        draw_splash_screen(delta);
+    }
 
     flux_game_load();
 }
