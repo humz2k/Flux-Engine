@@ -56,4 +56,5 @@ def package(name):
 
     shutil.move('build/driver',os.path.join(build_dir,'driver'))
 
-package(sys.argv[1])
+if __name__ == "__main__":
+    package(sys.argv[1])
