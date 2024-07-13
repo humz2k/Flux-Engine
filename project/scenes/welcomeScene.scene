@@ -1,6 +1,0 @@
-sceneName = emptyScene
-scenePrefabs = project/prefabs/welcomeNotice.prefab,project/prefabs/coolGuyPrefab.prefab,project/prefabs/defaultCamera.prefab,project/prefabs/lightmanager.prefab
-sceneGameObject = welcomeNotice,0,0,0,0,0,0,0,0,0
-sceneGameObject = coolGuyPrefab,0,-5,0,-1.57,0,0,1,1,1
-sceneGameObject = defaultCamera,0,0,-30,0,0,0,1,1,1
-sceneGameObject = lightmanager,0,0,0,0,0,0,1,1,1,ka:0.2

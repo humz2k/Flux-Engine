@@ -1,10 +1,24 @@
+/**
+ * @file loading_screens.c
+ * @brief Manages drawing of loading screens.
+ *
+ * Provides functions to draw loading screens.
+ */
+
 #include "loading_screens.h"
 #include "display_size.h"
 #include "raylib.h"
 #include "text_stuff.h"
 
+// this is so that we don't keep drawing to the screen if we repeatedly call
+// draw loading screen when its on the same %.
 static int last = -1;
 
+/**
+ * @brief Draws a loading screen with label.
+ * @param text text for label
+ * @param amount how filled should the loading screen be in range [0,1]
+ */
 void flux_draw_loading_screen(const char* text, float amount) {
     int next = (amount * 100.0f);
     if (next == last)
