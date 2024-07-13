@@ -7,6 +7,7 @@
 #include "scene_parser.h"
 #include "file_tools.h"
 #include "hqtools/hqtools.h"
+#include "loading_screens.h"
 #include "prefab_parser.h"
 #include "raylib.h"
 #include "transform.h"
@@ -219,8 +220,10 @@ void parser_delete_parsed_scene(fluxParsedScene scene) {
     for (int i = 0; i < scene->n_gameobjects; i++) {
         delete_parsed_gameobject(scene->gameobjects[i]);
     }
-    free(scene->gameobjects);
-    free(scene->prefabs);
+    if (scene->gameobjects)
+        free(scene->gameobjects);
+    if (scene->prefabs)
+        free(scene->prefabs);
     free(scene);
 }
 

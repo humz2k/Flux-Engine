@@ -1,0 +1,4 @@
+prefabName = bubblePrefab
+prefabModel = PLANE
+prefabScripts = bubbleScript
+prefabTint = 0,0,0,150

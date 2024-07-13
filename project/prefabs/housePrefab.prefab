@@ -1,0 +1,4 @@
+prefabName = housePrefab
+prefabModel = SPHERE
+prefabScripts = houseScript
+prefabTint = 255,255,255,150

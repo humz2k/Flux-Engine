@@ -84,6 +84,8 @@ static int skybox_loaded = 0; /**< Flag to check if the skybox is loaded. */
 static Shader skybox_shader;  /**< Shader for rendering the skybox. */
 static Model skybox;          /**< 3D model for the skybox. */
 
+static bool skybox_enabled = true;
+
 static int shadowMapRes = 4096; /**< Resolution of the shadow map. */
 
 /**
@@ -247,6 +249,7 @@ void render_unload_skybox(void) {
         return;
     TraceLog(LOG_INFO, "render_unload_skybox");
     UnloadModel(skybox);
+    skybox_loaded = 0;
 }
 
 /**
@@ -258,12 +261,24 @@ void render_draw_skybox(void) {
     LOG_FUNC_CALL();
     if (!skybox_loaded)
         return;
+    if (!skybox_enabled)
+        return;
     rlDisableBackfaceCulling();
     rlDisableDepthMask();
     DrawModel(skybox, render_get_current_cam().position, 1.0f, WHITE);
     rlEnableBackfaceCulling();
     rlEnableDepthMask();
 }
+
+/**
+ * @brief Enables the skybox.
+ */
+void render_enable_skybox(void) { skybox_enabled = true; }
+
+/**
+ * @brief Disables the skybox.
+ */
+void render_disable_skybox(void) { skybox_enabled = false; }
 
 /**
  * @brief Unloads the default shader and associated resources.
@@ -282,13 +297,19 @@ void render_unload_default_shader(void) {
  * @brief Returns the default shader used in the renderer.
  * @return The default shader.
  */
-Shader render_get_default_shader(void) { LOG_FUNC_CALL(); return flux_default_shader; }
+Shader render_get_default_shader(void) {
+    LOG_FUNC_CALL();
+    return flux_default_shader;
+}
 
 /**
  * @brief Returns the shader used when no lights are active.
  * @return The empty shader.
  */
-Shader render_get_empty_shader(void) { LOG_FUNC_CALL(); return flux_empty_shader; }
+Shader render_get_empty_shader(void) {
+    LOG_FUNC_CALL();
+    return flux_empty_shader;
+}
 
 /**
  * @brief Calculates and returns a camera configuration for a light based on its
@@ -348,7 +369,10 @@ void render_calculate_shadows(void) {
  * @brief Sets the ambient light coefficient in the shader.
  * @param ka Ambient coefficient to set.
  */
-void render_set_ka(float ka) { LOG_FUNC_CALL(); render_set_shader_attr_float(shader_ka, ka); }
+void render_set_ka(float ka) {
+    LOG_FUNC_CALL();
+    render_set_shader_attr_float(shader_ka, ka);
+}
 
 /**
  * @brief Sets the camera position in the shader.
@@ -376,14 +400,20 @@ static Light* get_light(int i) {
  * @param i Index of the light to check.
  * @return True if the light is enabled, false otherwise.
  */
-bool render_light_is_enabled(int i) { LOG_FUNC_CALL(); return get_light(i)->enabled; }
+bool render_light_is_enabled(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->enabled;
+}
 
 /**
  * @brief Checks if a light at a given index is disabled.
  * @param i Index of the light to check.
  * @return True if the light is disabled, false otherwise.
  */
-bool render_light_is_disabled(int i) { LOG_FUNC_CALL(); return !render_light_is_enabled(i); }
+bool render_light_is_disabled(int i) {
+    LOG_FUNC_CALL();
+    return !render_light_is_enabled(i);
+}
 
 /**
  * @brief Enables or disables a light based on the given value.
@@ -401,20 +431,29 @@ void render_light_set_enabled(int i, int val) {
  * @brief Enables a light at the specified index.
  * @param i Index of the light to enable.
  */
-void render_light_enable(int i) { LOG_FUNC_CALL(); render_light_set_enabled(i, 1); }
+void render_light_enable(int i) {
+    LOG_FUNC_CALL();
+    render_light_set_enabled(i, 1);
+}
 
 /**
  * @brief Disables a light at the specified index.
  * @param i Index of the light to disable.
  */
-void render_light_disable(int i) { LOG_FUNC_CALL(); render_light_set_enabled(i, 0); }
+void render_light_disable(int i) {
+    LOG_FUNC_CALL();
+    render_light_set_enabled(i, 0);
+}
 
 /**
  * @brief Retrieves the type of a light based on its index.
  * @param i Index of the light whose type is to be retrieved.
  * @return The light type as an integer.
  */
-int render_light_get_type(int i) { LOG_FUNC_CALL(); return get_light(i)->type; }
+int render_light_get_type(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->type;
+}
 
 /**
  * @brief Sets the type of a light based on the given index and type.
@@ -433,7 +472,10 @@ void render_light_set_type(int i, int type) {
  * @param i Index of the light whose color is to be retrieved.
  * @return The color of the light.
  */
-Color render_light_get_cL(int i) { LOG_FUNC_CALL(); return get_light(i)->cL; }
+Color render_light_get_cL(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->cL;
+}
 
 /**
  * @brief Sets the color of a light based on the given index and color.
@@ -455,7 +497,10 @@ void render_light_set_cL(int i, Color col) {
  * @param i Index of the light whose diffuse reflectivity is to be retrieved.
  * @return The diffuse reflectivity coefficient as a float.
  */
-float render_light_get_kd(int i) { LOG_FUNC_CALL(); return get_light(i)->kd; }
+float render_light_get_kd(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->kd;
+}
 
 /**
  * @brief Sets the diffuse reflectivity coefficient of a light based on the
@@ -476,7 +521,10 @@ void render_light_set_kd(int i, float kd) {
  * @param i Index of the light whose specular reflectivity is to be retrieved.
  * @return The specular reflectivity coefficient as a float.
  */
-float render_light_get_ks(int i) { LOG_FUNC_CALL(); return get_light(i)->ks; }
+float render_light_get_ks(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->ks;
+}
 
 /**
  * @brief Sets the specular reflectivity coefficient of a light based on the
@@ -496,7 +544,10 @@ void render_light_set_ks(int i, float ks) {
  * @param i Index of the light whose position is to be retrieved.
  * @return The position of the light as a Vector3.
  */
-Vector3 render_light_get_pos(int i) { LOG_FUNC_CALL(); return get_light(i)->pos; }
+Vector3 render_light_get_pos(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->pos;
+}
 
 /**
  * @brief Sets the position of a light based on the given index and position.
@@ -515,7 +566,10 @@ void render_light_set_pos(int i, Vector3 pos) {
  * @param i Index of the light whose direction is to be retrieved.
  * @return The direction of the light as a Vector3.
  */
-Vector3 render_light_get_L(int i) { LOG_FUNC_CALL(); return get_light(i)->L; }
+Vector3 render_light_get_L(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->L;
+}
 
 /**
  * @brief Sets the direction of a light based on the given index and direction.
@@ -535,7 +589,10 @@ void render_light_set_L(int i, Vector3 L) {
  * @param i Index of the light whose shininess factor is to be retrieved.
  * @return The shininess factor as a float.
  */
-float render_light_get_p(int i) { LOG_FUNC_CALL(); return get_light(i)->p; }
+float render_light_get_p(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->p;
+}
 
 /**
  * @brief Sets the shininess factor of a light based on the given index and
@@ -555,7 +612,10 @@ void render_light_set_p(int i, float p) {
  * @param i Index of the light whose intensity is to be retrieved.
  * @return The intensity of the light as a float.
  */
-float render_light_get_intensity(int i) { LOG_FUNC_CALL(); return get_light(i)->intensity; }
+float render_light_get_intensity(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->intensity;
+}
 
 /**
  * @brief Sets the intensity of a light based on the given index and intensity.
@@ -597,11 +657,17 @@ void render_light_set_fov(int i, float fov) {
  * @param i Index of the light whose scale factor is to be retrieved.
  * @return The scale factor as a float.
  */
-float render_light_get_scale(int i) { LOG_FUNC_CALL(); return get_light(i)->scale; }
+float render_light_get_scale(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->scale;
+}
 
 /**
  * @brief Retrieves the field of view of a light based on its index.
  * @param i Index of the light whose field of view is to be retrieved.
  * @return The field of view as a float.
  */
-float render_light_get_fov(int i) { LOG_FUNC_CALL(); return get_light(i)->fov; }
+float render_light_get_fov(int i) {
+    LOG_FUNC_CALL();
+    return get_light(i)->fov;
+}

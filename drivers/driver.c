@@ -1,5 +1,3 @@
 int run();
 
-int main(){
-    return run();
-}
+int main() { return run(); }

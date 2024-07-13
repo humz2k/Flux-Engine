@@ -38,10 +38,13 @@ struct GameCallback {
     int n_callbacks; /**< Number of callback functions registered. */
 };
 
-static void(*signal_callbacks[FLUX_MAX_GAME_CALLBACKS])(int); /**< Array of signal callback functions. */
-static int n_signal_callbacks = 0; /**< Number of signal callback functions registered. */
+static void (*signal_callbacks[FLUX_MAX_GAME_CALLBACKS])(
+    int); /**< Array of signal callback functions. */
+static int n_signal_callbacks =
+    0; /**< Number of signal callback functions registered. */
 
-static int pending_signals[FLUX_MAX_PENDING_SIGNALS]; /**< Queue of pending signals. */
+static int
+    pending_signals[FLUX_MAX_PENDING_SIGNALS]; /**< Queue of pending signals. */
 static int n_pending_signals = 0; /**< Number of pending signals. */
 
 /**
@@ -57,7 +60,7 @@ static void init_game_callback(struct GameCallback* callbacks) {
 /**
  * @brief Initializes signal callbacks
  */
-static void init_signal_callbacks(void){
+static void init_signal_callbacks(void) {
     LOG_FUNC_CALL();
     n_signal_callbacks = 0;
 }
@@ -82,7 +85,9 @@ static struct GameCallback
 static struct GameCallback
     onGameCloseCallbacks; /**< Callbacks to execute when the game closes. */
 
-void flux_scene_signal_handler(int signal); /**< forward declaration of scene signal handler (i know this is terrible) */
+void flux_scene_signal_handler(
+    int signal); /**< forward declaration of scene signal handler (i know this
+                    is terrible) */
 
 /**
  * @brief Initializes game event callback structures.
@@ -127,7 +132,7 @@ void flux_register_callback(enum FluxGameCallback event,
  * @brief Registers a signal callback function.
  * @param signal_callback Function pointer to the callback to register.
  */
-void flux_register_signal_callback(void(*signal_callback)(int)){
+void flux_register_signal_callback(void (*signal_callback)(int)) {
     LOG_FUNC_CALL();
     assert(n_signal_callbacks < FLUX_MAX_GAME_CALLBACKS);
     signal_callbacks[n_signal_callbacks] = signal_callback;
@@ -138,10 +143,10 @@ void flux_register_signal_callback(void(*signal_callback)(int)){
  * @brief Adds a signal to the pending signals queue.
  * @param signal signal to add to queue.
  */
-void flux_send_signal(int signal){
+void flux_send_signal(int signal) {
     LOG_FUNC_CALL();
     assert(n_pending_signals < FLUX_MAX_PENDING_SIGNALS);
-    TraceLog(INFO,"sending signal %d",signal);
+    TraceLog(INFO, "sending signal %d", signal);
     pending_signals[n_pending_signals] = signal;
     n_pending_signals++;
 }
@@ -149,12 +154,12 @@ void flux_send_signal(int signal){
 /**
  * @brief Executes all pending signals
  */
-void flux_flush_signals(void){
+void flux_flush_signals(void) {
     LOG_FUNC_CALL();
-    for (int i = 0; i < n_pending_signals; i++){
+    for (int i = 0; i < n_pending_signals; i++) {
         int signal = pending_signals[i];
-        TraceLog(INFO,"executing signal %d",signal);
-        for (int j = 0; j < n_signal_callbacks; j++){
+        TraceLog(INFO, "executing signal %d", signal);
+        for (int j = 0; j < n_signal_callbacks; j++) {
             signal_callbacks[j](signal);
         }
     }

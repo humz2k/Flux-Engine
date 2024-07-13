@@ -36,11 +36,18 @@ endif
 
 DEBUG ?= false
 
+PACKAGE ?= false
+FLUX_PACKAGE_FLAGS =
+
+ifeq ($(PACKAGE),true)
+FLUX_PACKAGE_FLAGS = -DFLUX_PACKAGE
+endif
+
 FLUX_DEBUG_FLAGS ?= -O0 -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline
 ifeq ($(DEBUG),true)
-FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof $(FLUX_DEBUG_FLAGS) -fno-inline -fPIC
+FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof $(FLUX_DEBUG_FLAGS) -fno-inline -fPIC $(FLUX_PACKAGE_FLAGS)
 else
-FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC
+FLUX_CC_FLAGS := -Wall -Wpedantic -Wno-newline-eof -O2 -fno-inline -fPIC $(FLUX_PACKAGE_FLAGS)
 endif
 
 INIH_DIR ?= inih
@@ -80,7 +87,7 @@ main: build/driver build/flux_editor build/test_render build/parser_test
 .secondary: $(OUTPUTS)
 
 $(ENGINE_DIR)/GENERATED_SCRIPTS.h: $(SCRIPT_SOURCES)
-	python3 ./build_scripts.py $(PROJECT_DIR)
+	python3 build_scripts.py $(PROJECT_DIR)
 
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9 CUSTOM_CFLAGS=-fno-inline

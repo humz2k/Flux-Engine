@@ -52,6 +52,7 @@ struct fluxGameObjectStruct {
     float fov;      ///< Field of view, relevant if the object is a camera.
     int projection; ///< Camera projection type (e.g., orthographic or
                     ///< perspective).
+    bool visible;
 };
 
 /**
@@ -178,6 +179,9 @@ fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform,
     out->n_scripts = flux_prefab_get_n_scripts(prefab);
     out->scripts = NULL;
     out->is_camera = flux_prefab_is_camera(prefab);
+    out->fov = flux_prefab_get_fov(prefab);
+    out->projection = flux_prefab_get_projection(prefab);
+    out->visible = true;
     if (out->n_scripts != 0) {
         assert(out->scripts = malloc(sizeof(fluxScript) * out->n_scripts));
         for (int i = 0; i < out->n_scripts; i++) {
@@ -186,8 +190,6 @@ fluxGameObject flux_allocate_gameobject(int id, fluxTransform transform,
             fluxCallback_onInit(out, out->scripts[i], args);
         }
     }
-    out->fov = flux_prefab_get_fov(prefab);
-    out->projection = flux_prefab_get_projection(prefab);
     return out;
 }
 
@@ -220,4 +222,20 @@ void flux_destroy_gameobject(fluxGameObject obj) {
         assert(obj->n_scripts == 0);
     }
     free(obj);
+}
+
+/**
+ * @brief Checks if a game object is set to be visible
+ * @param obj Pointer to the game object.
+ * @return `true` if the game object is set to be visible, `false` otherwise
+ */
+bool flux_gameobject_is_visible(fluxGameObject obj) { return obj->visible; }
+
+/**
+ * @brief Sets the visibility value of a game object
+ * @param obj Pointer to the game object.
+ * @param visible `true` if the game object should be visible, `false` if not
+ */
+void flux_gameobject_set_visible(fluxGameObject obj, bool visible) {
+    obj->visible = visible;
 }

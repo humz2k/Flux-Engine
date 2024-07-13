@@ -1,5 +1,3 @@
 #include "editor.h"
 
-int main(){
-    return run_editor();
-}
+int main() { return run_editor(); }

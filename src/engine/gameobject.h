@@ -16,6 +16,10 @@ fluxTransform flux_gameobject_get_transform(fluxGameObject obj);
 
 void flux_gameobject_set_transform(fluxGameObject obj, fluxTransform transform);
 
+bool flux_gameobject_is_visible(fluxGameObject obj);
+
+void flux_gameobject_set_visible(fluxGameObject obj, bool visible);
+
 #ifndef FLUX_GAMEOBJECT_TYPE_ONLY
 
 #include "raylib.h"

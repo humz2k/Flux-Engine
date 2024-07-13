@@ -11,10 +11,12 @@
 
 /**
  * @file prefabs.c
- * @brief Handles the creation, manipulation, and destruction of prefabs, which are templates for constructing game objects.
+ * @brief Handles the creation, manipulation, and destruction of prefabs, which
+ * are templates for constructing game objects.
  *
- * This file defines the operations for loading prefabs from parsed data, accessing their properties,
- * and cleaning them up. Prefabs encapsulate data necessary to instantiate game objects with predefined attributes like models,
+ * This file defines the operations for loading prefabs from parsed data,
+ * accessing their properties, and cleaning them up. Prefabs encapsulate data
+ * necessary to instantiate game objects with predefined attributes like models,
  * scripts, and camera settings.
  */
 
@@ -30,18 +32,20 @@
  * @struct fluxPrefabStruct
  * @brief Represents a template from which game objects can be created.
  *
- * Contains properties that can be applied to new game objects, such as models, camera settings, and scripts.
+ * Contains properties that can be applied to new game objects, such as models,
+ * camera settings, and scripts.
  */
 typedef struct fluxPrefabStruct {
-    hstr name;                 ///< Name of the prefab.
-    bool has_model;            ///< Flag indicating whether the prefab includes a model.
-    Model raw_model;           ///< Raw model data loaded from resources.
-    renderModel model;         ///< Processed model ready for rendering.
-    bool is_camera;            ///< Indicates if the prefab represents a camera.
-    int n_scripts;             ///< Number of scripts attached to the prefab.
+    hstr name;         ///< Name of the prefab.
+    bool has_model;    ///< Flag indicating whether the prefab includes a model.
+    Model raw_model;   ///< Raw model data loaded from resources.
+    renderModel model; ///< Processed model ready for rendering.
+    bool is_camera;    ///< Indicates if the prefab represents a camera.
+    int n_scripts;     ///< Number of scripts attached to the prefab.
     enum fluxScriptID* scripts; ///< Array of script identifiers.
-    int projection;            ///< Camera projection type (orthographic, perspective).
-    float fov;                 ///< Field of view, relevant if the prefab is a camera.
+    int projection; ///< Camera projection type (orthographic, perspective).
+    float fov;      ///< Field of view, relevant if the prefab is a camera.
+    Color tint;     ///< Tint of this prefab.
 } fluxPrefabStruct;
 
 /**
@@ -166,9 +170,17 @@ enum fluxScriptID* flux_prefab_get_scripts(fluxPrefab prefab) {
 }
 
 /**
+ * @brief Retrieves the tint associated with the prefab.
+ * @param prefab Pointer to the prefab.
+ * @return tint
+ */
+Color flux_prefab_get_tint(fluxPrefab prefab) { return prefab->tint; }
+
+/**
  * @brief Loads a prefab from parsed data.
  *
- * This function constructs a prefab from parsed data, initializing its properties and preparing it for use in the game.
+ * This function constructs a prefab from parsed data, initializing its
+ * properties and preparing it for use in the game.
  * @param parsed Parsed prefab data.
  * @return Pointer to the newly created prefab.
  */
@@ -187,8 +199,9 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
         TraceLog(LOG_INFO, "loading model %s", model_path);
         if (strcmp(model_path, "SPHERE") == 0) {
             out->raw_model = LoadModelFromMesh(GenMeshSphere(1, 50, 50));
-        }
-        else if (strcmp(model_path, "PLANE") == 0) {
+        } else if (strcmp(model_path, "CUBE") == 0) {
+            out->raw_model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
+        } else if (strcmp(model_path, "PLANE") == 0) {
             out->raw_model = LoadModelFromMesh(GenMeshPlane(1, 1, 10, 10));
         } else {
             out->raw_model = LoadModel(model_path);
@@ -205,6 +218,7 @@ fluxPrefab flux_load_prefab(fluxParsedPrefab parsed) {
     }
     out->projection = parser_parsed_prefab_get_projection(parsed);
     out->fov = parser_parsed_prefab_get_fov(parsed);
+    out->tint = parser_parsed_prefab_get_tint(parsed);
     return out;
 }
 

@@ -329,7 +329,7 @@ static Matrix get_mesh_transform(Model model, fluxTransform transform) {
     QuaternionToAxisAngle(qrot, &rotationAxis, &rotationAngle);
     Matrix matScale =
         MatrixScale(transform.scale.x, transform.scale.y, transform.scale.z);
-    Matrix matRotation = MatrixRotate(rotationAxis, rotationAngle * DEG2RAD);
+    Matrix matRotation = MatrixRotate(rotationAxis, rotationAngle);
     Matrix matTranslation =
         MatrixTranslate(transform.pos.x, transform.pos.y, transform.pos.z);
 
@@ -518,7 +518,10 @@ static void draw_all(Camera3D camera) {
  * @brief Returns the number of meshes currently visible in the scene.
  * @return Integer representing the number of visible meshes.
  */
-int render_get_visible_meshes(void) { LOG_FUNC_CALL(); return visible_meshes; }
+int render_get_visible_meshes(void) {
+    LOG_FUNC_CALL();
+    return visible_meshes;
+}
 
 /**
  * @brief Ends the rendering frame, handles post-processing tasks, and updates
@@ -556,11 +559,17 @@ void render_draw_grid(int n, float s) {
  * @brief Cleans up rendering resources and unloads shaders at application
  * closure.
  */
-void render_close(void) { LOG_FUNC_CALL(); render_unload_default_shader(); }
+void render_close(void) {
+    LOG_FUNC_CALL();
+    render_unload_default_shader();
+}
 
 /**
  * @brief Retrieves the current camera configuration used in the rendering
  * pipeline.
  * @return Current camera setup.
  */
-Camera3D render_get_current_cam(void) { LOG_FUNC_CALL(); return current_camera; }
+Camera3D render_get_current_cam(void) {
+    LOG_FUNC_CALL();
+    return current_camera;
+}

@@ -29,22 +29,28 @@ void render_set_shader_attr_int(renderShaderAttr attr, int val);
 void render_set_shader_attr_vec3(renderShaderAttr attr, Vector3 val);
 void render_set_shader_attr_float(renderShaderAttr attr, float val);
 
-
 void render_draw_skybox(void);
 
 /** @addtogroup group1 Public Renderer API
  *
  * Lights:
  * * To set the overall ambient light in the scene, call `render_set_ka()`.
- * * There are `FLUX_MAX_LIGHTS` possible lights that can be enabled in the scene.
- * * All functions related to these are prefixed by `render_light`, and generally take
- * the index of the light as the first parameter.
+ * * There are `FLUX_MAX_LIGHTS` possible lights that can be enabled in the
+ * scene.
+ * * All functions related to these are prefixed by `render_light`, and
+ * generally take the index of the light as the first parameter.
  *  @{
  */
+
+void render_enable_skybox(void);
+
+void render_disable_skybox(void);
 
 void render_calculate_shadows(void);
 
 void render_load_skybox(const char* path);
+
+void render_unload_skybox();
 
 bool render_light_is_enabled(int i);
 

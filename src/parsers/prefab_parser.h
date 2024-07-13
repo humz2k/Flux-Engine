@@ -34,4 +34,6 @@ void parser_parsed_prefab_set_fov(fluxParsedPrefab prefab, float fov);
 void parser_parsed_prefab_set_projection(fluxParsedPrefab prefab,
                                          int projection);
 
+Color parser_parsed_prefab_get_tint(fluxParsedPrefab parsed);
+
 #endif

@@ -47,6 +47,8 @@ void flux_prefab_set_fov(fluxPrefab prefab, float fov);
 
 enum fluxScriptID* flux_prefab_get_scripts(fluxPrefab prefab);
 
+Color flux_prefab_get_tint(fluxPrefab prefab);
+
 /** @} */
 
 #endif
