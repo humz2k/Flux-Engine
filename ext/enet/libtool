@@ -191,7 +191,7 @@ nm_file_list_spec="@"
 lt_sysroot=
 
 # Command to truncate a binary pipe.
-lt_truncate_bin="/bin/dd bs=4096 count=1"
+lt_truncate_bin="/opt/homebrew/opt/coreutils/libexec/gnubin/dd bs=4096 count=1"
 
 # The name of the directory that contains temporary libtool files.
 objdir=.libs
